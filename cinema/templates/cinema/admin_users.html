@@ -34,13 +34,13 @@
                         <td><strong>{{ u.name }}</strong></td>
                         <td>{{ u.email }}</td>
                         <td>{{ u.phone|default:"N/A" }}</td>
-                        <td style="color: var(--accent);">{{ u.points }}</td>
+                        <td style="color: var(--color-warning);">{{ u.points }}</td>
                         <td><span style="font-weight: 500;">{{ u.tier }}</span></td>
                         <td>
                             <span class="user-badge" style="
-                                {% if u.status == 'active' %}background:rgba(16,185,129,0.15); border-color:var(--success); color:var(--success);
-                                {% elif u.status == 'banned' %}background:rgba(239,68,68,0.15); border-color:var(--danger); color:var(--danger);
-                                {% else %}background:rgba(245,158,11,0.15); border-color:var(--accent); color:var(--accent);{% endif %}
+                                {% if u.status == 'active' %}background:rgba(16,185,129,0.15); border-color:var(--color-success); color:var(--color-success);
+                                {% elif u.status == 'banned' %}background:rgba(239,68,68,0.15); border-color:var(--color-error); color:var(--color-error);
+                                {% else %}background:rgba(245,158,11,0.15); border-color:var(--color-warning); color:var(--color-warning);{% endif %}
                             ">
                                 {{ u.status|upper }}
                             </span>
@@ -52,20 +52,20 @@
                                     <input type="hidden" name="user_id" value="{{ u.id }}">
                                     {% if u.status == 'active' %}
                                         <input type="hidden" name="action" value="ban">
-                                        <button type="submit" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; color: var(--danger); border-color: rgba(239,68,68,0.2);">Ban Account</button>
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.2);">Ban Account</button>
                                     {% else %}
                                         <input type="hidden" name="action" value="unban">
-                                        <button type="submit" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; color: var(--success); border-color: rgba(16,185,129,0.2);">Restore Active</button>
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-success); border-color: rgba(16,185,129,0.2);">Restore Active</button>
                                     {% endif %}
                                 </form>
                             {% else %}
-                                <span style="font-size: 12px; color: var(--text-muted);">Root Admin</span>
+                                <span style="font-size: 12px; color: var(--color-text-muted);">Root Admin</span>
                             {% endif %}
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="7" style="text-align: center; color: var(--text-muted);">No users registered yet.</td>
+                        <td colspan="7" style="text-align: center; color: var(--color-text-muted);">No users registered yet.</td>
                     </tr>
                 {% endfor %}
             </tbody>

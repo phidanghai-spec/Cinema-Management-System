@@ -7,7 +7,7 @@
     <div class="profile-avatar-big profile-tier-ring {{ user.tier|lower }}">{{ user.name|first|upper }}</div>
     <div>
         <h1 style="font-size: 30px; margin-bottom: 4px;">{{ user.name }}</h1>
-        <p style="color: var(--text-muted); font-size: 15px;">{{ user.email }}</p>
+        <p style="color: var(--color-text-muted); font-size: 15px;">{{ user.email }}</p>
         <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
             <span class="badge badge-primary">⭐ {{ user.tier }} Member</span>
             <span class="badge badge-gold">{{ user.points }} XP Points</span>
@@ -20,7 +20,7 @@
 <div class="glass-panel" style="margin: 24px 8%; padding: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h4 style="font-size: 16px;">🏆 Loyalty Journey</h4>
-        <span style="color: var(--text-muted); font-size: 14px;">
+        <span style="color: var(--color-text-muted); font-size: 14px;">
             {% if points_to_next > 0 %}{{ points_to_next }} XP to {{ next_tier }}{% else %}Max Tier Reached!{% endif %}
         </span>
     </div>
@@ -45,7 +45,7 @@
     </button>
     <button class="profile-tab" data-tab="notifications">
         📬 Inbox
-        {% if unread_count > 0 %}<span class="tab-count" style="background:rgba(239,68,68,0.2);color:var(--danger);">{{ unread_count }}</span>{% endif %}
+        {% if unread_count > 0 %}<span class="tab-count" style="background:rgba(239,68,68,0.2);color:var(--color-error);">{{ unread_count }}</span>{% endif %}
     </button>
     <button class="profile-tab" data-tab="settings">
         ⚙️ Settings
@@ -56,11 +56,11 @@
 <div id="tab-bookings" class="tab-panel">
     <div style="display: flex; flex-direction: column; gap: 18px;">
         {% for booking in bookings %}
-            <div class="glass-panel" style="padding: 22px; transition: var(--transition);">
+            <div class="glass-panel" style="padding: 22px; transition: var(--transition-base);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <h4 style="font-size: 17px; margin-bottom: 4px;">{{ booking.showtime.movie.title }}</h4>
-                        <span style="font-size: 12px; color: var(--text-muted); font-family: monospace;">CINE-{{ booking.id }} · {{ booking.created_at|date:"M d, Y H:i" }}</span>
+                        <span style="font-size: 12px; color: var(--color-text-muted); font-family: monospace;">CINE-{{ booking.id }} · {{ booking.created_at|date:"M d, Y H:i" }}</span>
                     </div>
                     <span class="badge
                         {% if booking.status == 'completed' %}badge-success
@@ -72,7 +72,7 @@
                     </span>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 14px; color: var(--text-muted); margin-bottom: 14px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 14px; color: var(--color-text-muted); margin-bottom: 14px;">
                     <div>📍 {{ booking.showtime.screen.theater.name }}</div>
                     <div>🎭 {{ booking.showtime.screen.name }}</div>
                     <div>📅 {{ booking.showtime.start_time|date:"M d, Y H:i" }}</div>
@@ -80,16 +80,16 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 12px; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <span style="color: var(--text-muted); font-size: 13px;">Seats: </span>
+                        <span style="color: var(--color-text-muted); font-size: 13px;">Seats: </span>
                         {% for item in booking.items.all %}
                             <span class="seat-badge {{ item.seat.type }}" style="font-size: 12px; padding: 3px 10px;">{{ item.seat.seat_number }}</span>
                         {% endfor %}
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <strong style="color: var(--success); font-size: 16px;">{{ booking.total_price|floatformat:"0" }} VND</strong>
+                        <strong style="color: var(--color-success); font-size: 16px;">{{ booking.total_price|floatformat:"0" }} VND</strong>
                         {% if booking.status == 'confirmed' %}
-                            <a href="{% url 'booking_ticket' booking.id %}" class="btn-secondary btn-sm">🎫 View Ticket</a>
-                            <button class="btn-secondary btn-sm cancel-booking-btn" data-booking-id="{{ booking.id }}" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">Cancel</button>
+                            <a href="{% url 'booking_ticket' booking.id %}" class="btn btn-secondary btn-sm">🎫 View Ticket</a>
+                            <button class="btn btn-secondary btn-sm cancel-booking-btn" data-booking-id="{{ booking.id }}" style="color: var(--color-error); border-color: rgba(239,68,68,0.3);">Cancel</button>
                         {% endif %}
                     </div>
                 </div>
@@ -97,9 +97,9 @@
         {% empty %}
             <div class="glass-panel" style="text-align: center; padding: 60px;">
                 <div style="font-size: 50px; margin-bottom: 16px;">🎬</div>
-                <h3 style="color: var(--text-secondary); margin-bottom: 10px;">No Bookings Yet</h3>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">Start your cinema journey!</p>
-                <a href="{% url 'index' %}" class="btn-primary">Browse Movies</a>
+                <h3 style="color: var(--color-text-secondary); margin-bottom: 10px;">No Bookings Yet</h3>
+                <p style="color: var(--color-text-muted); margin-bottom: 20px;">Start your cinema journey!</p>
+                <a href="{% url 'index' %}" class="btn btn-primary">Browse Movies</a>
             </div>
         {% endfor %}
     </div>
@@ -112,18 +112,18 @@
             <a href="{% url 'movie_detail' fav.movie.id %}" class="movie-card" style="text-decoration: none;">
                 <div class="poster-wrapper" style="height: 280px;">
                     <img src="{{ fav.movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600' }}" alt="{{ fav.movie.title }}" loading="lazy">
-                    <div class="card-overlay"><span class="btn-primary" style="padding: 8px 18px;">View Details</span></div>
+                    <div class="card-overlay"><span class="btn btn-primary" style="padding: 8px 18px;">View Details</span></div>
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title">{{ fav.movie.title }}</h3>
                     <div class="movie-meta">
-                        <span style="font-size: 13px; color: var(--text-muted);">{{ fav.movie.genre|truncatechars:15 }}</span>
+                        <span style="font-size: 13px; color: var(--color-text-muted);">{{ fav.movie.genre|truncatechars:15 }}</span>
                         <span class="rating-badge">★ {{ fav.movie.rating|floatformat:1 }}</span>
                     </div>
                 </div>
             </a>
         {% empty %}
-            <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted);">
+            <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--color-text-muted);">
                 <div style="font-size: 45px; margin-bottom: 15px;">❤️</div>
                 <p>No favorites yet. Like movies you enjoy!</p>
             </div>
@@ -138,12 +138,12 @@
             <a href="{% url 'movie_detail' wl.movie.id %}" class="movie-card" style="text-decoration: none;">
                 <div class="poster-wrapper" style="height: 280px;">
                     <img src="{{ wl.movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600' }}" alt="{{ wl.movie.title }}" loading="lazy">
-                    <div class="card-overlay"><span class="btn-primary" style="padding: 8px 18px;">View Details</span></div>
+                    <div class="card-overlay"><span class="btn btn-primary" style="padding: 8px 18px;">View Details</span></div>
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title">{{ wl.movie.title }}</h3>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
-                        <span style="font-size: 12px; color: var(--text-muted);">{{ wl.movie.genre|truncatechars:15 }}</span>
+                        <span style="font-size: 12px; color: var(--color-text-muted);">{{ wl.movie.genre|truncatechars:15 }}</span>
                         {% if wl.movie.status == 'coming_soon' %}
                             <span class="badge badge-gold" style="font-size: 10px;">Coming Soon</span>
                         {% endif %}
@@ -151,7 +151,7 @@
                 </div>
             </a>
         {% empty %}
-            <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted);">
+            <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--color-text-muted);">
                 <div style="font-size: 45px; margin-bottom: 15px;">🔔</div>
                 <p>Your watchlist is empty. Save movies to watch later!</p>
             </div>
@@ -163,19 +163,19 @@
 <div id="tab-notifications" class="tab-panel">
     <div style="display: flex; flex-direction: column; gap: 12px;">
         {% for notif in notifications %}
-            <div style="border-left: 3px solid {% if notif.status == 'unread' %}var(--primary){% else %}var(--border-glass){% endif %}; background: rgba(255,255,255,0.02); padding: 16px 20px; border-radius: 0 var(--radius-md) var(--radius-md) 0; {% if notif.status == 'unread' %}box-shadow: inset 0 0 20px rgba(168,85,247,0.04);{% endif %}">
+            <div style="border-left: 3px solid {% if notif.status == 'unread' %}var(--color-primary){% else %}var(--border-glass){% endif %}; background: rgba(255,255,255,0.02); padding: 16px 20px; border-radius: 0 var(--radius-md) var(--radius-md) 0; {% if notif.status == 'unread' %}box-shadow: inset 0 0 20px rgba(229,9,20,0.04);{% endif %}">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 10px;">
-                    <strong style="font-size: 14px; {% if notif.status == 'unread' %}color: var(--text-primary);{% else %}color: var(--text-muted);{% endif %}">
+                    <strong style="font-size: 14px; {% if notif.status == 'unread' %}color: var(--color-text-primary);{% else %}color: var(--color-text-muted);{% endif %}">
                         {% if notif.status == 'unread' %}🔵 {% endif %}{{ notif.title }}
                     </strong>
-                    <span style="font-size: 11px; color: var(--text-muted); white-space: nowrap;">{{ notif.created_at|date:"M d, H:i" }}</span>
+                    <span style="font-size: 11px; color: var(--color-text-muted); white-space: nowrap;">{{ notif.created_at|date:"M d, H:i" }}</span>
                 </div>
-                <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5;">{{ notif.message }}</p>
+                <p style="color: var(--color-text-muted); font-size: 13px; line-height: 1.5;">{{ notif.message }}</p>
             </div>
         {% empty %}
             <div class="glass-panel" style="text-align: center; padding: 50px;">
                 <div style="font-size: 45px; margin-bottom: 15px;">📭</div>
-                <p style="color: var(--text-muted);">No notifications yet. Your inbox is clean!</p>
+                <p style="color: var(--color-text-muted);">No notifications yet. Your inbox is clean!</p>
             </div>
         {% endfor %}
     </div>
@@ -203,7 +203,7 @@
                     <label class="form-label">Phone Number</label>
                     <input type="text" name="phone" class="form-input" value="{{ user.phone|default:'' }}" placeholder="0912 345 678">
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">Save Changes</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
             </form>
         </div>
 
@@ -212,11 +212,11 @@
             <h3 style="margin-bottom: 18px;" class="grad-text">🏠 Saved Addresses</h3>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
                 {% for addr in user.addresses.all %}
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px; color: var(--text-secondary);">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px; color: var(--color-text-secondary);">
                         📍 {{ addr.address }}, {{ addr.district }}, {{ addr.city }}
                     </div>
                 {% empty %}
-                    <p style="color: var(--text-muted); font-size: 14px;">No saved addresses yet.</p>
+                    <p style="color: var(--color-text-muted); font-size: 14px;">No saved addresses yet.</p>
                 {% endfor %}
             </div>
             <form method="POST" action="{% url 'profile' %}" style="display: flex; flex-direction: column; gap: 10px;">
@@ -225,7 +225,7 @@
                 <input type="text" name="city" class="form-input" placeholder="City (e.g. Ha Noi)" required style="padding: 9px 14px; font-size: 14px;">
                 <input type="text" name="district" class="form-input" placeholder="District" required style="padding: 9px 14px; font-size: 14px;">
                 <input type="text" name="address" class="form-input" placeholder="Street Address" required style="padding: 9px 14px; font-size: 14px;">
-                <button type="submit" class="btn-secondary" style="padding: 10px;">+ Add Address</button>
+                <button type="submit" class="btn btn-secondary" style="padding: 10px;">+ Add Address</button>
             </form>
         </div>
     </div>

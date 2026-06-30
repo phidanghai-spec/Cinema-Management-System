@@ -1,0 +1,153 @@
+/* Responsive styles for CineVerse */
+
+/* Tablet & Mobile tweaks (under 1024px) */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 0 var(--spacing-6);
+  }
+  
+  /* Hide user name and tier to prevent overlap */
+  .nav-user-info {
+    display: none !important;
+  }
+  
+  .booking-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-panel {
+    position: static;
+    margin-top: var(--spacing-6);
+  }
+  
+  .admin-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: var(--spacing-2);
+  }
+  
+  .admin-sidebar-header {
+    width: 100%;
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+}
+
+/* Mobile Layout tweaks (under 768px) */
+@media (max-width: 768px) {
+  /* Hide the navbar middle links on small screen */
+  .nav-links {
+    display: none !important;
+  }
+  
+  .hero-slider {
+    margin: var(--spacing-4) var(--spacing-4) var(--spacing-6);
+    height: 360px;
+  }
+  
+  .hero-content {
+    padding: var(--spacing-6);
+  }
+  
+  .hero-content h2 {
+    font-size: var(--text-2xl);
+  }
+  
+  .hero-content p {
+    font-size: var(--text-sm);
+  }
+  
+  .filters-panel {
+    margin: 0 var(--spacing-4) var(--spacing-6);
+    padding: var(--spacing-4);
+  }
+  
+  .filters-panel-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filters-panel-top form {
+    max-width: 100% !important;
+  }
+  
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--spacing-4);
+    padding: 0 var(--spacing-4) var(--spacing-8);
+  }
+  
+  .movie-details-header {
+    margin-top: -120px;
+    padding: 0 var(--spacing-4);
+    gap: var(--spacing-4);
+  }
+  
+  .detail-poster {
+    width: 180px;
+    margin: 0 auto;
+  }
+  
+  .detail-info {
+    text-align: center;
+    min-width: 100%;
+  }
+  
+  .detail-tags {
+    justify-content: center;
+  }
+  
+  .detail-info h1 {
+    font-size: var(--text-2xl);
+  }
+  
+  .showtime-section {
+    margin: var(--spacing-8) var(--spacing-4);
+  }
+  
+  .showtime-buttons {
+    justify-content: center;
+  }
+  
+  .seat-map-wrapper {
+    padding: var(--spacing-4);
+  }
+  
+  .seat-cell {
+    width: 26px;
+    height: 26px;
+    font-size: 9px;
+  }
+  
+  .seat-cell.couple {
+    width: 54px;
+  }
+  
+  .profile-header {
+    margin: var(--spacing-4) var(--spacing-4);
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-tabs {
+    margin: var(--spacing-4) var(--spacing-4);
+  }
+  
+  .tab-panel {
+    margin: 0 var(--spacing-4) var(--spacing-8);
+  }
+  
+  footer {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--spacing-8) var(--spacing-4);
+  }
+  
+  footer div {
+    text-align: center !important;
+  }
+}

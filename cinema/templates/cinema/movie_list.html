@@ -7,7 +7,7 @@
 <div class="hero-slider">
     <div id="hero-track" class="hero-track">
         {% for movie in spotlight_movies %}
-        <div class="hero-slide" style="background-image: url('{{ movie.poster_url|default:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop" }}');">
+        <div class="hero-slide" style="background-image: linear-gradient(to top, var(--color-bg-primary) 0%, rgba(15, 15, 15, 0.4) 60%, transparent 100%), url('{{ movie.poster_url|default:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop" }}');">
             <div class="hero-content">
                 <div class="hero-tags">
                     <span class="badge badge-primary">🔥 SPOTLIGHT</span>
@@ -17,20 +17,20 @@
                 <h2>{{ movie.title }}</h2>
                 <p>{{ movie.description|truncatechars:130 }}</p>
                 <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
-                    <a href="{% url 'movie_detail' movie.id %}" class="btn-primary">🎟️ Book Now</a>
-                    <a href="{% url 'movie_detail' movie.id %}" class="btn-secondary">View Details</a>
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary">🎟️ Book Now</a>
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-secondary">View Details</a>
                     <span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span>
-                    <span style="color: var(--text-muted); font-size: 14px;">⏳ {{ movie.duration }} min</span>
+                    <span style="color: var(--color-text-muted); font-size: 14px;">⏳ {{ movie.duration }} min</span>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="hero-slide" style="background-image: linear-gradient(rgba(15,23,42,0.2), rgba(15,23,42,0.9)), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop');">
+        <div class="hero-slide" style="background-image: linear-gradient(to top, var(--color-bg-primary) 0%, rgba(15, 15, 15, 0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop');">
             <div class="hero-content">
                 <div class="hero-tags"><span class="badge badge-primary">🔥 FEATURED</span></div>
                 <h2>Experience Cinema Like Never Before</h2>
                 <p>Choose from VIP recliners, IMAX screens, and Couple beds. Indulge in premium sound and crystal-clear projection.</p>
-                <a href="#movies-catalog" class="btn-primary">Browse All Films</a>
+                <a href="#movies-catalog" class="btn btn-primary">Browse All Films</a>
             </div>
         </div>
         {% endfor %}
@@ -59,9 +59,9 @@
             {% if current_genre %}<input type="hidden" name="genre" value="{{ current_genre }}">{% endif %}
             <div style="position: relative; flex: 1;">
                 <input type="text" name="q" class="form-input" placeholder="Search title, genre..." value="{{ search_query|default:'' }}" style="padding: 10px 16px 10px 38px;">
-                <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px;">🔍</span>
+                <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 13px;">🔍</span>
             </div>
-            <button type="submit" class="btn-primary" style="padding: 10px 20px; white-space: nowrap;">Search</button>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px; white-space: nowrap;">Search</button>
         </form>
     </div>
 
@@ -85,7 +85,7 @@
                      loading="lazy"
                      onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop';">
                 <div class="card-overlay">
-                    <span class="btn-primary" style="padding: 10px 22px;">Book Tickets 🎟️</span>
+                    <span class="btn btn-primary">Book Tickets 🎟️</span>
                 </div>
                 {% if movie.status == 'now_showing' %}
                     <div class="movie-ribbon">NOW SHOWING</div>
@@ -96,21 +96,21 @@
             <div class="movie-info">
                 <h3 class="movie-title">{{ movie.title }}</h3>
                 <div class="movie-meta">
-                    <span style="color: var(--text-muted); font-size: 13px;">{{ movie.genre|truncatechars:18 }}</span>
+                    <span style="color: var(--color-text-muted); font-size: 13px;">{{ movie.genre|truncatechars:18 }}</span>
                     <span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                    <span style="font-size: 12px; color: var(--text-muted);">⏳ {{ movie.duration }} mins</span>
+                    <span style="font-size: 12px; color: var(--color-text-muted);">⏳ {{ movie.duration }} mins</span>
                     <span class="movie-format-badge">{{ movie.formats }}</span>
                 </div>
             </div>
         </a>
     {% empty %}
-        <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 70px 30px; color: var(--text-muted);">
+        <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 70px 30px; color: var(--color-text-muted);">
             <div style="font-size: 50px; margin-bottom: 20px;">🎬</div>
-            <h3 style="margin-bottom: 10px; color: var(--text-secondary);">No Movies Found</h3>
+            <h3 style="margin-bottom: 10px; color: var(--color-text-secondary);">No Movies Found</h3>
             <p>Try adjusting your genre filters or search keyword.</p>
-            <a href="{% url 'index' %}" class="btn-secondary" style="margin-top: 20px; display: inline-flex;">Clear Filters</a>
+            <a href="{% url 'index' %}" class="btn btn-secondary" style="margin-top: 20px; display: inline-flex;">Clear Filters</a>
         </div>
     {% endfor %}
 </div>

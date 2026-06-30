@@ -20,7 +20,7 @@
             <h3 style="margin-bottom: 20px;" class="grad-text">📅 Schedule Movie Showtime</h3>
             
             {% if error %}
-                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--color-error); color: var(--color-error); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
                     ⚠️ {{ error }}
                 </div>
             {% endif %}
@@ -29,43 +29,43 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="create">
                 <div>
-                    <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">Movie</label>
-                    <select name="movie_id" class="form-input" style="background: var(--bg-dark);" required>
+                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Movie</label>
+                    <select name="movie_id" class="form-input" style="background: var(--color-bg-primary);" required>
                         {% for m in movies %}
                             <option value="{{ m.id }}">{{ m.title }} ({{ m.formats }})</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">Screen & Location</label>
-                    <select name="screen_id" class="form-input" style="background: var(--bg-dark);" required>
+                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Screen & Location</label>
+                    <select name="screen_id" class="form-input" style="background: var(--color-bg-primary);" required>
                         {% for s in screens %}
                             <option value="{{ s.id }}">{{ s.theater.name }} - {{ s.name }} ({{ s.format }})</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">Start Date & Time</label>
+                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Start Date & Time</label>
                     <input type="datetime-local" name="start_time" class="form-input" required>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">End Date & Time</label>
+                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">End Date & Time</label>
                     <input type="datetime-local" name="end_time" class="form-input" required>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">Language</label>
+                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Language</label>
                     <input type="text" name="language" class="form-input" value="Vietnamese" required>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">Subtitles</label>
+                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Subtitles</label>
                     <input type="text" name="subtitle" class="form-input" value="English" required>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">Price Multiplier (Holiday/Weekend surcharges)</label>
+                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Price Multiplier (Holiday/Weekend surcharges)</label>
                     <input type="number" name="multiplier" step="0.1" class="form-input" value="1.0" required>
                 </div>
                 <div style="display: flex; align-items: flex-end; justify-content: flex-end;">
-                    <button type="submit" class="btn-primary" style="padding: 10px 30px;">Add Showtime</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 30px;">Add Showtime</button>
                 </div>
             </form>
         </div>
@@ -100,13 +100,13 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="showtime_id" value="{{ st.id }}">
-                                    <button type="submit" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; color: var(--danger); border-color: rgba(239,68,68,0.2);">Cancel</button>
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; color: var(--color-error); border-color: rgba(239,68,68,0.2);">Cancel</button>
                                 </form>
                             </td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="7" style="text-align: center; color: var(--text-muted);">No showtimes scheduled.</td>
+                            <td colspan="7" style="text-align: center; color: var(--color-text-muted);">No showtimes scheduled.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

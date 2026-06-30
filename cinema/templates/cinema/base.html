@@ -24,7 +24,7 @@
             {% if user %}
                 <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">My Tickets</a></li>
                 {% if request.session.is_admin %}
-                    <li><a href="{% url 'admin_dashboard' %}" class="{% if 'admin' in request.resolver_match.url_name %}active{% endif %}" style="color: hsl(192,95%,60%);">⚡ Admin</a></li>
+                    <li><a href="{% url 'admin_dashboard' %}" class="{% if 'admin' in request.resolver_match.url_name %}active{% endif %} text-cyan" style="color: var(--color-secondary);">⚡ Admin</a></li>
                 {% endif %}
             {% endif %}
         </ul>
@@ -46,14 +46,14 @@
                     {% endwith %}
                 {% endif %}
                 <a href="{% url 'profile' %}" class="user-avatar" title="{{ user.name }}">{{ user.name|first|upper }}</a>
-                <div class="nav-user-info" style="display: flex; flex-direction: column; align-items: flex-start; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 14px; color: var(--text-primary); white-space: nowrap;">{{ user.name }}</span>
-                    <span style="font-size: 11px; color: var(--text-muted);">⭐ {{ user.tier }} Tier</span>
+                <div class="nav-user-info">
+                    <span class="nav-username">{{ user.name }}</span>
+                    <span class="nav-usertier">⭐ {{ user.tier }} Tier</span>
                 </div>
-                <a href="{% url 'logout' %}" class="btn-secondary btn-sm">Logout</a>
+                <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm">Logout</a>
             {% else %}
-                <a href="{% url 'login' %}" class="btn-secondary btn-sm">Sign In</a>
-                <a href="{% url 'register' %}" class="btn-primary btn-sm">Sign Up</a>
+                <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Sign In</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Sign Up</a>
             {% endif %}
         </div>
     </nav>
@@ -65,12 +65,12 @@
     </main>
 
     <!-- Footer -->
-    <footer style="margin-top: 60px; border-top: 1px solid var(--border-glass); padding: 36px 8%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    <footer>
         <div>
             <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.03em;">🎬 <span class="grad-text">CINEVERSE</span></span>
-            <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">Premium Cinema Booking Experience</p>
+            <p style="color: var(--color-text-muted); font-size: 13px; margin-top: 6px;">Premium Cinema Booking Experience</p>
         </div>
-        <div style="text-align: right; color: var(--text-muted); font-size: 13px;">
+        <div style="text-align: right; color: var(--color-text-muted); font-size: 13px;">
             <p>© 2026 CineVerse. Built for MTKPM Software Architecture Pattern Course.</p>
             <p style="margin-top: 4px; font-size: 12px;">12 Design Patterns · 15 DB Tables · Django Framework</p>
         </div>

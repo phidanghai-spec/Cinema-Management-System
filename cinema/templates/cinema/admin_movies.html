@@ -66,7 +66,7 @@
                     </select>
                 </div>
                 <div style="display: flex; align-items: flex-end;">
-                    <button type="submit" class="btn-primary" style="width: 100%; padding: 12px;">✅ Save Movie</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">✅ Save Movie</button>
                 </div>
             </form>
         </div>
@@ -75,7 +75,7 @@
         <div class="glass-panel" style="padding: 26px; overflow-x: auto;">
             <div class="section-header">
                 <h3 class="grad-text" style="font-size: 18px;">🎬 Movie Catalog ({{ movies|length }} films)</h3>
-                <a href="{% url 'index' %}" target="_blank" class="btn-secondary btn-sm">View Site →</a>
+                <a href="{% url 'index' %}" target="_blank" class="btn btn-secondary btn-sm">View Site →</a>
             </div>
 
             <table class="admin-table">
@@ -95,7 +95,7 @@
                 <tbody>
                     {% for movie in movies %}
                         <tr>
-                            <td style="color: var(--text-muted);">{{ forloop.counter }}</td>
+                            <td style="color: var(--color-text-muted);">{{ forloop.counter }}</td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     {% if movie.poster_url %}
@@ -105,10 +105,10 @@
                                     <strong>{{ movie.title }}</strong>
                                 </div>
                             </td>
-                            <td style="color: var(--text-muted);">{{ movie.genre|truncatechars:20 }}</td>
+                            <td style="color: var(--color-text-muted);">{{ movie.genre|truncatechars:20 }}</td>
                             <td>{{ movie.duration }}m</td>
                             <td><span class="movie-format-badge">{{ movie.formats }}</span></td>
-                            <td style="color: var(--text-muted);">{{ movie.release_date|date:"M d, Y" }}</td>
+                            <td style="color: var(--color-text-muted);">{{ movie.release_date|date:"M d, Y" }}</td>
                             <td><span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span></td>
                             <td>
                                 <span class="badge
@@ -121,19 +121,19 @@
                             </td>
                             <td>
                                 <div style="display: flex; gap: 8px; align-items: center;">
-                                    <a href="{% url 'movie_detail' movie.id %}" target="_blank" class="btn-secondary btn-sm" title="View">👁️</a>
+                                    <a href="{% url 'movie_detail' movie.id %}" target="_blank" class="btn btn-secondary btn-sm" title="View">👁️</a>
                                     <form method="POST" action="{% url 'admin_movies' %}" style="display: inline;" onsubmit="return confirm('Delete {{ movie.title }}?');">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="movie_id" value="{{ movie.id }}">
-                                        <button type="submit" class="btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">🗑️</button>
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.3);">🗑️</button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">No movies in catalog yet.</td>
+                            <td colspan="9" style="text-align: center; color: var(--color-text-muted); padding: 40px;">No movies in catalog yet.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

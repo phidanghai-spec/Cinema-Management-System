@@ -1,0 +1,37 @@
+/* Micro-animations and keyframes */
+
+/* Hover float effect for buttons/cards */
+.hover-float {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.hover-float:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Page fade-in */
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pulse animation for active highlights */
+.animate-pulse {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+/* Custom shimmer/loading placeholders if needed */
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  to { background-position: -200% 0; }
+}

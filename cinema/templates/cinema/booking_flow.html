@@ -26,11 +26,11 @@
 
 <div class="booking-container">
     <!-- Left: Seat Map -->
-    <div class="glass-panel seat-map-wrapper" id="booking-step-panel-1">
+    <div class="glass-panel seat-map-wrapper booking-step-panel" id="booking-step-panel-1">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 6px;">
             <div>
                 <h2 style="font-size: 24px;">🎭 Choose Your Seats</h2>
-                <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                <p style="color: var(--color-text-muted); font-size: 14px; margin-top: 4px;">
                     <strong style="color: white;">{{ showtime.movie.title }}</strong> ·
                     {{ showtime.screen.name }} ({{ showtime.screen.format }}) ·
                     {{ showtime.start_time|date:"l, M d • H:i" }}
@@ -38,8 +38,8 @@
             </div>
             <div style="text-align: right;">
                 <span class="badge badge-primary">{{ showtime.price_multiplier }}x Multiplier</span>
-                <div id="seat-count-badge" style="margin-top: 6px; font-size: 22px; font-weight: 800; color: var(--primary);">0</div>
-                <div style="font-size: 12px; color: var(--text-muted);">seats selected</div>
+                <div id="seat-count-badge" style="margin-top: 6px; font-size: 22px; font-weight: 800; color: var(--color-primary);">0</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">seats selected</div>
             </div>
         </div>
 
@@ -68,18 +68,18 @@
         <div class="seat-legend">
             <div class="legend-item">
                 <div class="legend-color" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass);"></div>
-                <span>Normal <em style="color:var(--text-muted);">(80k)</em></span>
+                <span>Standard <em style="color:var(--color-text-muted);">(80k)</em></span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4);"></div>
-                <span>VIP <em style="color:var(--text-muted);">(120k)</em></span>
+                <span>VIP <em style="color:var(--color-text-muted);">(120k)</em></span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.4);"></div>
-                <span>Couple <em style="color:var(--text-muted);">(200k)</em></span>
+                <span>Couple <em style="color:var(--color-text-muted);">(200k)</em></span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background:var(--grad-primary);"></div>
+                <div class="legend-color" style="background:var(--color-primary);"></div>
                 <span>Selected</span>
             </div>
             <div class="legend-item">
@@ -89,7 +89,7 @@
         </div>
 
         <!-- Continue Button -->
-        <button class="btn-primary" data-goto-step="2" style="margin-top: 24px; padding: 13px 40px; font-size: 16px;">
+        <button class="btn btn-primary" data-goto-step="2" style="margin-top: 24px; padding: 13px 40px; font-size: 16px;">
             Continue to Review →
         </button>
     </div>
@@ -101,7 +101,7 @@
         <!-- Movie Info -->
         <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
             <h4 style="font-weight: 700; font-size: 16px; margin-bottom: 6px;">{{ showtime.movie.title }}</h4>
-            <p style="color: var(--text-muted); font-size: 13px; line-height: 1.7;">
+            <p style="color: var(--color-text-muted); font-size: 13px; line-height: 1.7;">
                 🏢 {{ showtime.screen.theater.name }}<br>
                 🎭 {{ showtime.screen.name }} ({{ showtime.screen.format }})<br>
                 📅 {{ showtime.start_time|date:"l, M d, Y • H:i" }}
@@ -111,16 +111,16 @@
         <!-- Seat & Price Summary -->
         <div style="border-top: 1px dashed var(--border-glass); padding-top: 16px; margin-bottom: 16px;">
             <div class="summary-row">
-                <span style="color: var(--text-muted);">Selected Seats</span>
-                <span id="selected-seats-list" style="font-weight: 700; color: var(--secondary); max-width: 200px; text-align: right; word-break: break-all;">None</span>
+                <span style="color: var(--color-text-muted);">Selected Seats</span>
+                <span id="selected-seats-list" style="font-weight: 700; color: var(--color-secondary); max-width: 200px; text-align: right; word-break: break-all;">None</span>
             </div>
             <div class="summary-row">
-                <span style="color: var(--text-muted);">Subtotal</span>
+                <span style="color: var(--color-text-muted);">Subtotal</span>
                 <span><span id="booking-subtotal">0</span> VND</span>
             </div>
             <div class="summary-row" id="discount-row" style="display: none;">
-                <span style="color: var(--success);">Discount Applied</span>
-                <span style="color: var(--success);">- <span id="discount-display">0</span> VND</span>
+                <span style="color: var(--color-success);">Discount Applied</span>
+                <span style="color: var(--color-success);">- <span id="discount-display">0</span> VND</span>
             </div>
         </div>
 
@@ -129,7 +129,7 @@
             <label class="form-label">Voucher Code</label>
             <div style="display: flex; gap: 8px;">
                 <input type="text" id="promo-code-input" class="form-input" placeholder="SUMMER2026" style="padding: 9px 14px; font-size: 14px;">
-                <button type="button" id="apply-promo-btn" class="btn-secondary" style="padding: 9px 16px; font-size: 14px; white-space: nowrap;">Apply</button>
+                <button type="button" id="apply-promo-btn" class="btn btn-secondary" style="padding: 9px 16px; font-size: 14px; white-space: nowrap;">Apply</button>
             </div>
             <p id="promo-message" style="font-size: 12px; margin-top: 6px;"></p>
             <input type="hidden" id="applied-discount-value" value="0">
@@ -139,7 +139,7 @@
         <!-- Total -->
         <div class="total-row">
             <span>Total</span>
-            <span style="color: var(--accent);"><span id="booking-total">0</span> VND</span>
+            <span style="color: var(--color-warning);"><span id="booking-total">0</span> VND</span>
         </div>
 
         <!-- Checkout Form -->
@@ -193,7 +193,7 @@
                 <input type="text" id="booking-notes" class="form-input" placeholder="e.g. Need wheelchair access..." style="padding: 9px 14px; font-size: 14px;">
             </div>
 
-            <button type="submit" id="booking-checkout-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 16px;" disabled>
+            <button type="submit" id="booking-checkout-btn" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;" disabled>
                 🔒 Complete Payment
             </button>
         </form>

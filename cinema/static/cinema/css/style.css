@@ -464,6 +464,36 @@ h1, h2, h3, h4, h5, h6 {
     flex-wrap: wrap;
     gap: 16px;
 }
+.filters-panel {
+    margin: 10px 8% 32px 8%;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.filters-panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.filters-panel-genres {
+    border-top: 1px solid var(--border-glass);
+    padding-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.filters-genre-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 6px;
+}
 .filter-group { display: flex; gap: 10px; align-items: center; }
 .filter-btn {
     background: rgba(255,255,255,0.03);
@@ -1242,9 +1272,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── Responsive ── */
-@media (max-width: 1100px) {
-    .admin-metrics { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1024px) {
+    .nav-links { gap: 18px; }
+    .nav-links a { font-size: 14px; }
+    .nav-user-info { display: none !important; }
+    .navbar { padding: 0 4%; }
 }
+
 @media (max-width: 900px) {
     .booking-container, .admin-container, .movie-details-header { grid-template-columns: 1fr; }
     .hero-slider { height: 340px; }
@@ -1254,6 +1288,28 @@ h1, h2, h3, h4, h5, h6 {
     .auth-right { padding: 40px 28px; }
     .admin-metrics { grid-template-columns: repeat(2, 1fr); }
 }
+
+@media (max-width: 768px) {
+    .nav-links { display: none !important; } /* Hide middle links on smaller screens to prevent clutter */
+    .filters-panel {
+        padding: 16px;
+        gap: 14px;
+    }
+    .filters-panel-top {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filters-panel-top form {
+        max-width: 100% !important;
+        margin-left: 0 !important;
+    }
+    .filters-panel-genres {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
 @media (max-width: 600px) {
     .navbar { padding: 0 5%; }
     .movie-grid { margin: 20px 5% 40px 5%; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }

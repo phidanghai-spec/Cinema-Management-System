@@ -44,26 +44,35 @@
     </div>
 </div>
 
-<!-- Filters & Search -->
-<div class="filters-container" id="movies-catalog">
-    <div class="filter-group">
-        <a href="?status=now_showing" class="filter-btn {% if current_status == 'now_showing' %}active{% endif %}">🎬 Now Showing</a>
-        <a href="?status=coming_soon"  class="filter-btn {% if current_status == 'coming_soon'  %}active{% endif %}">🗓️ Coming Soon</a>
+<!-- Catalog Filters Panel -->
+<div class="filters-panel glass-panel" id="movies-catalog">
+    <div class="filters-panel-top">
+        <!-- Status Tabs -->
+        <div class="filter-group">
+            <a href="?status=now_showing{% if current_genre %}&genre={{ current_genre }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if current_status == 'now_showing' %}active{% endif %}">🎬 Now Showing</a>
+            <a href="?status=coming_soon{% if current_genre %}&genre={{ current_genre }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if current_status == 'coming_soon' %}active{% endif %}">🗓️ Coming Soon</a>
+        </div>
+
+        <!-- Search Bar -->
+        <form method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 400px; position: relative;">
+            <input type="hidden" name="status" value="{{ current_status }}">
+            {% if current_genre %}<input type="hidden" name="genre" value="{{ current_genre }}">{% endif %}
+            <div style="position: relative; flex: 1;">
+                <input type="text" name="q" class="form-input" placeholder="Search title, genre..." value="{{ search_query|default:'' }}" style="padding: 10px 16px 10px 38px;">
+                <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px;">🔍</span>
+            </div>
+            <button type="submit" class="btn-primary" style="padding: 10px 20px; white-space: nowrap;">Search</button>
+        </form>
     </div>
 
-    <form method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 400px;">
-        <input type="hidden" name="status" value="{{ current_status }}">
-        <input type="text" name="q" class="form-input" placeholder="Search title, genre..." value="{{ search_query|default:'' }}" style="padding: 10px 16px;">
-        <button type="submit" class="btn-primary" style="padding: 10px 20px; white-space: nowrap;">🔍 Search</button>
-    </form>
-</div>
-
-<!-- Genre Quick Filters -->
-<div style="margin: 0 8% 30px 8%; display: flex; gap: 9px; flex-wrap: wrap;">
-    <a href="?status={{ current_status }}" class="filter-btn {% if not current_genre %}active{% endif %}" style="padding: 6px 14px; font-size: 13px;">All Genres</a>
-    {% for g in genres %}
-        <a href="?status={{ current_status }}&genre={{ g }}" class="filter-btn {% if current_genre == g %}active{% endif %}" style="padding: 6px 14px; font-size: 13px;">{{ g }}</a>
-    {% endfor %}
+    <!-- Genre List -->
+    <div class="filters-panel-genres">
+        <span class="filters-genre-label">Genres:</span>
+        <a href="?status={{ current_status }}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn btn-sm {% if not current_genre %}active{% endif %}">All Genres</a>
+        {% for g in genres %}
+            <a href="?status={{ current_status }}&genre={{ g }}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn btn-sm {% if current_genre == g %}active{% endif %}">{{ g }}</a>
+        {% endfor %}
+    </div>
 </div>
 
 <!-- Movie Grid -->

@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CineVerse – Premium cinema ticket booking experience. Book VIP, IMAX, and Couple seats online.">
+    <title>{% block title %}CineVerse | Premium Cinema Experience{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{% static 'cinema/css/style.css' %}">
+</head>
+<body>
+    <!-- Premium Navigation Bar -->
+    <nav class="navbar" id="main-navbar">
+        <a href="{% url 'index' %}" class="nav-logo">
+            <span class="logo-icon">🎬</span>
+            <span class="logo-text">CINEVERSE</span>
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Browse</a></li>
+            <li><a href="{% url 'index' %}?status=now_showing" class="{% if current_status == 'now_showing' %}active{% endif %}">Now Showing</a></li>
+            <li><a href="{% url 'index' %}?status=coming_soon" class="{% if current_status == 'coming_soon' %}active{% endif %}">Coming Soon</a></li>
+            {% if user %}
+                <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">My Tickets</a></li>
+                {% if request.session.is_admin %}
+                    <li><a href="{% url 'admin_dashboard' %}" class="{% if 'admin' in request.resolver_match.url_name %}active{% endif %}" style="color: hsl(192,95%,60%);">⚡ Admin</a></li>
+                {% endif %}
+            {% endif %}
+        </ul>
+
+        <div class="nav-user">
+            {% if user %}
+                {% if user.notifications.all|length > 0 %}
+                    {% with unread=user.notifications.filter %}
+                        <a id="nav-notif-bell" href="{% url 'profile' %}#notifications" class="notif-bell" title="Notifications">
+                            🔔
+                            {% with count=user.notifications.all %}
+                                {% if count %}
+                                    <span class="notif-count" id="nav-notif-count">
+                                        {% with n=user.notifications.all|length %}{% if n > 9 %}9+{% else %}{{ n }}{% endif %}{% endwith %}
+                                    </span>
+                                {% endif %}
+                            {% endwith %}
+                        </a>
+                    {% endwith %}
+                {% endif %}
+                <div class="user-avatar" title="{{ user.name }}">{{ user.name|first|upper }}</div>
+                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 1px;">
+                    <span style="font-weight: 600; font-size: 14px; color: var(--text-primary); white-space: nowrap;">{{ user.name }}</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">⭐ {{ user.tier }} Tier</span>
+                </div>
+                <a href="{% url 'logout' %}" class="btn-secondary btn-sm">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-secondary btn-sm">Sign In</a>
+                <a href="{% url 'register' %}" class="btn-primary btn-sm">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top: 60px; border-top: 1px solid var(--border-glass); padding: 36px 8%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.03em;">🎬 <span class="grad-text">CINEVERSE</span></span>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">Premium Cinema Booking Experience</p>
+        </div>
+        <div style="text-align: right; color: var(--text-muted); font-size: 13px;">
+            <p>© 2026 CineVerse. Built for MTKPM Software Architecture Pattern Course.</p>
+            <p style="margin-top: 4px; font-size: 12px;">12 Design Patterns · 15 DB Tables · Django Framework</p>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script src="{% static 'cinema/js/main.js' %}"></script>
+</body>
+</html>

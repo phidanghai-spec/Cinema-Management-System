@@ -1,0 +1,178 @@
+{% extends 'cinema/base.html' %}
+{% block title %}{{ movie.title }} | CineVerse{% endblock %}
+{% block content %}
+
+<!-- Cinematic Backdrop -->
+<div class="movie-backdrop">
+    <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1200' }}" alt="">
+</div>
+
+<!-- Movie Detail Header -->
+<div class="movie-details-header">
+    <div class="detail-poster">
+        {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop';">
+        {% else %}
+            <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop" alt="{{ movie.title }}">
+        {% endif %}
+    </div>
+
+    <div class="detail-info">
+        <div class="detail-tags">
+            <span class="detail-tag" style="background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.4); color: white;">★ {{ movie.rating|floatformat:1 }}</span>
+            <span class="detail-tag">⏳ {{ movie.duration }} mins</span>
+            <span class="detail-tag" style="color: var(--secondary);">🎞️ {{ movie.formats }}</span>
+            <span class="detail-tag">📅 {{ movie.release_date|date:"M d, Y" }}</span>
+            {% if movie.status == 'now_showing' %}
+                <span class="detail-tag" style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.4); color:var(--success);">▶ Now Showing</span>
+            {% elif movie.status == 'coming_soon' %}
+                <span class="detail-tag" style="background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.4); color:var(--accent);">🗓 Coming Soon</span>
+            {% endif %}
+        </div>
+
+        <h1>{{ movie.title }}</h1>
+        <h4 style="color: var(--primary); font-weight: 500; margin-top: -5px;">{{ movie.genre }}</h4>
+
+        <p style="color: var(--text-secondary); font-size: 16px; line-height: 1.75; max-width: 620px;">{{ movie.description }}</p>
+
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 5px;">
+            {% if movie.trailer_url %}
+                <button id="open-trailer-btn" class="btn-primary">▶️ Watch Trailer</button>
+            {% endif %}
+
+            {% if user %}
+                <button id="toggle-favorite-btn" data-movie-id="{{ movie.id }}" class="btn-secondary {% if is_favorite %}active{% endif %}">
+                    {% if is_favorite %}❤️ Liked{% else %}🤍 Like{% endif %}
+                </button>
+                <button id="toggle-watchlist-btn" data-movie-id="{{ movie.id }}" class="btn-secondary {% if is_watchlist %}active{% endif %}">
+                    {% if is_watchlist %}🔔 Watchlist{% else %}🔕 Add to Watchlist{% endif %}
+                </button>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-secondary">❤️ Sign in to Like</a>
+            {% endif %}
+
+            {% if movie.status == 'now_showing' %}
+                <a href="#booking-anch" class="btn-secondary" style="border-color: rgba(6,182,212,0.4); color: var(--secondary);">📅 See Showtimes</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Trailer Modal -->
+{% if movie.trailer_url %}
+<div id="trailer-modal" class="trailer-modal">
+    <div class="glass-panel" style="width: 90%; max-width: 860px; padding: 12px; border-radius: 16px; position: relative;">
+        <button id="close-trailer-btn" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 28px; cursor: pointer; line-height: 1;">✕</button>
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
+            <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+                    src="{{ movie.trailer_url }}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Showtimes -->
+<div class="showtime-section" id="booking-anch">
+    <h2 class="grad-text" style="margin-bottom: 25px;">📅 Available Showtimes</h2>
+
+    {% if grouped_showtimes %}
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            {% for date, theaters in grouped_showtimes.items %}
+                <div class="glass-panel" style="padding: 28px;">
+                    <h3 style="color: var(--secondary); margin-bottom: 18px; font-size: 17px; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: rgba(6,182,212,0.1); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(6,182,212,0.3);">📆 {{ date }}</span>
+                    </h3>
+                    {% for t_name, s_list in theaters.items %}
+                        <div style="margin-bottom: 20px; padding-left: 10px; border-left: 2px solid rgba(168,85,247,0.3);">
+                            <h4 style="color: var(--text-secondary); margin-bottom: 12px; font-size: 15px;">🏢 {{ t_name }}</h4>
+                            <div class="showtime-buttons">
+                                {% for showtime in s_list %}
+                                    <a href="{% url 'booking_flow' showtime.id %}" class="showtime-btn">
+                                        <strong style="font-size: 18px; display: block; margin-bottom: 5px;">{{ showtime.start_time|date:"H:i" }}</strong>
+                                        <div style="font-size: 12px; color: var(--text-muted);">{{ showtime.screen.name }}</div>
+                                        <div style="font-size: 12px; margin-top: 3px;">
+                                            <span class="movie-format-badge" style="font-size: 10px;">{{ showtime.screen.format }}</span>
+                                            {% if showtime.price_multiplier != 1.0 %}
+                                                <span style="color: var(--accent); font-size: 10px; margin-left: 4px;">{{ showtime.price_multiplier }}x</span>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="glass-panel" style="text-align: center; padding: 50px; color: var(--text-muted);">
+            <p style="font-size: 16px;">No upcoming showtimes available. Check back soon! 🎬</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Reviews Section -->
+<div style="margin: 50px 8%;">
+    <h2 class="grad-text" style="margin-bottom: 30px;">💬 Customer Reviews</h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 360px; gap: 40px;">
+        <!-- Review List -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for r in reviews %}
+                <div class="glass-panel" style="padding: 22px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="user-avatar" style="width: 44px; height: 44px; font-size: 16px; font-weight: 700;">{{ r.user.name|first|upper }}</div>
+                            <div>
+                                <strong style="font-size: 15px;">{{ r.user.name }}</strong>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">{{ r.created_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                        <span class="rating-badge">★ {{ r.rating }}/5</span>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 15px; line-height: 1.7;">{{ r.comment }}</p>
+                </div>
+            {% empty %}
+                <div class="glass-panel" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <div style="font-size: 40px; margin-bottom: 15px;">✍️</div>
+                    <p>No reviews yet. Be the first to share your thoughts!</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Write Review -->
+        <div class="glass-panel" style="padding: 28px; height: fit-content;">
+            <h3 style="margin-bottom: 20px;" class="grad-text">✍️ Write a Review</h3>
+            {% if user %}
+                <form method="POST" action="{% url 'submit_review' movie.id %}" style="display: flex; flex-direction: column; gap: 18px;">
+                    {% csrf_token %}
+                    <div>
+                        <label class="form-label">Your Rating</label>
+                        <!-- Interactive Star Rating -->
+                        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                            {% for i in "12345" %}
+                                <button type="button" class="star-rating-btn" data-value="{{ forloop.counter }}"
+                                        style="font-size: 28px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 0; line-height: 1; transition: all 0.15s ease;">
+                                    ☆
+                                </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="rating" id="rating-hidden-input" value="5">
+                    </div>
+                    <div>
+                        <label class="form-label">Your Comment</label>
+                        <textarea name="comment" class="form-input" rows="5" placeholder="Share your cinema experience..." required style="resize: vertical; min-height: 100px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Submit Review ✨</button>
+                </form>
+            {% else %}
+                <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    <p style="margin-bottom: 15px;">Sign in to leave a review</p>
+                    <a href="{% url 'login' %}" class="btn-primary" style="width: 100%;">Sign In</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

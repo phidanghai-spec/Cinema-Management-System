@@ -1,0 +1,106 @@
+{% extends 'cinema/base.html' %}
+{% block title %}Your Ticket | CineVerse{% endblock %}
+{% block content %}
+
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 40px 20px;">
+
+    <!-- Success Header -->
+    <div style="text-align: center; margin-bottom: 32px;" class="animate-in">
+        <div style="font-size: 60px; line-height: 1; margin-bottom: 15px; animation: bounce 1s ease 0.3s both;">🎉</div>
+        <h1 class="grad-text" style="font-size: 32px; margin-bottom: 8px;">Booking Confirmed!</h1>
+        <p style="color: var(--text-muted); font-size: 16px;">Your premium cinema experience awaits</p>
+    </div>
+
+    <!-- Cinema Ticket Card -->
+    <div class="ticket-outer" style="width: 100%; max-width: 520px;">
+        <div class="ticket-wrapper">
+
+            <!-- Ticket Top Header -->
+            <div class="ticket-top">
+                <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.15em; color: var(--text-muted); margin-bottom: 8px;">🎬 CINEVERSE PREMIUM TICKET</div>
+                <h2 style="font-size: 22px; margin-bottom: 6px; line-height: 1.2;">{{ booking.showtime.movie.title }}</h2>
+                <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                    <span class="badge badge-primary">{{ booking.showtime.screen.format }}</span>
+                    <span class="badge badge-muted">{{ booking.showtime.language }}</span>
+                    <span class="badge badge-cyan">{{ booking.status|upper }}</span>
+                </div>
+            </div>
+
+            <!-- Ticket Body -->
+            <div class="ticket-body">
+                <!-- Info Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px;">
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Theater</div>
+                        <div style="font-weight: 600; font-size: 15px;">{{ booking.showtime.screen.theater.name }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Auditorium</div>
+                        <div style="font-weight: 600; font-size: 15px;">{{ booking.showtime.screen.name }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Date</div>
+                        <div style="font-weight: 600; font-size: 15px; color: var(--secondary);">{{ booking.showtime.start_time|date:"M d, Y" }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Time</div>
+                        <div style="font-weight: 700; font-size: 20px; color: var(--accent);">{{ booking.showtime.start_time|date:"H:i" }}</div>
+                    </div>
+                </div>
+
+                <!-- Seat Badges -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;">Seats</div>
+                    <div class="ticket-seat-badges">
+                        {% for item in booking.items.all %}
+                            <span class="seat-badge {{ item.seat.type }}">{{ item.seat.seat_number }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Booking Code & Total -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: rgba(168,85,247,0.08); border-radius: var(--radius-md); border: 1px solid rgba(168,85,247,0.2);">
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Booking Code</div>
+                        <div style="font-family: monospace; font-size: 16px; font-weight: 700; color: var(--primary); cursor: pointer;"
+                             data-copy="CINE-{{ booking.id }}" title="Click to copy">
+                            CINE-{{ booking.id }} 📋
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Total Paid</div>
+                        <div style="font-size: 22px; font-weight: 900; color: var(--success);">{{ booking.total_price|floatformat:"0" }} VND</div>
+                    </div>
+                </div>
+
+                <!-- QR Code Section -->
+                <div class="ticket-qr-section">
+                    <div style="font-size: 13px; color: var(--text-muted); font-weight: 500; margin-bottom: 14px; text-align: center;">📷 Scan QR at cinema entrance</div>
+                    <div class="qr-frame">
+                        <div id="qr-render-target" style="line-height: 0;"></div>
+                    </div>
+                    <input type="hidden" id="qr-content-value" value="{{ qr_content }}">
+                    <span style="font-size: 12px; color: var(--text-muted); font-family: monospace;">{{ qr_content }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; justify-content: center;">
+        <button id="print-ticket-btn" class="btn-secondary">🖨️ Print Ticket</button>
+        <a href="{% url 'profile' %}#bookings" class="btn-primary">📋 My Bookings</a>
+        <a href="{% url 'index' %}" class="btn-secondary">🎬 Browse More Films</a>
+    </div>
+</div>
+
+<style>
+@keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@media print {
+    .navbar, footer, #toast-container, .btn-primary, .btn-secondary { display: none !important; }
+    .ticket-wrapper { box-shadow: none !important; border: 2px solid #333 !important; }
+    body { background: white !important; color: black !important; }
+}
+</style>
+
+{% endblock %}

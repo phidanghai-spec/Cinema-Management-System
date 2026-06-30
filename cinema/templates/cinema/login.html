@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | CineVerse</title>
+    <link rel="stylesheet" href="{% static 'cinema/css/style.css' %}">
+</head>
+<body style="background: var(--bg-dark);">
+
+<div class="auth-wrapper">
+    <!-- Left: Cinema Feature Showcase -->
+    <div class="auth-left">
+        <div class="auth-left-bg" style="background-image: url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1470&auto=format&fit=crop');"></div>
+        <div class="auth-left-overlay"></div>
+        <div class="auth-left-content">
+            <a href="{% url 'index' %}" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 28px;">🎬</span>
+                <span style="font-size: 26px; font-weight: 900; letter-spacing: -0.03em;" class="grad-text">CINEVERSE</span>
+            </a>
+
+            <div style="margin-top: 60px;">
+                <h2 style="font-size: 38px; line-height: 1.15; margin-bottom: 16px;">Your Premium Cinema<br>Experience Awaits</h2>
+                <p style="color: rgba(255,255,255,0.6); font-size: 16px; line-height: 1.7;">Book tickets, choose your perfect seats, and enjoy exclusive member rewards.</p>
+            </div>
+
+            <div class="auth-features">
+                <div class="auth-feature">
+                    <div class="auth-feature-icon">🎭</div>
+                    <div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">VIP & IMAX Seating</div>
+                        <div style="color: rgba(255,255,255,0.55); font-size: 14px;">Premium recliner seats with unbeatable sound</div>
+                    </div>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-icon">⭐</div>
+                    <div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Loyalty Rewards</div>
+                        <div style="color: rgba(255,255,255,0.55); font-size: 14px;">Earn points and upgrade from Bronze to Platinum</div>
+                    </div>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-icon">🎟️</div>
+                    <div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Instant QR Tickets</div>
+                        <div style="color: rgba(255,255,255,0.55); font-size: 14px;">Skip the queue with digital QR entry passes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Login Form -->
+    <div class="auth-right">
+        <div class="auth-form-box">
+            <h2 style="font-size: 28px; margin-bottom: 6px;">Welcome Back 👋</h2>
+            <p style="color: var(--text-muted); margin-bottom: 32px; font-size: 15px;">Sign in to access your bookings and member rewards</p>
+
+            {% if error %}
+                <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.4); color: var(--danger); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 22px; font-size: 14px; display: flex; gap: 10px; align-items: center;">
+                    ⚠️ {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'login' %}" style="display: flex; flex-direction: column; gap: 18px;">
+                {% csrf_token %}
+                <div>
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-input" placeholder="you@example.com" autocomplete="email" required>
+                </div>
+                <div>
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 4px;">Sign In →</button>
+            </form>
+
+            <div style="margin-top: 28px; border-top: 1px solid var(--border-glass); padding-top: 24px;">
+                <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+                    Don't have an account? <a href="{% url 'register' %}" class="grad-text" style="font-weight: 700; text-decoration: none;">Create Account</a>
+                </p>
+
+                <!-- Demo Credentials -->
+                <div style="background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.2); border-radius: var(--radius-md); padding: 14px 16px; font-size: 13px; color: var(--text-muted);">
+                    <div style="color: var(--secondary); font-weight: 700; margin-bottom: 8px;">💡 Demo Accounts</div>
+                    <div style="display: flex; flex-direction: column; gap: 5px; font-family: monospace;">
+                        <div>👤 customer@cinema.com / <strong>customer123</strong></div>
+                        <div>⚡ admin@cinema.com / <strong>admin123</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="{% static 'cinema/js/main.js' %}"></script>
+</body>
+</html>

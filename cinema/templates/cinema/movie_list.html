@@ -1,0 +1,109 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+{% block title %}CineVerse | Explore Movies{% endblock %}
+{% block content %}
+
+<!-- Hero Spotlight Carousel -->
+<div class="hero-slider">
+    <div id="hero-track" class="hero-track">
+        {% for movie in spotlight_movies %}
+        <div class="hero-slide" style="background-image: url('{{ movie.poster_url|default:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop" }}');">
+            <div class="hero-content">
+                <div class="hero-tags">
+                    <span class="badge badge-primary">🔥 SPOTLIGHT</span>
+                    <span class="badge badge-cyan">{{ movie.formats }}</span>
+                    {% if movie.genre %}<span class="badge badge-muted">{{ movie.genre|truncatechars:20 }}</span>{% endif %}
+                </div>
+                <h2>{{ movie.title }}</h2>
+                <p>{{ movie.description|truncatechars:130 }}</p>
+                <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn-primary">🎟️ Book Now</a>
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn-secondary">View Details</a>
+                    <span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span>
+                    <span style="color: var(--text-muted); font-size: 14px;">⏳ {{ movie.duration }} min</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="hero-slide" style="background-image: linear-gradient(rgba(15,23,42,0.2), rgba(15,23,42,0.9)), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop');">
+            <div class="hero-content">
+                <div class="hero-tags"><span class="badge badge-primary">🔥 FEATURED</span></div>
+                <h2>Experience Cinema Like Never Before</h2>
+                <p>Choose from VIP recliners, IMAX screens, and Couple beds. Indulge in premium sound and crystal-clear projection.</p>
+                <a href="#movies-catalog" class="btn-primary">Browse All Films</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Carousel Dots -->
+    <div class="hero-dots">
+        {% for movie in spotlight_movies %}
+            <div class="hero-dot {% if forloop.first %}active{% endif %}"></div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Filters & Search -->
+<div class="filters-container" id="movies-catalog">
+    <div class="filter-group">
+        <a href="?status=now_showing" class="filter-btn {% if current_status == 'now_showing' %}active{% endif %}">🎬 Now Showing</a>
+        <a href="?status=coming_soon"  class="filter-btn {% if current_status == 'coming_soon'  %}active{% endif %}">🗓️ Coming Soon</a>
+    </div>
+
+    <form method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 400px;">
+        <input type="hidden" name="status" value="{{ current_status }}">
+        <input type="text" name="q" class="form-input" placeholder="Search title, genre..." value="{{ search_query|default:'' }}" style="padding: 10px 16px;">
+        <button type="submit" class="btn-primary" style="padding: 10px 20px; white-space: nowrap;">🔍 Search</button>
+    </form>
+</div>
+
+<!-- Genre Quick Filters -->
+<div style="margin: 0 8% 30px 8%; display: flex; gap: 9px; flex-wrap: wrap;">
+    <a href="?status={{ current_status }}" class="filter-btn {% if not current_genre %}active{% endif %}" style="padding: 6px 14px; font-size: 13px;">All Genres</a>
+    {% for g in genres %}
+        <a href="?status={{ current_status }}&genre={{ g }}" class="filter-btn {% if current_genre == g %}active{% endif %}" style="padding: 6px 14px; font-size: 13px;">{{ g }}</a>
+    {% endfor %}
+</div>
+
+<!-- Movie Grid -->
+<div class="movie-grid">
+    {% for movie in movies %}
+        <a href="{% url 'movie_detail' movie.id %}" class="movie-card">
+            <div class="poster-wrapper">
+                <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}"
+                     alt="{{ movie.title }}"
+                     loading="lazy"
+                     onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop';">
+                <div class="card-overlay">
+                    <span class="btn-primary" style="padding: 10px 22px;">Book Tickets 🎟️</span>
+                </div>
+                {% if movie.status == 'now_showing' %}
+                    <div class="movie-ribbon">NOW SHOWING</div>
+                {% elif movie.status == 'coming_soon' %}
+                    <div class="coming-soon-badge">COMING SOON</div>
+                {% endif %}
+            </div>
+            <div class="movie-info">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <div class="movie-meta">
+                    <span style="color: var(--text-muted); font-size: 13px;">{{ movie.genre|truncatechars:18 }}</span>
+                    <span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                    <span style="font-size: 12px; color: var(--text-muted);">⏳ {{ movie.duration }} mins</span>
+                    <span class="movie-format-badge">{{ movie.formats }}</span>
+                </div>
+            </div>
+        </a>
+    {% empty %}
+        <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 70px 30px; color: var(--text-muted);">
+            <div style="font-size: 50px; margin-bottom: 20px;">🎬</div>
+            <h3 style="margin-bottom: 10px; color: var(--text-secondary);">No Movies Found</h3>
+            <p>Try adjusting your genre filters or search keyword.</p>
+            <a href="{% url 'index' %}" class="btn-secondary" style="margin-top: 20px; display: inline-flex;">Clear Filters</a>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

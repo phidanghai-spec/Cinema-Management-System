@@ -120,7 +120,10 @@ def admin_movies_view(request, admin):
                 trailer_url=request.POST.get('trailer_url'),
                 release_date=request.POST.get('release_date'),
                 end_date=request.POST.get('end_date'),
-                status=request.POST.get('status', 'draft')
+                status=request.POST.get('status', 'draft'),
+                age_rating=request.POST.get('age_rating', 'P'),
+                director=request.POST.get('director', 'Unknown'),
+                cast=request.POST.get('cast', 'N/A')
             )
             return redirect('admin_movies')
         elif action == 'edit':
@@ -136,6 +139,9 @@ def admin_movies_view(request, admin):
             movie.release_date = request.POST.get('release_date')
             movie.end_date = request.POST.get('end_date')
             movie.status = request.POST.get('status')
+            movie.age_rating = request.POST.get('age_rating', 'P')
+            movie.director = request.POST.get('director', 'Unknown')
+            movie.cast = request.POST.get('cast', 'N/A')
             movie.save()
             return redirect('admin_movies')
         elif action == 'delete':

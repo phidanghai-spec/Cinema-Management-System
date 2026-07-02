@@ -21,6 +21,7 @@
             <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Browse</a></li>
             <li><a href="{% url 'index' %}?status=now_showing" class="{% if current_status == 'now_showing' %}active{% endif %}">Now Showing</a></li>
             <li><a href="{% url 'index' %}?status=coming_soon" class="{% if current_status == 'coming_soon' %}active{% endif %}">Coming Soon</a></li>
+            <li><a href="{% url 'offers' %}" class="{% if request.resolver_match.url_name == 'offers' %}active{% endif %}">🎟️ Offers</a></li>
             {% if user %}
                 <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">My Tickets</a></li>
                 {% if request.session.is_admin %}

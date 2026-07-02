@@ -779,3 +779,66 @@ class APITests(BaseTestCase):
         """GET /register/ should return HTTP 200."""
         resp = self.client.get(reverse('register'))
         self.assertEqual(resp.status_code, 200)
+
+    def test_forgot_password_view(self):
+        """GET /forgot-password/ loads, POST with unregistered email fails, registered succeeds."""
+        # GET loads
+        resp = self.client.get(reverse('forgot_password'))
+        self.assertEqual(resp.status_code, 200)
+
+        # POST unregistered fails
+        resp = self.client.post(reverse('forgot_password'), {'email': 'nobody@cinema.com'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Email address is not registered")
+
+        # POST registered succeeds
+        resp = self.client.post(reverse('forgot_password'), {'email': 'test@cinema.com'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "mock password reset link")
+
+    def test_reset_password_view(self):
+        """POST /reset-password/<token>/ validates token, checks confirmation and resets password."""
+        # Request token
+        self.client.post(reverse('forgot_password'), {'email': 'test@cinema.com'})
+        user = User.objects.get(email='test@cinema.com')
+        token = user.reset_token
+        self.assertIsNotNone(token)
+
+        # Invalid token fails
+        resp = self.client.get(reverse('reset_password', args=['invalid-token']))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Invalid or expired reset token")
+
+        # Confirm mismatch fails
+        resp = self.client.post(reverse('reset_password', args=[token]), {
+            'password': 'newpassword123',
+            'confirm_password': 'mismatchpassword'
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Passwords do not match")
+
+        # Short password fails
+        resp = self.client.post(reverse('reset_password', args=[token]), {
+            'password': 'short',
+            'confirm_password': 'short'
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Password must be at least 8 characters")
+
+        # Success resets password
+        resp = self.client.post(reverse('reset_password', args=[token]), {
+            'password': 'newpassword123',
+            'confirm_password': 'newpassword123'
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Password reset successfully")
+        
+        # Verify password is updated
+        user.refresh_from_db()
+        self.assertTrue(user.check_password('newpassword123'))
+        self.assertIsNone(user.reset_token)
+
+    def test_offers_view_loads(self):
+        """GET /offers/ loads active discounts successfully."""
+        resp = self.client.get(reverse('offers'))
+        self.assertEqual(resp.status_code, 200)

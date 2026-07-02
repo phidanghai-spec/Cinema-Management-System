@@ -57,8 +57,25 @@
                     <textarea name="description" class="form-input" rows="3" placeholder="Movie synopsis..." required style="resize: vertical;"></textarea>
                 </div>
                 <div>
+                    <label class="form-label">Age Rating</label>
+                    <select name="age_rating" class="form-input" style="background: var(--color-bg-primary);">
+                        <option value="P">P - General (Mọi đối tượng)</option>
+                        <option value="C13">C13 - 13+ (Từ 13 tuổi trở lên)</option>
+                        <option value="C16">C16 - 16+ (Từ 16 tuổi trở lên)</option>
+                        <option value="C18">C18 - 18+ (Từ 18 tuổi trở lên)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Director</label>
+                    <input type="text" name="director" class="form-input" placeholder="e.g. Christopher Nolan" required>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label class="form-label">Cast (Diễn viên chính)</label>
+                    <input type="text" name="cast" class="form-input" placeholder="e.g. Leonardo DiCaprio, Joseph Gordon-Levitt" required>
+                </div>
+                <div>
                     <label class="form-label">Status</label>
-                    <select name="status" class="form-input" style="background: var(--bg-dark);">
+                    <select name="status" class="form-input" style="background: var(--color-bg-primary);">
                         <option value="draft">Draft</option>
                         <option value="now_showing">Now Showing</option>
                         <option value="coming_soon">Coming Soon</option>
@@ -102,7 +119,10 @@
                                         <img src="{{ movie.poster_url }}" style="width: 34px; height: 50px; object-fit: cover; border-radius: 4px; flex-shrink: 0;" loading="lazy"
                                              onerror="this.style.display='none'">
                                     {% endif %}
-                                    <strong>{{ movie.title }}</strong>
+                                    <div>
+                                        <strong>{{ movie.title }}</strong>
+                                        <span class="badge badge-muted" style="font-size: 10px; margin-left: 4px; vertical-align: middle;">{{ movie.age_rating }}</span>
+                                    </div>
                                 </div>
                             </td>
                             <td style="color: var(--color-text-muted);">{{ movie.genre|truncatechars:20 }}</td>

@@ -52,6 +52,12 @@ class Movie(models.Model):
         ('coming_soon', 'Coming Soon'),
         ('inactive', 'Inactive'),
     ]
+    AGE_RATINGS = [
+        ('P', 'P - General (Mọi đối tượng)'),
+        ('C13', 'C13 - 13+ (Từ 13 tuổi trở lên)'),
+        ('C16', 'C16 - 16+ (Từ 16 tuổi trở lên)'),
+        ('C18', 'C18 - 18+ (Từ 18 tuổi trở lên)'),
+    ]
     title = models.CharField(max_length=255)
     description = models.TextField()
     genre = models.CharField(max_length=100) # e.g. "Action, Sci-Fi"
@@ -63,6 +69,9 @@ class Movie(models.Model):
     release_date = models.DateField()
     end_date = models.DateField()
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='draft')
+    age_rating = models.CharField(max_length=10, choices=AGE_RATINGS, default='P')
+    director = models.CharField(max_length=100, default='Unknown')
+    cast = models.TextField(default='N/A')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

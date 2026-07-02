@@ -1,0 +1,106 @@
+{% extends 'cinema/base.html' %}
+{% block title %}Exclusive Offers & Vouchers | CineVerse{% endblock %}
+{% block content %}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;" class="animate-in">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">🎁 Special Offers & Promotions</h1>
+        <p style="color: var(--color-text-secondary); font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            Unlock exclusive discounts and promo codes. Copy the voucher codes below and apply them during checkout for instant savings.
+        </p>
+    </div>
+
+    <!-- Offers Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 30px;">
+        {% for disc in discounts %}
+            <div class="glass-panel" style="padding: 0; overflow: hidden; position: relative; display: flex; flex-direction: column; transition: var(--transition-base); border: 1px solid var(--border-glass);">
+                
+                <!-- Ticket Top Accent -->
+                <div style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); height: 6px; width: 100%;"></div>
+                
+                <!-- Ticket Content -->
+                <div style="padding: 28px; display: flex; flex-direction: column; flex-grow: 1;">
+                    <!-- Discount Value Badge -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div>
+                            {% if disc.type == 'percentage' %}
+                                <div style="font-size: 36px; font-weight: 900; color: var(--color-primary); line-height: 1;">{{ disc.value }}% <span style="font-size: 16px; font-weight: 600; color: var(--color-text-primary);">OFF</span></div>
+                            {% else %}
+                                <div style="font-size: 28px; font-weight: 900; color: var(--color-primary); line-height: 1;">{{ disc.value|floatformat:"0" }} <span style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">VND OFF</span></div>
+                            {% endif %}
+                            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Voucher Code</div>
+                        </div>
+                        <span class="badge badge-cyan" style="font-size: 11px;">Active</span>
+                    </div>
+
+                    <!-- Code Box -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px dashed var(--border-glass); padding: 12px 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                        <span style="font-family: monospace; font-size: 18px; font-weight: 800; color: var(--color-warning); letter-spacing: 0.05em;">{{ disc.code }}</span>
+                        <button onclick="copyPromoCode('{{ disc.code }}', this)" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; border-color: rgba(255,255,255,0.15);">📋 Copy</button>
+                    </div>
+
+                    <!-- Conditions -->
+                    <div style="font-size: 13px; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 8px; flex-grow: 1; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 18px; margin-bottom: 10px;">
+                        <div>🛒 Minimum Purchase: <strong style="color: var(--color-text-secondary);">{{ disc.min_amount|floatformat:"0" }} VND</strong></div>
+                        <div>📅 Valid Until: <strong style="color: var(--color-text-secondary);">{{ disc.valid_to|date:"M d, Y" }}</strong></div>
+                        <div>👤 Limit: <strong style="color: var(--color-text-secondary);">{{ disc.per_user_limit }} per user</strong></div>
+                    </div>
+                </div>
+
+                <!-- Ticket Notch Sides Visual effect -->
+                <div style="position: absolute; top: 50%; left: -8px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-bg-primary); transform: translateY(-50%); border-right: 1px solid var(--border-glass);"></div>
+                <div style="position: absolute; top: 50%; right: -8px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-bg-primary); transform: translateY(-50%); border-left: 1px solid var(--border-glass);"></div>
+            </div>
+        {% empty %}
+            <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;">
+                <div style="font-size: 60px; margin-bottom: 20px;">🎟️</div>
+                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">No Active Offers</h3>
+                <p style="color: var(--color-text-muted);">Check back soon for upcoming holiday promotions and deals!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function copyPromoCode(code, buttonElement) {
+    navigator.clipboard.writeText(code).then(() => {
+        const originalText = buttonElement.innerText;
+        buttonElement.innerText = "✓ Copied";
+        buttonElement.style.borderColor = "var(--color-success)";
+        buttonElement.style.color = "var(--color-success)";
+        
+        // Show a custom floating toast if toast-container exists
+        showToast("Voucher code copied to clipboard!", "success");
+
+        setTimeout(() => {
+            buttonElement.innerText = originalText;
+            buttonElement.style.borderColor = "rgba(255,255,255,0.15)";
+            buttonElement.style.color = "";
+        }, 2000);
+    }).catch(err => {
+        console.error("Failed to copy code: ", err);
+    });
+}
+
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerText = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+</script>
+{% endblock %}

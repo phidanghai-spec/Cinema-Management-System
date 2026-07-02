@@ -87,6 +87,9 @@
                 <div class="card-overlay">
                     <span class="btn btn-primary">Book Tickets 🎟️</span>
                 </div>
+                <div class="age-badge-overlay {{ movie.age_rating|lower }}" title="{{ movie.get_age_rating_display }}">
+                    {{ movie.age_rating }}
+                </div>
                 {% if movie.status == 'now_showing' %}
                     <div class="movie-ribbon">NOW SHOWING</div>
                 {% elif movie.status == 'coming_soon' %}

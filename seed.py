@@ -86,7 +86,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/LEjhY15eCx0",
             "release_date": datetime.date.today() - datetime.timedelta(days=10),
             "end_date": datetime.date.today() + datetime.timedelta(days=30),
-            "status": "now_showing"
+            "status": "now_showing",
+            "age_rating": "P",
+            "director": "Kelsey Mann",
+            "cast": "Amy Poehler, Phyllis Smith, Lewis Black, Tony Hale"
         },
         {
             "title": "Deadpool & Wolverine",
@@ -99,7 +102,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/73_1biulkYk",
             "release_date": datetime.date.today() - datetime.timedelta(days=5),
             "end_date": datetime.date.today() + datetime.timedelta(days=25),
-            "status": "now_showing"
+            "status": "now_showing",
+            "age_rating": "C18",
+            "director": "Shawn Levy",
+            "cast": "Ryan Reynolds, Hugh Jackman, Emma Corrin, Morena Baccarin"
         },
         {
             "title": "Interstellar",
@@ -112,7 +118,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/zSWdZAWr3Tk",
             "release_date": datetime.date.today() - datetime.timedelta(days=1),
             "end_date": datetime.date.today() + datetime.timedelta(days=60),
-            "status": "now_showing"
+            "status": "now_showing",
+            "age_rating": "C13",
+            "director": "Christopher Nolan",
+            "cast": "Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin"
         },
         {
             "title": "Dune: Part Two",
@@ -125,7 +134,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/Way9Dexny3w",
             "release_date": datetime.date.today() - datetime.timedelta(days=15),
             "end_date": datetime.date.today() + datetime.timedelta(days=45),
-            "status": "now_showing"
+            "status": "now_showing",
+            "age_rating": "C16",
+            "director": "Denis Villeneuve",
+            "cast": "Timothée Chalamet, Zendaya, Rebecca Ferguson, Javier Bardem"
         },
         {
             "title": "Despicable Me 4",
@@ -138,7 +150,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/qQuxc7sDFQ0",
             "release_date": datetime.date.today() - datetime.timedelta(days=2),
             "end_date": datetime.date.today() + datetime.timedelta(days=40),
-            "status": "now_showing"
+            "status": "now_showing",
+            "age_rating": "P",
+            "director": "Chris Renaud",
+            "cast": "Steve Carell, Kristen Wiig, Will Ferrell, Sofía Vergara"
         },
         {
             "title": "A Quiet Place: Day One",
@@ -151,7 +166,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/YPY7J-flzE8",
             "release_date": datetime.date.today() + datetime.timedelta(days=10),
             "end_date": datetime.date.today() + datetime.timedelta(days=40),
-            "status": "coming_soon"
+            "status": "coming_soon",
+            "age_rating": "C16",
+            "director": "Michael Sarnoski",
+            "cast": "Lupita Nyong'o, Joseph Quinn, Alex Wolff, Djimon Hounsou"
         },
         {
             "title": "Avatar: Fire and Ash",
@@ -164,7 +182,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/8v_T75w3jUY",
             "release_date": datetime.date.today() + datetime.timedelta(days=120),
             "end_date": datetime.date.today() + datetime.timedelta(days=160),
-            "status": "coming_soon"
+            "status": "coming_soon",
+            "age_rating": "C13",
+            "director": "James Cameron",
+            "cast": "Sam Worthington, Zoe Saldana, Sigourney Weaver, Stephen Lang"
         },
         {
             "title": "Wicked",
@@ -177,7 +198,10 @@ def seed_database():
             "trailer_url": "https://www.youtube.com/embed/6COmYeLsz4c",
             "release_date": datetime.date.today() + datetime.timedelta(days=15),
             "end_date": datetime.date.today() + datetime.timedelta(days=50),
-            "status": "coming_soon"
+            "status": "coming_soon",
+            "age_rating": "P",
+            "director": "Jon M. Chu",
+            "cast": "Cynthia Erivo, Ariana Grande, Michelle Yeoh, Jeff Goldblum"
         }
     ]
 

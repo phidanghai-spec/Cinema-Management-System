@@ -293,6 +293,40 @@
   color: #000000;
 }
 
+/* Age Rating Badge Overlays */
+.age-badge-overlay {
+  position: absolute;
+  top: var(--spacing-3);
+  right: var(--spacing-3);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  z-index: 5;
+  text-align: center;
+  min-width: 32px;
+}
+
+.age-badge-overlay.p {
+  background: var(--color-success);
+  color: #ffffff;
+}
+
+.age-badge-overlay.c13 {
+  background: #f97316; /* Orange */
+  color: #ffffff;
+}
+
+.age-badge-overlay.c16 {
+  background: #a855f7; /* Purple */
+  color: #ffffff;
+}
+
+.age-badge-overlay.c18 {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
 /* Toast Notifications */
 #toast-container {
   position: fixed;

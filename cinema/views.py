@@ -63,6 +63,55 @@ def logout_view(request):
     request.session.flush()
     return redirect('login')
 
+def forgot_password_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email__iexact=email)
+            import uuid
+            token = str(uuid.uuid4())
+            user.reset_token = token
+            user.save()
+            
+            reset_url = request.build_absolute_uri(f"/reset-password/{token}/")
+            print(f"[Email SIMULATOR] Password reset link for {email}: {reset_url}")
+            
+            return render(request, 'cinema/forgot_password.html', {
+                'success': "We've generated a mock password reset link.",
+                'mock_reset_url': reset_url
+            })
+        except User.DoesNotExist:
+            return render(request, 'cinema/forgot_password.html', {'error': "Email address is not registered."})
+    return render(request, 'cinema/forgot_password.html')
+
+def reset_password_view(request, token):
+    try:
+        user = User.objects.get(reset_token=token)
+    except User.DoesNotExist:
+        return render(request, 'cinema/reset_password.html', {'error': "Invalid or expired reset token.", 'token': token})
+        
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        if password != confirm_password:
+            return render(request, 'cinema/reset_password.html', {'error': "Passwords do not match.", 'token': token})
+        if len(password) < 8:
+            return render(request, 'cinema/reset_password.html', {'error': "Password must be at least 8 characters.", 'token': token})
+            
+        user.set_password(password)
+        user.reset_token = None
+        user.save()
+        return render(request, 'cinema/login.html', {'success': "Password reset successfully. Please sign in with your new password."})
+        
+    return render(request, 'cinema/reset_password.html', {'token': token})
+
+def offers_view(request):
+    user = get_session_user(request)
+    import datetime
+    today = datetime.date.today()
+    discounts = Discount.objects.filter(valid_to__gte=today, valid_from__lte=today)
+    return render(request, 'cinema/offers.html', {'user': user, 'discounts': discounts})
+
 # Movies Browsing Views
 def index_view(request):
     user = get_session_user(request)

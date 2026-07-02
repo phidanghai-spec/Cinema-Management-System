@@ -57,6 +57,12 @@
             <h2 style="font-size: 28px; margin-bottom: 6px;">Welcome Back 👋</h2>
             <p style="color: var(--color-text-muted); margin-bottom: 32px; font-size: 15px;">Sign in to access your bookings and member rewards</p>
 
+            {% if success %}
+                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.4); color: var(--color-success); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 22px; font-size: 14px; display: flex; gap: 10px; align-items: center;">
+                    ✅ {{ success }}
+                </div>
+            {% endif %}
+
             {% if error %}
                 <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.4); color: var(--color-error); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 22px; font-size: 14px; display: flex; gap: 10px; align-items: center;">
                     ⚠️ {{ error }}
@@ -70,7 +76,10 @@
                     <input type="email" name="email" class="form-input" placeholder="you@example.com" autocomplete="email" required>
                 </div>
                 <div>
-                    <label class="form-label">Password</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="form-label">Password</label>
+                        <a href="{% url 'forgot_password' %}" style="font-size: 13px; color: var(--color-primary); text-decoration: none;">Forgot Password?</a>
+                    </div>
                     <input type="password" name="password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 4px;">Sign In →</button>

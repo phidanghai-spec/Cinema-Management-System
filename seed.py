@@ -245,66 +245,114 @@ def seed_database():
     s2_t2 = TheaterService.create_screen(t2.id, "IMAX Hall 2", "IMAX", 8, 10)
     print("Auto-generated layouts and seat grids for Screens.")
 
-    # 6. Create Showtimes (Today and Tomorrow)
+    # 6. Create Showtimes (For the next 7 days)
     today = datetime.datetime.now().date()
-    tomorrow = today + datetime.timedelta(days=1)
+    print("Generating showtimes for the next 7 days...")
     
-    # Showtime 1: Inside Out 2 in Royal City IMAX Hall 1 today at 18:00
-    Showtime.objects.create(
-        movie=created_movies[0], # Inside Out 2
-        screen=s1_t1,
-        start_time=datetime.datetime.combine(today, datetime.time(18, 0)),
-        end_time=datetime.datetime.combine(today, datetime.time(19, 36)),
-        language="English",
-        subtitle="Vietnamese",
-        price_multiplier=1.2 # IMAX premium
-    )
-
-    # Showtime 2: Deadpool & Wolverine in Royal City Cinema Room 2 today at 20:00
-    Showtime.objects.create(
-        movie=created_movies[1], # Deadpool
-        screen=s2_t1,
-        start_time=datetime.datetime.combine(today, datetime.time(20, 0)),
-        end_time=datetime.datetime.combine(today, datetime.time(22, 7)),
-        language="English",
-        subtitle="Vietnamese",
-        price_multiplier=1.0
-    )
-
-    # Showtime 3: Interstellar in Landmark 72 IMAX Hall 2 tomorrow at 19:30
-    Showtime.objects.create(
-        movie=created_movies[2], # Interstellar
-        screen=s2_t2,
-        start_time=datetime.datetime.combine(tomorrow, datetime.time(19, 30)),
-        end_time=datetime.datetime.combine(tomorrow, datetime.time(22, 19)),
-        language="English",
-        subtitle="Vietnamese",
-        price_multiplier=1.3 # IMAX + Weekend premium
-    )
-
-    # Showtime 4: Dune: Part Two in Landmark 72 VIP Hall 1 today at 19:00
-    Showtime.objects.create(
-        movie=created_movies[3], # Dune: Part Two
-        screen=s1_t2,
-        start_time=datetime.datetime.combine(today, datetime.time(19, 0)),
-        end_time=datetime.datetime.combine(today, datetime.time(21, 46)),
-        language="English",
-        subtitle="Vietnamese",
-        price_multiplier=1.5 # VIP screen premium
-    )
-
-    # Showtime 5: Despicable Me 4 in Royal City Cinema Room 2 today at 15:30
-    Showtime.objects.create(
-        movie=created_movies[4], # Despicable Me 4
-        screen=s2_t1,
-        start_time=datetime.datetime.combine(today, datetime.time(15, 30)),
-        end_time=datetime.datetime.combine(today, datetime.time(17, 4)),
-        language="English",
-        subtitle="Vietnamese",
-        price_multiplier=1.0
-    )
-
-    print("Created Active Showtimes for Today and Tomorrow.")
+    for day_offset in range(7):
+        current_date = today + datetime.timedelta(days=day_offset)
+        
+        # Inside Out 2
+        Showtime.objects.create(
+            movie=created_movies[0],
+            screen=s1_t1,
+            start_time=datetime.datetime.combine(current_date, datetime.time(10, 0)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(11, 36)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.2
+        )
+        Showtime.objects.create(
+            movie=created_movies[0],
+            screen=s2_t1,
+            start_time=datetime.datetime.combine(current_date, datetime.time(14, 0)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(15, 36)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.0
+        )
+        
+        # Deadpool & Wolverine
+        Showtime.objects.create(
+            movie=created_movies[1],
+            screen=s2_t1,
+            start_time=datetime.datetime.combine(current_date, datetime.time(17, 0)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(19, 7)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.0
+        )
+        Showtime.objects.create(
+            movie=created_movies[1],
+            screen=s1_t1,
+            start_time=datetime.datetime.combine(current_date, datetime.time(20, 30)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(22, 37)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.2
+        )
+        
+        # Interstellar
+        Showtime.objects.create(
+            movie=created_movies[2],
+            screen=s2_t2,
+            start_time=datetime.datetime.combine(current_date, datetime.time(19, 30)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(22, 19)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.3
+        )
+        Showtime.objects.create(
+            movie=created_movies[2],
+            screen=s1_t2,
+            start_time=datetime.datetime.combine(current_date, datetime.time(13, 0)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(15, 49)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.5
+        )
+        
+        # Dune: Part Two
+        Showtime.objects.create(
+            movie=created_movies[3],
+            screen=s1_t2,
+            start_time=datetime.datetime.combine(current_date, datetime.time(19, 0)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(21, 46)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.5
+        )
+        Showtime.objects.create(
+            movie=created_movies[3],
+            screen=s2_t2,
+            start_time=datetime.datetime.combine(current_date, datetime.time(10, 30)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(13, 16)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.3
+        )
+        
+        # Despicable Me 4
+        Showtime.objects.create(
+            movie=created_movies[4],
+            screen=s2_t1,
+            start_time=datetime.datetime.combine(current_date, datetime.time(11, 45)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(13, 19)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.0
+        )
+        Showtime.objects.create(
+            movie=created_movies[4],
+            screen=s1_t1,
+            start_time=datetime.datetime.combine(current_date, datetime.time(15, 0)),
+            end_time=datetime.datetime.combine(current_date, datetime.time(16, 34)),
+            language="English",
+            subtitle="Vietnamese",
+            price_multiplier=1.2
+        )
+        
+    print("Created Active Showtimes for the next 7 days.")
     print("Database seeding completed successfully! Ready for launch.")
 
 if __name__ == '__main__':

@@ -18,15 +18,15 @@
         </a>
 
         <ul class="nav-links">
-            <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Browse</a></li>
-            <li><a href="{% url 'index' %}?status=now_showing" class="{% if current_status == 'now_showing' %}active{% endif %}">Now Showing</a></li>
-            <li><a href="{% url 'index' %}?status=coming_soon" class="{% if current_status == 'coming_soon' %}active{% endif %}">Coming Soon</a></li>
-            <li><a href="{% url 'offers' %}" class="{% if request.resolver_match.url_name == 'offers' %}active{% endif %}">🎟️ Offers</a></li>
-            <li><a href="{% url 'theaters' %}" class="{% if request.resolver_match.url_name == 'theaters' %}active{% endif %}">🏢 Theaters</a></li>
-            <li><a href="{% url 'faq' %}" class="{% if request.resolver_match.url_name == 'faq' %}active{% endif %}">❓ FAQ</a></li>
+            <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Khám Phá</a></li>
+            <li><a href="{% url 'index' %}?status=now_showing" class="{% if current_status == 'now_showing' %}active{% endif %}">Phim Đang Chiếu</a></li>
+            <li><a href="{% url 'index' %}?status=coming_soon" class="{% if current_status == 'coming_soon' %}active{% endif %}">Phim Sắp Chiếu</a></li>
+            <li><a href="{% url 'offers' %}" class="{% if request.resolver_match.url_name == 'offers' %}active{% endif %}">🎟️ Khuyến Mãi</a></li>
+            <li><a href="{% url 'theaters' %}" class="{% if request.resolver_match.url_name == 'theaters' %}active{% endif %}">🏢 Hệ Thống Rạp</a></li>
+            <li><a href="{% url 'faq' %}" class="{% if request.resolver_match.url_name == 'faq' %}active{% endif %}">❓ Hỏi Đáp</a></li>
             {% if user %}
-                <li><a href="{% url 'watchlist' %}" class="{% if request.resolver_match.url_name == 'watchlist' %}active{% endif %}">🔔 Watchlist</a></li>
-                <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">My Tickets</a></li>
+                <li><a href="{% url 'watchlist' %}" class="{% if request.resolver_match.url_name == 'watchlist' %}active{% endif %}">🔔 Phim Đã Lưu</a></li>
+                <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Lịch Sử Đặt Vé</a></li>
                 {% if request.session.is_admin %}
                     <li><a href="{% url 'admin_dashboard' %}" class="{% if 'admin' in request.resolver_match.url_name %}active{% endif %} text-cyan" style="color: var(--color-secondary);">⚡ Admin</a></li>
                 {% endif %}
@@ -37,7 +37,7 @@
             {% if user %}
                 {% if user.notifications.all|length > 0 %}
                     {% with unread=user.notifications.filter %}
-                        <a id="nav-notif-bell" href="{% url 'profile' %}#notifications" class="notif-bell" title="Notifications">
+                        <a id="nav-notif-bell" href="{% url 'profile' %}#notifications" class="notif-bell" title="Thông báo">
                             🔔
                             {% with count=user.notifications.all %}
                                 {% if count %}
@@ -52,12 +52,12 @@
                 <a href="{% url 'profile' %}" class="user-avatar" title="{{ user.name }}">{{ user.name|first|upper }}</a>
                 <div class="nav-user-info">
                     <span class="nav-username">{{ user.name }}</span>
-                    <span class="nav-usertier">⭐ {{ user.tier }} Tier</span>
+                    <span class="nav-usertier">⭐ Hạng {{ user.tier }}</span>
                 </div>
-                <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm">Logout</a>
+                <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm">Đăng Xuất</a>
             {% else %}
-                <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Sign In</a>
-                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Sign Up</a>
+                <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Đăng Nhập</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Đăng Ký</a>
             {% endif %}
         </div>
     </nav>
@@ -72,11 +72,11 @@
     <footer>
         <div>
             <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.03em;">🎬 <span class="grad-text">CINEVERSE</span></span>
-            <p style="color: var(--color-text-muted); font-size: 13px; margin-top: 6px;">Premium Cinema Booking Experience</p>
+            <p style="color: var(--color-text-muted); font-size: 13px; margin-top: 6px;">Trải nghiệm Đặt vé Xem phim Cao cấp</p>
         </div>
         <div style="text-align: right; color: var(--color-text-muted); font-size: 13px;">
-            <p>© 2026 CineVerse. Built for MTKPM Software Architecture Pattern Course.</p>
-            <p style="margin-top: 4px; font-size: 12px;">12 Design Patterns · 15 DB Tables · Django Framework</p>
+            <p>© 2026 CineVerse. Đồ án mẫu cho môn học Mẫu thiết kế phần mềm (MTKPM).</p>
+            <p style="margin-top: 4px; font-size: 12px;">12 Mẫu Thiết Kế · 15 Bảng CSDL · Framework Django</p>
         </div>
     </footer>
 

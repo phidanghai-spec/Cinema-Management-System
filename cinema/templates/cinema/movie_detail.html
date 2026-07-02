@@ -20,13 +20,13 @@
     <div class="detail-info">
         <div class="detail-tags">
             <span class="detail-tag" style="background: rgba(229,9,20,0.1); border-color: rgba(229,9,20,0.4); color: white;">★ {{ movie.rating|floatformat:1 }}</span>
-            <span class="detail-tag">⏳ {{ movie.duration }} mins</span>
+            <span class="detail-tag">⏳ {{ movie.duration }} phút</span>
             <span class="detail-tag" style="color: var(--color-secondary);">🎞️ {{ movie.formats }}</span>
-            <span class="detail-tag">📅 {{ movie.release_date|date:"M d, Y" }}</span>
+            <span class="detail-tag">📅 {{ movie.release_date|date:"d/m/Y" }}</span>
             {% if movie.status == 'now_showing' %}
-                <span class="detail-tag" style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.4); color:var(--color-success);">▶ Now Showing</span>
+                <span class="detail-tag" style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.4); color:var(--color-success);">▶ Đang Chiếu</span>
             {% elif movie.status == 'coming_soon' %}
-                <span class="detail-tag" style="background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.4); color:var(--color-warning);">🗓 Coming Soon</span>
+                <span class="detail-tag" style="background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.4); color:var(--color-warning);">🗓 Sắp Chiếu</span>
             {% endif %}
         </div>
 
@@ -41,28 +41,28 @@
         <p style="color: var(--color-text-secondary); font-size: 16px; line-height: 1.75; max-width: 620px; margin-bottom: 18px;">{{ movie.description }}</p>
 
         <div style="margin: 20px 0; display: flex; flex-direction: column; gap: 10px; font-size: 15px; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 18px 0; max-width: 620px;">
-            <div>🎬 <span style="color: var(--color-text-muted);">Director:</span> <strong style="color: var(--color-text-secondary); font-weight: 600;">{{ movie.director }}</strong></div>
-            <div>👥 <span style="color: var(--color-text-muted);">Cast:</span> <strong style="color: var(--color-text-secondary); font-weight: 600;">{{ movie.cast }}</strong></div>
+            <div>🎬 <span style="color: var(--color-text-muted);">Đạo diễn:</span> <strong style="color: var(--color-text-secondary); font-weight: 600;">{{ movie.director }}</strong></div>
+            <div>👥 <span style="color: var(--color-text-muted);">Diễn viên:</span> <strong style="color: var(--color-text-secondary); font-weight: 600;">{{ movie.cast }}</strong></div>
         </div>
 
         <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 5px;">
             {% if movie.trailer_url %}
-                <button id="open-trailer-btn" class="btn btn-primary">▶️ Watch Trailer</button>
+                <button id="open-trailer-btn" class="btn btn-primary">▶️ Xem Trailer</button>
             {% endif %}
 
             {% if user %}
                 <button id="toggle-favorite-btn" data-movie-id="{{ movie.id }}" class="btn btn-secondary {% if is_favorite %}active{% endif %}">
-                    {% if is_favorite %}❤️ Liked{% else %}🤍 Like{% endif %}
+                    {% if is_favorite %}❤️ Đã Thích{% else %}🤍 Thích{% endif %}
                 </button>
                 <button id="toggle-watchlist-btn" data-movie-id="{{ movie.id }}" class="btn btn-secondary {% if is_watchlist %}active{% endif %}">
-                    {% if is_watchlist %}🔔 Watchlist{% else %}🔕 Add to Watchlist{% endif %}
+                    {% if is_watchlist %}🔔 Đã Lưu{% else %}🔕 Lưu Watchlist{% endif %}
                 </button>
             {% else %}
-                <a href="{% url 'login' %}" class="btn btn-secondary">❤️ Sign in to Like</a>
+                <a href="{% url 'login' %}" class="btn btn-secondary">❤️ Đăng nhập để Thích</a>
             {% endif %}
 
             {% if movie.status == 'now_showing' %}
-                <a href="#booking-anch" class="btn btn-secondary" style="border-color: rgba(59,130,246,0.4); color: var(--color-secondary);">📅 See Showtimes</a>
+                <a href="#booking-anch" class="btn btn-secondary" style="border-color: rgba(59,130,246,0.4); color: var(--color-secondary);">📅 Xem Lịch Chiếu</a>
             {% endif %}
         </div>
     </div>
@@ -83,7 +83,7 @@
 
 <!-- Showtimes -->
 <div class="showtime-section" id="booking-anch">
-    <h2 class="grad-text" style="margin-bottom: 25px;">📅 Available Showtimes</h2>
+    <h2 class="grad-text" style="margin-bottom: 25px;">📅 Lịch Chiếu Khả Dụng</h2>
 
     {% if grouped_showtimes %}
         <div style="display: flex; flex-direction: column; gap: 24px;">
@@ -116,14 +116,14 @@
         </div>
     {% else %}
         <div class="glass-panel" style="text-align: center; padding: 50px; color: var(--color-text-muted);">
-            <p style="font-size: 16px;">No upcoming showtimes available. Check back soon! 🎬</p>
+            <p style="font-size: 16px;">Không có lịch chiếu sắp tới cho phim này. Vui lòng quay lại sau! 🎬</p>
         </div>
     {% endif %}
 </div>
 
 <!-- Reviews Section -->
 <div style="margin: 50px 8%;">
-    <h2 class="grad-text" style="margin-bottom: 30px;">💬 Customer Reviews</h2>
+    <h2 class="grad-text" style="margin-bottom: 30px;">💬 Đánh Giá Khách Hàng</h2>
 
     <div style="display: grid; grid-template-columns: 1fr 360px; gap: 40px;">
         <!-- Review List -->
@@ -135,7 +135,7 @@
                             <div class="user-avatar" style="width: 44px; height: 44px; font-size: 16px; font-weight: 700;">{{ r.user.name|first|upper }}</div>
                             <div>
                                 <strong style="font-size: 15px;">{{ r.user.name }}</strong>
-                                <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">{{ r.created_at|date:"M d, Y" }}</div>
+                                <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">{{ r.created_at|date:"d/m/Y H:i" }}</div>
                             </div>
                         </div>
                         <span class="rating-badge">★ {{ r.rating }}/5</span>
@@ -145,19 +145,19 @@
             {% empty %}
                 <div class="glass-panel" style="text-align: center; padding: 40px; color: var(--color-text-muted);">
                     <div style="font-size: 40px; margin-bottom: 15px;">✍️</div>
-                    <p>No reviews yet. Be the first to share your thoughts!</p>
+                    <p>Chưa có đánh giá nào. Hãy là người đầu tiên chia sẻ cảm nghĩ của bạn!</p>
                 </div>
             {% endfor %}
         </div>
 
         <!-- Write Review -->
         <div class="glass-panel" style="padding: 28px; height: fit-content;">
-            <h3 style="margin-bottom: 20px;" class="grad-text">✍️ Write a Review</h3>
+            <h3 style="margin-bottom: 20px;" class="grad-text">✍️ Viết Đánh Giá</h3>
             {% if user %}
                 <form method="POST" action="{% url 'submit_review' movie.id %}" style="display: flex; flex-direction: column; gap: 18px;">
                     {% csrf_token %}
                     <div>
-                        <label class="form-label">Your Rating</label>
+                        <label class="form-label">Đánh giá của bạn</label>
                         <!-- Interactive Star Rating -->
                         <div style="display: flex; gap: 6px; margin-bottom: 10px;">
                             {% for i in "12345" %}
@@ -170,19 +170,18 @@
                         <input type="hidden" name="rating" id="rating-hidden-input" value="5">
                     </div>
                     <div>
-                        <label class="form-label">Your Comment</label>
-                        <textarea name="comment" class="form-input" rows="5" placeholder="Share your cinema experience..." required style="resize: vertical; min-height: 100px;"></textarea>
+                        <label class="form-label">Bình luận của bạn</label>
+                        <textarea name="comment" class="form-input" rows="5" placeholder="Chia sẻ trải nghiệm xem phim của bạn..." required style="resize: vertical; min-height: 100px;"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review ✨</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Gửi Đánh Giá ✨</button>
                 </form>
             {% else %}
                 <div style="text-align: center; padding: 20px; color: var(--color-text-muted);">
-                    <p style="margin-bottom: 15px;">Sign in to leave a review</p>
-                    <a href="{% url 'login' %}" class="btn btn-primary" style="width: 100%;">Sign In</a>
+                    <p style="margin-bottom: 15px;">Đăng nhập để viết đánh giá</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm" style="width: 100%;">Đăng Nhập</a>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
-
 {% endblock %}

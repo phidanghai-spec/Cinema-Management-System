@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In | CineVerse</title>
+    <title>Đăng Nhập | CineVerse</title>
     <link rel="stylesheet" href="{% static 'cinema/css/style.css' %}">
 </head>
 <body style="background: var(--color-bg-primary);">
@@ -21,30 +21,30 @@
             </a>
 
             <div style="margin-top: 60px;">
-                <h2 style="font-size: 38px; line-height: 1.15; margin-bottom: 16px;">Your Premium Cinema<br>Experience Awaits</h2>
-                <p style="color: var(--color-text-secondary); font-size: 16px; line-height: 1.7;">Book tickets, choose your perfect seats, and enjoy exclusive member rewards.</p>
+                <h2 style="font-size: 38px; line-height: 1.15; margin-bottom: 16px;">Trải Nghiệm Điện Ảnh<br>Cao Cấp Đang Chờ Bạn</h2>
+                <p style="color: var(--color-text-secondary); font-size: 16px; line-height: 1.7;">Đặt vé trực tuyến, chọn vị trí ngồi hoàn hảo và tận hưởng các ưu đãi thành viên đặc quyền.</p>
             </div>
 
             <div class="auth-features">
                 <div class="auth-feature">
                     <div class="auth-feature-icon">🎭</div>
                     <div>
-                        <div style="font-weight: 700; margin-bottom: 3px;">VIP & IMAX Seating</div>
-                        <div style="color: var(--color-text-muted); font-size: 14px;">Premium recliner seats with unbeatable sound</div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Phòng Chiếu VIP & IMAX</div>
+                        <div style="color: var(--color-text-muted); font-size: 14px;">Ghế da cao cấp chỉnh điện cùng hệ thống âm thanh vòm đỉnh cao</div>
                     </div>
                 </div>
                 <div class="auth-feature">
                     <div class="auth-feature-icon">⭐</div>
                     <div>
-                        <div style="font-weight: 700; margin-bottom: 3px;">Loyalty Rewards</div>
-                        <div style="color: var(--color-text-muted); font-size: 14px;">Earn points and upgrade from Bronze to Platinum</div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Tích Điểm Thành Viên</div>
+                        <div style="color: var(--color-text-muted); font-size: 14px;">Tích lũy XP để nâng hạng từ Đồng lên Bạch Kim</div>
                     </div>
                 </div>
                 <div class="auth-feature">
                     <div class="auth-feature-icon">🎟️</div>
                     <div>
-                        <div style="font-weight: 700; margin-bottom: 3px;">Instant QR Tickets</div>
-                        <div style="color: var(--color-text-muted); font-size: 14px;">Skip the queue with digital QR entry passes</div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Vé Điện Tử QR Code</div>
+                        <div style="color: var(--color-text-muted); font-size: 14px;">Vào phòng chiếu trực tiếp bằng mã QR không cần xếp hàng</div>
                     </div>
                 </div>
             </div>
@@ -54,8 +54,8 @@
     <!-- Right: Login Form -->
     <div class="auth-right">
         <div class="auth-form-box">
-            <h2 style="font-size: 28px; margin-bottom: 6px;">Welcome Back 👋</h2>
-            <p style="color: var(--color-text-muted); margin-bottom: 32px; font-size: 15px;">Sign in to access your bookings and member rewards</p>
+            <h2 style="font-size: 28px; margin-bottom: 6px;">Chào Mừng Trở Lại 👋</h2>
+            <p style="color: var(--color-text-muted); margin-bottom: 32px; font-size: 15px;">Đăng nhập để xem lịch sử đặt vé và ưu đãi thành viên</p>
 
             {% if success %}
                 <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.4); color: var(--color-success); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 22px; font-size: 14px; display: flex; gap: 10px; align-items: center;">
@@ -72,27 +72,27 @@
             <form method="POST" action="{% url 'login' %}" style="display: flex; flex-direction: column; gap: 18px;">
                 {% csrf_token %}
                 <div>
-                    <label class="form-label">Email Address</label>
+                    <label class="form-label">Địa chỉ Email</label>
                     <input type="email" name="email" class="form-input" placeholder="you@example.com" autocomplete="email" required>
                 </div>
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <label class="form-label">Password</label>
-                        <a href="{% url 'forgot_password' %}" style="font-size: 13px; color: var(--color-primary); text-decoration: none;">Forgot Password?</a>
+                        <label class="form-label">Mật khẩu</label>
+                        <a href="{% url 'forgot_password' %}" style="font-size: 13px; color: var(--color-primary); text-decoration: none;">Quên mật khẩu?</a>
                     </div>
                     <input type="password" name="password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 4px;">Sign In →</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 4px;">Đăng Nhập →</button>
             </form>
 
             <div style="margin-top: 28px; border-top: 1px solid var(--border-glass); padding-top: 24px;">
                 <p style="text-align: center; color: var(--color-text-muted); font-size: 14px; margin-bottom: 16px;">
-                    Don't have an account? <a href="{% url 'register' %}" class="grad-text" style="font-weight: 700; text-decoration: none;">Create Account</a>
+                    Chưa có tài khoản? <a href="{% url 'register' %}" class="grad-text" style="font-weight: 700; text-decoration: none;">Đăng Ký</a>
                 </p>
 
                 <!-- Demo Credentials -->
                 <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius-md); padding: 14px 16px; font-size: 13px; color: var(--color-text-muted);">
-                    <div style="color: var(--color-secondary); font-weight: 700; margin-bottom: 8px;">💡 Demo Accounts</div>
+                    <div style="color: var(--color-secondary); font-weight: 700; margin-bottom: 8px;">💡 Tài Khoản Dùng Thử</div>
                     <div style="display: flex; flex-direction: column; gap: 5px; font-family: monospace;">
                         <div>👤 customer@cinema.com / <strong>customer123</strong></div>
                         <div>⚡ admin@cinema.com / <strong>admin123</strong></div>

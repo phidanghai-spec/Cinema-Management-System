@@ -150,4 +150,17 @@
   footer div {
     text-align: center !important;
   }
+
+  /* Auth Pages Mobile Layout */
+  .auth-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .auth-left {
+    display: none !important;
+  }
+  .auth-right {
+    padding: var(--spacing-8) var(--spacing-4);
+    min-height: 100vh;
+    border-left: none;
+  }
 }

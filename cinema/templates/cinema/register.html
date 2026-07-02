@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account | CineVerse</title>
+    <title>Đăng Ký Tài Khoản | CineVerse</title>
     <link rel="stylesheet" href="{% static 'cinema/css/style.css' %}">
 </head>
 <body style="background: var(--color-bg-primary);">
@@ -21,30 +21,30 @@
             </a>
 
             <div style="margin-top: 60px;">
-                <h2 style="font-size: 38px; line-height: 1.15; margin-bottom: 16px;">Join the Premier<br>Cinema Community</h2>
-                <p style="color: var(--color-text-secondary); font-size: 16px; line-height: 1.7;">Create your free account and unlock a world of cinematic excellence.</p>
+                <h2 style="font-size: 38px; line-height: 1.15; margin-bottom: 16px;">Tham Gia Cộng Đồng<br>CineVerse</h2>
+                <p style="color: var(--color-text-secondary); font-size: 16px; line-height: 1.7;">Đăng ký tài khoản miễn phí và trải nghiệm rạp chiếu phim cao cấp ngay hôm nay.</p>
             </div>
 
             <div class="auth-features">
                 <div class="auth-feature">
                     <div class="auth-feature-icon">🎁</div>
                     <div>
-                        <div style="font-weight: 700; margin-bottom: 3px;">Welcome Bonus</div>
-                        <div style="color: var(--color-text-muted); font-size: 14px;">Start with 50 XP points on your first booking</div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Ưu Đãi Chào Mừng</div>
+                        <div style="color: var(--color-text-muted); font-size: 14px;">Tặng ngay 50 XP khi hoàn tất đặt vé lần đầu</div>
                     </div>
                 </div>
                 <div class="auth-feature">
                     <div class="auth-feature-icon">💜</div>
                     <div>
-                        <div style="font-weight: 700; margin-bottom: 3px;">Exclusive Discounts</div>
-                        <div style="color: var(--color-text-muted); font-size: 14px;">Members get special voucher codes & offers</div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Khuyến Mãi Đặc Quyền</div>
+                        <div style="color: var(--color-text-muted); font-size: 14px;">Nhận mã giảm giá và ưu đãi đặc biệt dành riêng cho thành viên</div>
                     </div>
                 </div>
                 <div class="auth-feature">
                     <div class="auth-feature-icon">📱</div>
                     <div>
-                        <div style="font-weight: 700; margin-bottom: 3px;">Digital Ticket Wallet</div>
-                        <div style="color: var(--color-text-muted); font-size: 14px;">All your tickets stored safely in the cloud</div>
+                        <div style="font-weight: 700; margin-bottom: 3px;">Ví Vé Điện Tử</div>
+                        <div style="color: var(--color-text-muted); font-size: 14px;">Lưu trữ toàn bộ vé xem phim của bạn một cách an toàn</div>
                     </div>
                 </div>
             </div>
@@ -54,8 +54,8 @@
     <!-- Right: Register Form -->
     <div class="auth-right">
         <div class="auth-form-box">
-            <h2 style="font-size: 28px; margin-bottom: 6px;">Create Account 🚀</h2>
-            <p style="color: var(--color-text-muted); margin-bottom: 32px; font-size: 15px;">Sign up for free and get started in seconds</p>
+            <h2 style="font-size: 28px; margin-bottom: 6px;">Đăng Ký Tài Khoản 🚀</h2>
+            <p style="color: var(--color-text-muted); margin-bottom: 32px; font-size: 15px;">Đăng ký nhanh chóng và dễ dàng trong vài giây</p>
 
             {% if error %}
                 <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.4); color: var(--color-error); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 22px; font-size: 14px;">
@@ -66,26 +66,26 @@
             <form method="POST" action="{% url 'register' %}" style="display: flex; flex-direction: column; gap: 16px;">
                 {% csrf_token %}
                 <div>
-                    <label class="form-label">Full Name</label>
+                    <label class="form-label">Họ và Tên</label>
                     <input type="text" name="name" class="form-input" placeholder="Nguyen Van A" autocomplete="name" required>
                 </div>
                 <div>
-                    <label class="form-label">Email Address</label>
+                    <label class="form-label">Địa chỉ Email</label>
                     <input type="email" name="email" class="form-input" placeholder="you@example.com" autocomplete="email" required>
                 </div>
                 <div>
-                    <label class="form-label">Phone Number (Optional)</label>
+                    <label class="form-label">Số Điện Thoại (Tùy chọn)</label>
                     <input type="text" name="phone" class="form-input" placeholder="0912 345 678" autocomplete="tel">
                 </div>
                 <div>
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-input" placeholder="Minimum 8 characters" autocomplete="new-password" required>
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" name="password" class="form-input" placeholder="Tối thiểu 8 ký tự" autocomplete="new-password" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 4px;">Create My Account 🎬</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 4px;">Đăng Ký Ngay 🎬</button>
             </form>
 
             <p style="margin-top: 24px; text-align: center; color: var(--color-text-muted); font-size: 14px;">
-                Already a member? <a href="{% url 'login' %}" class="grad-text" style="font-weight: 700; text-decoration: none;">Sign In</a>
+                Bạn đã có tài khoản? <a href="{% url 'login' %}" class="grad-text" style="font-weight: 700; text-decoration: none;">Đăng Nhập</a>
             </p>
         </div>
     </div>

@@ -22,7 +22,10 @@
             <li><a href="{% url 'index' %}?status=now_showing" class="{% if current_status == 'now_showing' %}active{% endif %}">Now Showing</a></li>
             <li><a href="{% url 'index' %}?status=coming_soon" class="{% if current_status == 'coming_soon' %}active{% endif %}">Coming Soon</a></li>
             <li><a href="{% url 'offers' %}" class="{% if request.resolver_match.url_name == 'offers' %}active{% endif %}">🎟️ Offers</a></li>
+            <li><a href="{% url 'theaters' %}" class="{% if request.resolver_match.url_name == 'theaters' %}active{% endif %}">🏢 Theaters</a></li>
+            <li><a href="{% url 'faq' %}" class="{% if request.resolver_match.url_name == 'faq' %}active{% endif %}">❓ FAQ</a></li>
             {% if user %}
+                <li><a href="{% url 'watchlist' %}" class="{% if request.resolver_match.url_name == 'watchlist' %}active{% endif %}">🔔 Watchlist</a></li>
                 <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">My Tickets</a></li>
                 {% if request.session.is_admin %}
                     <li><a href="{% url 'admin_dashboard' %}" class="{% if 'admin' in request.resolver_match.url_name %}active{% endif %} text-cyan" style="color: var(--color-secondary);">⚡ Admin</a></li>

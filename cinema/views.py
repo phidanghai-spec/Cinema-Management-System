@@ -112,6 +112,54 @@ def offers_view(request):
     discounts = Discount.objects.filter(valid_to__gte=today, valid_from__lte=today)
     return render(request, 'cinema/offers.html', {'user': user, 'discounts': discounts})
 
+def watchlist_view(request):
+    user = get_session_user(request)
+    if not user:
+        return redirect('login')
+    watchlist_items = Watchlist.objects.filter(user=user).select_related('movie')
+    watchlist_ids = watchlist_items.values_list('movie_id', flat=True)
+    is_favorites = Favorite.objects.filter(user=user).values_list('movie_id', flat=True)
+    return render(request, 'cinema/watchlist.html', {
+        'user': user,
+        'watchlist_items': watchlist_items,
+        'favorite_ids': list(is_favorites),
+        'watchlist_ids': list(watchlist_ids),
+    })
+
+def faq_view(request):
+    user = get_session_user(request)
+    return render(request, 'cinema/faq.html', {'user': user})
+
+def genre_movies_view(request, genre_slug):
+    user = get_session_user(request)
+    from django.db.models import Q
+    clean_genre_hyphen = genre_slug.replace(' ', '-').title()
+    clean_genre_space = genre_slug.replace('-', ' ').title()
+    movies = Movie.objects.filter(
+        Q(genre__icontains=clean_genre_hyphen) | 
+        Q(genre__icontains=clean_genre_space) |
+        Q(genre__icontains=genre_slug)
+    ).exclude(status='inactive').order_by('-release_date')
+    return render(request, 'cinema/genre_movies.html', {
+        'user': user,
+        'genre_name': clean_genre_space,
+        'genre_slug': genre_slug,
+        'movies': movies,
+    })
+
+def theaters_view(request):
+    user = get_session_user(request)
+    theaters = Theater.objects.all().order_by('city', 'name')
+    for t in theaters:
+        if t.amenities:
+            t.amenity_list = [a.strip() for a in t.amenities.split(',')]
+        else:
+            t.amenity_list = []
+    return render(request, 'cinema/theaters.html', {
+        'user': user,
+        'theaters': theaters,
+    })
+
 # Movies Browsing Views
 def index_view(request):
     user = get_session_user(request)

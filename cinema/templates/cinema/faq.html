@@ -1,0 +1,94 @@
+{% extends 'cinema/base.html' %}
+{% block title %}FAQ & Support | CineVerse{% endblock %}
+{% block content %}
+
+<div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;" class="animate-in">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">❓ Frequently Asked Questions</h1>
+        <p style="color: var(--color-text-secondary); font-size: 16px; line-height: 1.6;">
+            Have questions about bookings, loyalty rewards, or theater formats? Find quick answers below.
+        </p>
+    </div>
+
+    <!-- Accordion Group -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- FAQ 1 -->
+        <details class="glass-panel faq-item" style="padding: 20px 24px; cursor: pointer; border: 1px solid var(--border-glass); border-radius: var(--radius-md);">
+            <summary style="font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--color-text-primary);">
+                <span>🎟️ How do I book tickets on CineVerse?</span>
+                <span class="faq-arrow" style="transition: transform 0.2s ease; color: var(--color-primary);">▼</span>
+            </summary>
+            <div style="margin-top: 14px; color: var(--color-text-secondary); line-height: 1.6; font-size: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; cursor: default;">
+                Booking tickets is simple! Browse the available movies under **Browse** or **Now Showing**, select a film to view details, pick an available showtime, choose your seats (VIP, Normal, or Couple), apply any promo vouchers at checkout, and confirm your booking.
+            </div>
+        </details>
+
+        <!-- FAQ 2 -->
+        <details class="glass-panel faq-item" style="padding: 20px 24px; cursor: pointer; border: 1px solid var(--border-glass); border-radius: var(--radius-md);">
+            <summary style="font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--color-text-primary);">
+                <span>💳 What payment methods are supported?</span>
+                <span class="faq-arrow" style="transition: transform 0.2s ease; color: var(--color-primary);">▼</span>
+            </summary>
+            <div style="margin-top: 14px; color: var(--color-text-secondary); line-height: 1.6; font-size: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; cursor: default;">
+                We support safe and instant online payment processors including **Momo**, **ZaloPay**, and major **Credit Cards** via our integrated payment gateway adapters.
+            </div>
+        </details>
+
+        <!-- FAQ 3 -->
+        <details class="glass-panel faq-item" style="padding: 20px 24px; cursor: pointer; border: 1px solid var(--border-glass); border-radius: var(--radius-md);">
+            <summary style="font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--color-text-primary);">
+                <span>⭐ How does the loyalty membership work?</span>
+                <span class="faq-arrow" style="transition: transform 0.2s ease; color: var(--color-primary);">▼</span>
+            </summary>
+            <div style="margin-top: 14px; color: var(--color-text-secondary); line-height: 1.6; font-size: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; cursor: default;">
+                Every booking earns you membership points! Points accumulate to level up your status tier from **Bronze** -> **Silver** -> **Gold** -> **Platinum**. Higher tiers enjoy discounted ticket rates and exclusive lounge/IMAX promotions.
+            </div>
+        </details>
+
+        <!-- FAQ 4 -->
+        <details class="glass-panel faq-item" style="padding: 20px 24px; cursor: pointer; border: 1px solid var(--border-glass); border-radius: var(--radius-md);">
+            <summary style="font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--color-text-primary);">
+                <span>🎬 What do the age rating badges stand for?</span>
+                <span class="faq-arrow" style="transition: transform 0.2s ease; color: var(--color-primary);">▼</span>
+            </summary>
+            <div style="margin-top: 14px; color: var(--color-text-secondary); line-height: 1.6; font-size: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; cursor: default;">
+                Our age rating labels represent standard film classification rules:
+                <ul style="margin-top: 10px; margin-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                    <li><strong style="color: var(--color-success);">P</strong>: General audience (Suitable for all ages).</li>
+                    <li><strong style="color: #f97316;">C13</strong>: Restrictive to viewers aged 13 or older.</li>
+                    <li><strong style="color: #a855f7;">C16</strong>: Restrictive to viewers aged 16 or older.</li>
+                    <li><strong style="color: var(--color-primary);">C18</strong>: Restrictive to viewers aged 18 or older.</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- FAQ 5 -->
+        <details class="glass-panel faq-item" style="padding: 20px 24px; cursor: pointer; border: 1px solid var(--border-glass); border-radius: var(--radius-md);">
+            <summary style="font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--color-text-primary);">
+                <span>🍿 Can I cancel or refund my ticket?</span>
+                <span class="faq-arrow" style="transition: transform 0.2s ease; color: var(--color-primary);">▼</span>
+            </summary>
+            <div style="margin-top: 14px; color: var(--color-text-secondary); line-height: 1.6; font-size: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; cursor: default;">
+                Yes! You can request a ticket cancellation up to **60 minutes** before showtime. Refunds are processed automatically back to your member wallet balance or original payment adapter.
+            </div>
+        </details>
+
+    </div>
+</div>
+
+<style>
+/* Custom details marker styling */
+details summary::-webkit-details-marker {
+    display: none;
+}
+details[open] .faq-arrow {
+    transform: rotate(180deg);
+}
+details:hover {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+</style>
+
+{% endblock %}

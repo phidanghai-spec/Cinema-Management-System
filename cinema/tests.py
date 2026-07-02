@@ -16,7 +16,8 @@ from django.urls import reverse
 
 from .models import (
     User, Movie, Theater, Screen, Seat,
-    Showtime, Booking, BookingItem, Payment, Discount, InAppNotification
+    Showtime, Booking, BookingItem, Payment, Discount, InAppNotification,
+    Watchlist, Favorite
 )
 from .patterns import (
     VIPSeatPriceDecorator, CoupleSeatPriceDecorator, SimpleSeat,
@@ -842,3 +843,33 @@ class APITests(BaseTestCase):
         """GET /offers/ loads active discounts successfully."""
         resp = self.client.get(reverse('offers'))
         self.assertEqual(resp.status_code, 200)
+
+    def test_watchlist_view_requires_login(self):
+        """GET /watchlist/ redirects anonymous users to login."""
+        resp = self.client.get(reverse('watchlist'))
+        self.assertEqual(resp.status_code, 302)
+
+    def test_watchlist_view_loads_for_user(self):
+        """GET /watchlist/ returns 200 and loads watchlisted items."""
+        self._login()
+        Watchlist.objects.create(user=self.user, movie=self.movie)
+        resp = self.client.get(reverse('watchlist'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, self.movie.title)
+
+    def test_faq_view_loads(self):
+        """GET /faq/ loads successfully."""
+        resp = self.client.get(reverse('faq'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_genre_movies_view_loads(self):
+        """GET /genre/<genre_slug>/ loads matching genre movies."""
+        resp = self.client.get(reverse('genre_movies', args=['sci-fi']))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, self.movie.title)
+
+    def test_theaters_view_loads(self):
+        """GET /theaters/ loads theater details."""
+        resp = self.client.get(reverse('theaters'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, self.theater.name)

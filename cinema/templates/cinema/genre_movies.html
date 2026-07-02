@@ -1,0 +1,59 @@
+{% extends 'cinema/base.html' %}
+{% block title %}{{ genre_name }} Movies | CineVerse{% endblock %}
+{% block content %}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;" class="animate-in">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 50px;">
+        <span class="badge badge-primary" style="font-size: 12px; margin-bottom: 12px; padding: 6px 14px;">GENRE EXPLORER</span>
+        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900; text-transform: capitalize;">✨ {{ genre_name }} Movies</h1>
+        <p style="color: var(--color-text-secondary); font-size: 16px; line-height: 1.6;">
+            Explore the best and newest {{ genre_name|lower }} releases currently screening at CineVerse.
+        </p>
+    </div>
+
+    <!-- Movie Grid -->
+    <div class="movie-grid">
+        {% for movie in movies %}
+            <a href="{% url 'movie_detail' movie.id %}" class="movie-card">
+                <div class="poster-wrapper">
+                    <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}"
+                         alt="{{ movie.title }}"
+                         loading="lazy"
+                         onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop';">
+                    <div class="card-overlay">
+                        <span class="btn btn-primary">Book Tickets 🎟️</span>
+                    </div>
+                    <div class="age-badge-overlay {{ movie.age_rating|lower }}" title="{{ movie.get_age_rating_display }}">
+                        {{ movie.age_rating }}
+                    </div>
+                    {% if movie.status == 'now_showing' %}
+                        <div class="movie-ribbon">NOW SHOWING</div>
+                    {% elif movie.status == 'coming_soon' %}
+                        <div class="coming-soon-badge">COMING SOON</div>
+                    {% endif %}
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title">{{ movie.title }}</h3>
+                    <div class="movie-meta">
+                        <span style="color: var(--color-text-muted); font-size: 13px;">{{ movie.genre|truncatechars:18 }}</span>
+                        <span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                        <span style="font-size: 12px; color: var(--color-text-muted);">⏳ {{ movie.duration }} mins</span>
+                        <span class="movie-format-badge">{{ movie.formats }}</span>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--color-text-muted);">
+                <div style="font-size: 60px; margin-bottom: 20px;">🎬</div>
+                <h3 style="margin-bottom: 10px; color: var(--color-text-secondary);">No Movies Found</h3>
+                <p>We don't have any movies under the "{{ genre_name }}" category right now. Check back soon!</p>
+                <a href="{% url 'index' %}" class="btn btn-secondary" style="margin-top: 20px;">Return Home</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

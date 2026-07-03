@@ -1,0 +1,181 @@
+{% extends 'cinema/base_core.html' %}
+{% load static %}
+
+{% block title %}CineVerse Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Scoped Admin Layout Styles */
+    body {
+        background-color: #0f1016; /* Clean dark-grey background for Admin */
+        color: #e2e8f0;
+    }
+    
+    .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 8%;
+        background: rgba(20, 21, 28, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+    }
+    
+    .admin-logo-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .admin-logo-compact {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        color: var(--color-primary, #e50914);
+        text-decoration: none;
+    }
+    
+    .admin-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--color-text-muted, #94a3b8);
+    }
+    
+    .admin-breadcrumb-separator {
+        color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .admin-user-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .admin-profile-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .admin-avatar {
+        width: 34px;
+        height: 34px;
+        background: linear-gradient(135deg, #f59e0b, #e50914);
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+    }
+    
+    .admin-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #f1f5f9;
+    }
+    
+    /* Grouped Sidebar Styles */
+    .admin-sidebar-group {
+        margin-bottom: 18px;
+    }
+    
+    .admin-sidebar-group-title {
+        font-size: 10px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        padding: 4px 12px 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        margin-bottom: 8px;
+    }
+    
+    .admin-sidebar {
+        padding: 20px 14px;
+        background: rgba(18, 18, 24, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    .admin-menu-link {
+        font-size: 13.5px !important;
+        padding: 10px 12px !important;
+        border-radius: 8px !important;
+        color: #94a3b8 !important;
+        margin-bottom: 2px;
+        transition: all 0.2s ease !important;
+    }
+    
+    .admin-menu-link:hover {
+        background: rgba(255, 255, 255, 0.04) !important;
+        color: #f1f5f9 !important;
+    }
+    
+    .admin-menu-link.active {
+        background: rgba(229, 9, 20, 0.15) !important;
+        color: #fff !important;
+        border-left: 3px solid var(--color-primary, #e50914) !important;
+        font-weight: 700 !important;
+    }
+</style>
+{% endblock %}
+
+{% block body_content %}
+    <!-- Admin Scoped Header -->
+    <header class="admin-header">
+        <div class="admin-logo-section">
+            <a href="{% url 'admin_dashboard' %}" class="admin-logo-compact">CINEVERSE ADMIN</a>
+            <span class="admin-breadcrumb-separator">|</span>
+            <div class="admin-breadcrumb">
+                <span>System</span>
+                <span class="admin-breadcrumb-separator">/</span>
+                {% block admin_breadcrumb %}
+                    <span>Overview</span>
+                {% endblock %}
+            </div>
+        </div>
+        
+        <div class="admin-user-section">
+            <div class="admin-profile-info">
+                <span class="admin-avatar">{{ user.name|first|upper|default:"A" }}</span>
+                <span class="admin-name">{{ user.name|default:"System Admin" }}</span>
+            </div>
+            <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px;">Đăng Xuất</a>
+        </div>
+    </header>
+
+    <!-- Admin Panel Workspace Grid -->
+    <div class="admin-container" style="margin-top: 24px;">
+        <!-- Grouped Sidebar Navigation -->
+        <aside class="glass-panel admin-sidebar">
+            <!-- Group 1: General -->
+            <div class="admin-sidebar-group">
+                <div class="admin-sidebar-group-title">Tổng quan</div>
+                <a href="{% url 'admin_dashboard' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">📊 Thống Kê Overview</a>
+            </div>
+            
+            <!-- Group 2: Content -->
+            <div class="admin-sidebar-group">
+                <div class="admin-sidebar-group-title">Nội dung</div>
+                <a href="{% url 'admin_movies' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_movies' %}active{% endif %}">🎬 Quản Lý Phim</a>
+                <a href="{% url 'admin_showtimes' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_showtimes' %}active{% endif %}">📅 Quản Lý Suất Chiếu</a>
+            </div>
+            
+            <!-- Group 3: Operations -->
+            <div class="admin-sidebar-group">
+                <div class="admin-sidebar-group-title">Người dùng & Giao dịch</div>
+                <a href="{% url 'admin_users' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">👥 Quản Lý Khách Hàng</a>
+            </div>
+        </aside>
+
+        <!-- Dynamic Admin Content Block -->
+        <div class="admin-workspace-body">
+            {% block admin_content %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}

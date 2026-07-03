@@ -1,61 +1,58 @@
-{% extends 'cinema/base.html' %}
+{% extends 'cinema/base_admin.html' %}
 {% block title %}Admin Dashboard | CineVerse{% endblock %}
-{% block content %}
 
-<div class="admin-container">
-    <!-- Sidebar -->
-    <div class="glass-panel admin-sidebar">
-        <div class="admin-sidebar-header">ADMIN PANEL</div>
-        <a href="{% url 'admin_dashboard' %}"  class="admin-menu-link active">📊 Overview</a>
-        <a href="{% url 'admin_movies' %}"      class="admin-menu-link">🎬 Movies</a>
-        <a href="{% url 'admin_showtimes' %}"   class="admin-menu-link">📅 Showtimes</a>
-        <a href="{% url 'admin_users' %}"       class="admin-menu-link">👥 Users</a>
-        <div style="margin-top: auto; padding: 12px; border-top: 1px solid var(--border-glass); font-size: 12px; color: var(--text-muted); margin-top: 20px;">
-            Logged in as <strong style="color: var(--primary);">{{ admin.name }}</strong>
-        </div>
+{% block admin_breadcrumb %}
+    <span>Overview</span>
+{% endblock %}
+
+{% block admin_content %}
+<div>
+    <div class="section-header" style="margin-bottom: 24px;">
+        <h2 class="grad-text" style="font-size: 26px;">📊 Dashboard Tổng Quan</h2>
+        <span style="color: var(--color-text-muted); font-size: 14px;">Báo cáo số liệu và nhật ký hoạt động hệ thống rạp</span>
     </div>
 
-    <!-- Main Content -->
-    <div>
-        <div class="section-header" style="margin-bottom: 24px;">
-            <h2 class="grad-text" style="font-size: 26px;">📊 Analytics Overview</h2>
-            <span style="color: var(--text-muted); font-size: 14px;">Real-time system metrics</span>
-        </div>
+    <!-- Switcher Tabs -->
+    <div class="overview-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+        <button class="tab-btn active" onclick="switchOverviewTab('metrics-tab', this)" style="background: none; border: none; color: #fff; padding: 10px 18px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; font-size: 14px;">📊 Số Liệu Hệ Thống</button>
+        <button class="tab-btn" onclick="switchOverviewTab('logs-tab', this)" style="background: none; border: none; color: var(--color-text-muted); padding: 10px 18px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; font-size: 14px;">🛠️ Nhật Ký Design Patterns</button>
+    </div>
 
+    <!-- Tab 1: Metrics & Analytics -->
+    <div id="metrics-tab" style="display: block;">
         <!-- KPI Metrics -->
         <div class="admin-metrics">
             <div class="glass-panel metric-card">
                 <div class="metric-icon">💰</div>
-                <div class="metric-label">Gross Revenue</div>
+                <div class="metric-label">Tổng Doanh Thu</div>
                 <div class="metric-num" style="color: var(--color-success);" data-countup="{{ total_revenue }}" data-suffix=" VND">0 VND</div>
-                <div class="metric-change up">↑ +12.4% this month</div>
+                <div class="metric-change up">↑ +12.4% tháng này</div>
             </div>
             <div class="glass-panel metric-card">
                 <div class="metric-icon">🎟️</div>
-                <div class="metric-label">Total Bookings</div>
+                <div class="metric-label">Tổng Đơn Đặt Vé</div>
                 <div class="metric-num" style="color: var(--color-secondary);" data-countup="{{ total_bookings }}">0</div>
-                <div class="metric-change up">↑ +8 today</div>
+                <div class="metric-change up">↑ +8 đơn hôm nay</div>
             </div>
             <div class="glass-panel metric-card">
                 <div class="metric-icon">👥</div>
-                <div class="metric-label">Active Accounts</div>
+                <div class="metric-label">Tài Khoản Hoạt Động</div>
                 <div class="metric-num" data-countup="{{ total_users }}">0</div>
-                <div class="metric-change up">↑ +3 this week</div>
+                <div class="metric-change up">↑ +3 tài khoản mới</div>
             </div>
             <div class="glass-panel metric-card">
                 <div class="metric-icon">📈</div>
-                <div class="metric-label">Seat Occupancy</div>
+                <div class="metric-label">Tỷ Lệ Lấp Đầy Ghế</div>
                 <div class="metric-num" style="color: var(--color-warning);" data-countup="{{ occupancy_rate }}" data-suffix="%" data-prefix="">0%</div>
-                <div class="metric-change up">↑ +2.1% vs last week</div>
+                <div class="metric-change up">↑ +2.1% tuần này</div>
             </div>
         </div>
 
-        <!-- Charts Row -->
+        <!-- Charts & Leaderboards Row -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 30px;">
-
             <!-- Revenue Chart -->
             <div class="glass-panel" style="padding: 24px;">
-                <h3 style="margin-bottom: 18px; font-size: 16px;">📈 Monthly Revenue (VND)</h3>
+                <h3 style="margin-bottom: 18px; font-size: 16px;">📊 Doanh Thu Theo Tháng (VND)</h3>
                 <div style="width: 100%; height: 200px; position: relative;">
                     <canvas id="revenue-chart-canvas"
                             data-labels='{{ monthly_labels }}'
@@ -65,7 +62,7 @@
 
             <!-- Top Movies Leaderboard -->
             <div class="glass-panel" style="padding: 24px;">
-                <h3 style="margin-bottom: 18px; font-size: 16px;">🏆 Top Films by Bookings</h3>
+                <h3 style="margin-bottom: 18px; font-size: 16px;">🏆 Bảng Xếp Hạng Phim Đắt Vé</h3>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     {% for item in top_movies_by_bookings %}
                         <div style="display: flex; align-items: center; gap: 12px;">
@@ -78,34 +75,35 @@
                                     {% endwith %}
                                 </div>
                             </div>
-                            <span class="badge badge-primary" style="font-size: 11px;">{{ item.booking_count }} bookings</span>
+                            <span class="badge badge-primary" style="font-size: 11px;">{{ item.booking_count }} vé</span>
                         </div>
                     {% empty %}
-                        <p style="color: var(--color-text-muted); font-size: 14px;">No booking data available yet.</p>
+                        <p style="color: var(--color-text-muted); font-size: 14px;">Chưa có dữ liệu đặt vé.</p>
                     {% endfor %}
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Bottom Row: QR Scanner + Pattern Logs + Upload -->
+    <!-- Tab 2: Pattern Logs & System Diagnostics -->
+    <div id="logs-tab" style="display: none;">
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 28px; margin-bottom: 30px;">
-
             <!-- QR Ticket Scanner -->
-            <div class="glass-panel" style="padding: 24px;">
-                <h3 style="margin-bottom: 10px; font-size: 16px;">📷 Entrance QR Scanner</h3>
-                <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px; line-height: 1.6;">Enter the QR code content from a customer's digital ticket to verify and mark as completed.</p>
+            <div class="glass-panel" style="padding: 24px; align-self: start;">
+                <h3 style="margin-bottom: 10px; font-size: 16px;">📷 Quét QR Soát Vé Lối Vào</h3>
+                <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px; line-height: 1.6;">Nhập chuỗi ký tự QR Code trên vé của khách hàng để thực hiện soát vé và cập nhật trạng thái đã dùng.</p>
                 <form id="ticket-verify-form" style="display: flex; flex-direction: column; gap: 10px;">
                     {% csrf_token %}
                     <input type="text" id="qr-scanner-input" class="form-input" placeholder="CINEMA-BOOKING-ID:1" style="padding: 9px 14px; font-size: 13px;">
-                    <button type="submit" class="btn btn-primary" style="padding: 10px; font-size: 14px;">✅ Verify Ticket</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 10px; font-size: 14px;">✅ Kiểm Tra & Soát Vé</button>
                 </form>
                 <div id="verify-result" style="display: none; margin-top: 14px;"></div>
             </div>
 
             <!-- Design Pattern Logs -->
             <div class="glass-panel" style="padding: 24px;">
-                <h3 style="margin-bottom: 16px; font-size: 16px;" class="cyan-text">🛠️ Design Pattern Execution Logs</h3>
-                <div style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto;">
+                <h3 style="margin-bottom: 16px; font-size: 16px;" class="cyan-text">🛠️ Nhật Ký Thực Thi Design Patterns</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
                     {% for log in pattern_logs %}
                         <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-left: 3px solid rgba(59,130,246,0.5); padding: 11px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 13px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -119,21 +117,49 @@
             </div>
         </div>
 
-        <!-- CSV Bulk Upload -->
+        <!-- CSV Bulk Import -->
         <div class="glass-panel" style="padding: 24px;">
-            <h3 style="margin-bottom: 8px; font-size: 16px;">📤 Bulk Movie Import (CSV)</h3>
-            <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">CSV format: <code style="background:rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 12px;">title, description, genre, duration, formats, poster_url, trailer_url, release_date, end_date, status</code></p>
+            <h3 style="margin-bottom: 8px; font-size: 16px;">📤 Nhập Dữ Liệu Phim Hàng Loạt (CSV)</h3>
+            <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">Cấu trúc file CSV: <code style="background:rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 12px;">title, description, genre, duration, formats, poster_url, trailer_url, release_date, end_date, status</code></p>
             <form id="csv-upload-form" style="display: flex; gap: 12px; align-items: flex-end;">
                 {% csrf_token %}
                 <div style="flex: 1;">
-                    <label class="form-label">CSV File</label>
+                    <label class="form-label">Tệp CSV</label>
                     <input type="file" id="csv-file-input" class="form-input" accept=".csv" required style="padding: 9px 14px;">
                 </div>
-                <button type="submit" class="btn btn-primary" style="padding: 11px 24px; white-space: nowrap;">Upload & Parse</button>
+                <button type="submit" class="btn btn-primary" style="padding: 11px 24px; white-space: nowrap;">Tải Lên & Parse Dữ Liệu</button>
                 <div id="upload-status" style="font-size: 13px; font-weight: 500; padding: 11px 0;"></div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- Tab Switcher Scripts -->
+<script>
+    function switchOverviewTab(tabId, btn) {
+        document.getElementById('metrics-tab').style.display = 'none';
+        document.getElementById('logs-tab').style.display = 'none';
+        
+        document.getElementById(tabId).style.display = 'block';
+        
+        const buttons = btn.parentElement.querySelectorAll('.tab-btn');
+        buttons.forEach(b => {
+            b.classList.remove('active');
+            b.style.color = 'var(--color-text-muted)';
+            b.style.background = 'none';
+        });
+        
+        btn.classList.add('active');
+        btn.style.color = '#fff';
+        btn.style.background = 'rgba(229, 9, 20, 0.2)';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const activeBtn = document.querySelector('.tab-btn.active');
+        if (activeBtn) {
+            activeBtn.style.color = '#fff';
+            activeBtn.style.background = 'rgba(229, 9, 20, 0.2)';
+        }
+    });
+</script>
 {% endblock %}

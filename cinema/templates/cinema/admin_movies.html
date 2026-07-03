@@ -1,165 +1,158 @@
-{% extends 'cinema/base.html' %}
-{% block title %}Manage Movies | CineVerse Admin{% endblock %}
-{% block content %}
+{% extends 'cinema/base_admin.html' %}
+{% block title %}Quản Lý Phim | CineVerse Admin{% endblock %}
 
-<div class="admin-container">
-    <!-- Sidebar -->
-    <div class="glass-panel admin-sidebar">
-        <div class="admin-sidebar-header">ADMIN PANEL</div>
-        <a href="{% url 'admin_dashboard' %}"  class="admin-menu-link">📊 Overview</a>
-        <a href="{% url 'admin_movies' %}"      class="admin-menu-link active">🎬 Movies</a>
-        <a href="{% url 'admin_showtimes' %}"   class="admin-menu-link">📅 Showtimes</a>
-        <a href="{% url 'admin_users' %}"       class="admin-menu-link">👥 Users</a>
+{% block admin_breadcrumb %}
+    <span>Movies</span>
+{% endblock %}
+
+{% block admin_content %}
+<div style="display: flex; flex-direction: column; gap: 28px;">
+
+    <!-- Add Movie Form -->
+    <div class="glass-panel" style="padding: 26px;">
+        <h3 class="grad-text" style="margin-bottom: 22px; font-size: 18px;">➕ Thêm Phim Mới</h3>
+        <form method="POST" action="{% url 'admin_movies' %}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <div>
+                <label class="form-label">Tên Phim (Tiếng Việt / Tiếng Anh)</label>
+                <input type="text" name="title" class="form-input" placeholder="Ví dụ: Inception" required>
+            </div>
+            <div>
+                <label class="form-label">Thể Loại(s)</label>
+                <input type="text" name="genre" class="form-input" placeholder="Ví dụ: Hành Động, Khoa Học Viễn Tưởng" required>
+            </div>
+            <div>
+                <label class="form-label">Thời Lượng (phút)</label>
+                <input type="number" name="duration" class="form-input" value="120" required>
+            </div>
+            <div>
+                <label class="form-label">Định Dạng Chiếu</label>
+                <input type="text" name="formats" class="form-input" value="2D, 3D" required>
+            </div>
+            <div>
+                <label class="form-label">Đường Dẫn Poster (Poster URL)</label>
+                <input type="url" name="poster_url" class="form-input" placeholder="https://...">
+            </div>
+            <div>
+                <label class="form-label">Đường Dẫn Trailer Embed</label>
+                <input type="url" name="trailer_url" class="form-input" placeholder="https://www.youtube.com/embed/...">
+            </div>
+            <div>
+                <label class="form-label">Ngày Khởi Chiếu</label>
+                <input type="date" name="release_date" class="form-input" required>
+            </div>
+            <div>
+                <label class="form-label">Ngày Kết Thúc</label>
+                <input type="date" name="end_date" class="form-input" required>
+            </div>
+            <div style="grid-column: 1 / -1;">
+                <label class="form-label">Mô Tả / Nội Dung Phim</label>
+                <textarea name="description" class="form-input" rows="3" placeholder="Tóm tắt nội dung phim..." required style="resize: vertical;"></textarea>
+            </div>
+            <div>
+                <label class="form-label">Phân Loại Độ Tuổi (Age Rating)</label>
+                <select name="age_rating" class="form-input" required>
+                    <option value="P">P - Mọi lứa tuổi</option>
+                    <option value="K">K - Dưới 13 tuổi cần người giám hộ</option>
+                    <option value="C13">C13 - 13 tuổi trở lên</option>
+                    <option value="C16">C16 - 16 tuổi trở lên</option>
+                    <option value="C18">C18 - 18 tuổi trở lên</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Đạo Diễn</label>
+                <input type="text" name="director" class="form-input" placeholder="Ví dụ: Christopher Nolan">
+            </div>
+            <div style="grid-column: 1 / -1;">
+                <label class="form-label">Dàn Diễn Viên</label>
+                <input type="text" name="cast" class="form-input" placeholder="Ví dụ: Leonardo DiCaprio, Joseph Gordon-Levitt">
+            </div>
+            <div>
+                <label class="form-label">Trạng Thái</label>
+                <select name="status" class="form-input" required>
+                    <option value="now_showing">Đang Chiếu</option>
+                    <option value="coming_soon">Sắp Chiếu</option>
+                    <option value="draft">Bản Nháp (Draft)</option>
+                    <option value="inactive">Ngừng Chiếu (Inactive)</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Điểm Đánh Giá Mặc Định (Rating)</label>
+                <input type="number" step="0.1" min="1.0" max="10.0" name="rating" class="form-input" value="8.0" required>
+            </div>
+            <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button type="submit" class="btn btn-primary" style="padding: 12px 30px;">➕ Thêm Mới Phim</button>
+            </div>
+        </form>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 28px;">
-
-        <!-- Add Movie Form -->
-        <div class="glass-panel" style="padding: 26px;">
-            <h3 class="grad-text" style="margin-bottom: 22px; font-size: 18px;">➕ Add New Movie</h3>
-            <form method="POST" action="{% url 'admin_movies' %}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="create">
-                <div>
-                    <label class="form-label">Movie Title</label>
-                    <input type="text" name="title" class="form-input" placeholder="e.g. Inception" required>
-                </div>
-                <div>
-                    <label class="form-label">Genre(s)</label>
-                    <input type="text" name="genre" class="form-input" placeholder="Action, Sci-Fi" required>
-                </div>
-                <div>
-                    <label class="form-label">Duration (minutes)</label>
-                    <input type="number" name="duration" class="form-input" value="120" required>
-                </div>
-                <div>
-                    <label class="form-label">Formats</label>
-                    <input type="text" name="formats" class="form-input" value="2D, 3D" required>
-                </div>
-                <div>
-                    <label class="form-label">Poster URL</label>
-                    <input type="url" name="poster_url" class="form-input" placeholder="https://...">
-                </div>
-                <div>
-                    <label class="form-label">Trailer Embed URL</label>
-                    <input type="url" name="trailer_url" class="form-input" placeholder="https://www.youtube.com/embed/...">
-                </div>
-                <div>
-                    <label class="form-label">Release Date</label>
-                    <input type="date" name="release_date" class="form-input" required>
-                </div>
-                <div>
-                    <label class="form-label">End Date</label>
-                    <input type="date" name="end_date" class="form-input" required>
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-input" rows="3" placeholder="Movie synopsis..." required style="resize: vertical;"></textarea>
-                </div>
-                <div>
-                    <label class="form-label">Age Rating</label>
-                    <select name="age_rating" class="form-input" style="background: var(--color-bg-primary);">
-                        <option value="P">P - General (Mọi đối tượng)</option>
-                        <option value="C13">C13 - 13+ (Từ 13 tuổi trở lên)</option>
-                        <option value="C16">C16 - 16+ (Từ 16 tuổi trở lên)</option>
-                        <option value="C18">C18 - 18+ (Từ 18 tuổi trở lên)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label">Director</label>
-                    <input type="text" name="director" class="form-input" placeholder="e.g. Christopher Nolan" required>
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <label class="form-label">Cast (Diễn viên chính)</label>
-                    <input type="text" name="cast" class="form-input" placeholder="e.g. Leonardo DiCaprio, Joseph Gordon-Levitt" required>
-                </div>
-                <div>
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-input" style="background: var(--color-bg-primary);">
-                        <option value="draft">Draft</option>
-                        <option value="now_showing">Now Showing</option>
-                        <option value="coming_soon">Coming Soon</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
-                <div style="display: flex; align-items: flex-end;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">✅ Save Movie</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Movie Catalog Table -->
-        <div class="glass-panel" style="padding: 26px; overflow-x: auto;">
-            <div class="section-header">
-                <h3 class="grad-text" style="font-size: 18px;">🎬 Movie Catalog ({{ movies|length }} films)</h3>
-                <a href="{% url 'index' %}" target="_blank" class="btn btn-secondary btn-sm">View Site →</a>
-            </div>
-
-            <table class="admin-table">
-                <thead>
+    <!-- Movies Catalog List -->
+    <div class="glass-panel" style="padding: 26px;">
+        <h3 style="margin-bottom: 20px; font-size: 18px;">🎬 Danh Mục Phim Đang Quản Lý</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Tên Phim</th>
+                    <th>Thể Loại</th>
+                    <th>Thời Lượng</th>
+                    <th>Định Dạng</th>
+                    <th>Ngày Khởi Chiếu</th>
+                    <th>Đánh Giá</th>
+                    <th>Trạng Thái</th>
+                    <th style="width: 100px;">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movie in movies %}
                     <tr>
-                        <th style="width: 40px;">#</th>
-                        <th>Title</th>
-                        <th>Genre</th>
-                        <th>Duration</th>
-                        <th>Formats</th>
-                        <th>Release</th>
-                        <th>Rating</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <td style="color: var(--color-text-muted);">{{ forloop.counter }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                {% if movie.poster_url %}
+                                    <img src="{{ movie.poster_url }}" style="width: 34px; height: 50px; object-fit: cover; border-radius: 4px; flex-shrink: 0;" loading="lazy"
+                                         onerror="this.style.display='none'">
+                                {% endif %}
+                                <div>
+                                    <strong>{{ movie.title }}</strong>
+                                    <span class="badge badge-muted" style="font-size: 10px; margin-left: 4px; vertical-align: middle;">{{ movie.age_rating }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color: var(--color-text-muted);">{{ movie.genre|truncatechars:20 }}</td>
+                        <td>{{ movie.duration }}m</td>
+                        <td><span class="movie-format-badge">{{ movie.formats }}</span></td>
+                        <td style="color: var(--color-text-muted);">{{ movie.release_date|date:"M d, Y" }}</td>
+                        <td><span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span></td>
+                        <td>
+                            <span class="badge
+                                {% if movie.status == 'now_showing' %}badge-success
+                                {% elif movie.status == 'coming_soon' %}badge-cyan
+                                {% elif movie.status == 'draft' %}badge-gold
+                                {% else %}badge-muted{% endif %}" style="font-size: 11px;">
+                                {{ movie.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <a href="{% url 'movie_detail' movie.id %}" target="_blank" class="btn btn-secondary btn-sm" title="View">👁️</a>
+                                <form method="POST" action="{% url 'admin_movies' %}" style="display: inline;" onsubmit="return confirm('Xóa phim {{ movie.title }}?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.3);">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for movie in movies %}
-                        <tr>
-                            <td style="color: var(--color-text-muted);">{{ forloop.counter }}</td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    {% if movie.poster_url %}
-                                        <img src="{{ movie.poster_url }}" style="width: 34px; height: 50px; object-fit: cover; border-radius: 4px; flex-shrink: 0;" loading="lazy"
-                                             onerror="this.style.display='none'">
-                                    {% endif %}
-                                    <div>
-                                        <strong>{{ movie.title }}</strong>
-                                        <span class="badge badge-muted" style="font-size: 10px; margin-left: 4px; vertical-align: middle;">{{ movie.age_rating }}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td style="color: var(--color-text-muted);">{{ movie.genre|truncatechars:20 }}</td>
-                            <td>{{ movie.duration }}m</td>
-                            <td><span class="movie-format-badge">{{ movie.formats }}</span></td>
-                            <td style="color: var(--color-text-muted);">{{ movie.release_date|date:"M d, Y" }}</td>
-                            <td><span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span></td>
-                            <td>
-                                <span class="badge
-                                    {% if movie.status == 'now_showing' %}badge-success
-                                    {% elif movie.status == 'coming_soon' %}badge-cyan
-                                    {% elif movie.status == 'draft' %}badge-gold
-                                    {% else %}badge-muted{% endif %}" style="font-size: 11px;">
-                                    {{ movie.get_status_display }}
-                                </span>
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <a href="{% url 'movie_detail' movie.id %}" target="_blank" class="btn btn-secondary btn-sm" title="View">👁️</a>
-                                    <form method="POST" action="{% url 'admin_movies' %}" style="display: inline;" onsubmit="return confirm('Delete {{ movie.title }}?');">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
-                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.3);">🗑️</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="9" style="text-align: center; color: var(--color-text-muted); padding: 40px;">No movies in catalog yet.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: var(--color-text-muted); padding: 40px;">Chưa có phim nào trong danh mục.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-
 {% endblock %}

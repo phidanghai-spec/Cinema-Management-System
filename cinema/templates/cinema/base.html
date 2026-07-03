@@ -1,15 +1,9 @@
+{% extends 'cinema/base_core.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CineVerse – Premium cinema ticket booking experience. Book VIP, IMAX, and Couple seats online.">
-    <title>{% block title %}CineVerse | Premium Cinema Experience{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="{% static 'cinema/css/style.css' %}">
-</head>
-<body>
+
+{% block title %}{% block parent_title %}CineVerse | Premium Cinema Experience{% endblock %}{% endblock %}
+
+{% block body_content %}
     <!-- Premium Navigation Bar -->
     <nav class="navbar" id="main-navbar">
         <a href="{% url 'index' %}" class="nav-logo">
@@ -79,11 +73,4 @@
             <p style="margin-top: 4px; font-size: 12px;">12 Mẫu Thiết Kế · 15 Bảng CSDL · Framework Django</p>
         </div>
     </footer>
-
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
-
-    <!-- JavaScript -->
-    <script src="{% static 'cinema/js/main.js' %}"></script>
-</body>
-</html>
+{% endblock %}

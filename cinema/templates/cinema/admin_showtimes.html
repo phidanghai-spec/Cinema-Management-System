@@ -1,119 +1,110 @@
-{% extends 'cinema/base.html' %}
-{% block title %}Manage Showtimes | CineVerse{% endblock %}
-{% block content %}
+{% extends 'cinema/base_admin.html' %}
+{% block title %}Quản Lý Suất Chiếu | CineVerse Admin{% endblock %}
 
-<div class="admin-container">
-    <!-- Sidebar Menu -->
-    <div class="glass-panel admin-sidebar">
-        <div class="admin-sidebar-header">ADMIN PANEL</div>
-        <a href="{% url 'admin_dashboard' %}"  class="admin-menu-link">📊 Overview</a>
-        <a href="{% url 'admin_movies' %}"      class="admin-menu-link">🎬 Movies</a>
-        <a href="{% url 'admin_showtimes' %}"   class="admin-menu-link active">📅 Showtimes</a>
-        <a href="{% url 'admin_users' %}"       class="admin-menu-link">👥 Users</a>
-    </div>
+{% block admin_breadcrumb %}
+    <span>Showtimes</span>
+{% endblock %}
 
-    <!-- Main Content Panel -->
-    <div style="display: flex; flex-direction: column; gap: 30px;">
+{% block admin_content %}
+<div style="display: flex; flex-direction: column; gap: 30px;">
+    
+    <!-- Add Showtime Form -->
+    <div class="glass-panel" style="padding: 25px;">
+        <h3 style="margin-bottom: 20px;" class="grad-text">📅 Thiết Lập Lịch Chiếu Phim</h3>
         
-        <!-- Add Showtime Form -->
-        <div class="glass-panel" style="padding: 25px;">
-            <h3 style="margin-bottom: 20px;" class="grad-text">📅 Schedule Movie Showtime</h3>
-            
-            {% if error %}
-                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--color-error); color: var(--color-error); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
-                    ⚠️ {{ error }}
-                </div>
-            {% endif %}
+        {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--color-error); color: var(--color-error); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+                ⚠️ {{ error }}
+            </div>
+        {% endif %}
 
-            <form method="POST" action="{% url 'admin_showtimes' %}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="create">
-                <div>
-                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Movie</label>
-                    <select name="movie_id" class="form-input" style="background: var(--color-bg-primary);" required>
-                        {% for m in movies %}
-                            <option value="{{ m.id }}">{{ m.title }} ({{ m.formats }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Screen & Location</label>
-                    <select name="screen_id" class="form-input" style="background: var(--color-bg-primary);" required>
-                        {% for s in screens %}
-                            <option value="{{ s.id }}">{{ s.theater.name }} - {{ s.name }} ({{ s.format }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Start Date & Time</label>
-                    <input type="datetime-local" name="start_time" class="form-input" required>
-                </div>
-                <div>
-                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">End Date & Time</label>
-                    <input type="datetime-local" name="end_time" class="form-input" required>
-                </div>
-                <div>
-                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Language</label>
-                    <input type="text" name="language" class="form-input" value="Vietnamese" required>
-                </div>
-                <div>
-                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Subtitles</label>
-                    <input type="text" name="subtitle" class="form-input" value="English" required>
-                </div>
-                <div>
-                    <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Price Multiplier (Holiday/Weekend surcharges)</label>
-                    <input type="number" name="multiplier" step="0.1" class="form-input" value="1.0" required>
-                </div>
-                <div style="display: flex; align-items: flex-end; justify-content: flex-end;">
-                    <button type="submit" class="btn btn-primary" style="padding: 10px 30px;">Add Showtime</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Showtime Grid Table -->
-        <div class="glass-panel" style="padding: 30px; overflow-x: auto;">
-            <h3 class="grad-text">📅 Active Showtime Schedule</h3>
-            
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Movie</th>
-                        <th>Theater & Screen</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Multiplier</th>
-                        <th>Subtitle</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for st in showtimes %}
-                        <tr>
-                            <td><strong>{{ st.movie.title }}</strong></td>
-                            <td>{{ st.screen.theater.name }} - {{ st.screen.name }}</td>
-                            <td>{{ st.start_time|date:"Y-m-d H:i" }}</td>
-                            <td>{{ st.end_time|date:"Y-m-d H:i" }}</td>
-                            <td>{{ st.price_multiplier }}x</td>
-                            <td>{{ st.subtitle }}</td>
-                            <td>
-                                <form method="POST" action="{% url 'admin_showtimes' %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="showtime_id" value="{{ st.id }}">
-                                    <button type="submit" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; color: var(--color-error); border-color: rgba(239,68,68,0.2);">Cancel</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="7" style="text-align: center; color: var(--color-text-muted);">No showtimes scheduled.</td>
-                        </tr>
+        <form method="POST" action="{% url 'admin_showtimes' %}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Phim</label>
+                <select name="movie_id" class="form-input" style="background: var(--color-bg-primary);" required>
+                    {% for m in movies %}
+                        <option value="{{ m.id }}">{{ m.title }} ({{ m.formats }})</option>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Phòng Chiếu & Rạp</label>
+                <select name="screen_id" class="form-input" style="background: var(--color-bg-primary);" required>
+                    {% for s in screens %}
+                        <option value="{{ s.id }}">{{ s.theater.name }} - {{ s.name }} ({{ s.format }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Thời Gian Bắt Đầu</label>
+                <input type="datetime-local" name="start_time" class="form-input" required>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Thời Gian Kết Thúc</label>
+                <input type="datetime-local" name="end_time" class="form-input" required>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Ngôn Ngữ</label>
+                <input type="text" name="language" class="form-input" value="Vietnamese" required>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Phụ Đề</label>
+                <input type="text" name="subtitle" class="form-input" value="English" required>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">Hệ Số Giá (Weekend / Holiday surcharges)</label>
+                <input type="number" name="multiplier" step="0.1" class="form-input" value="1.0" required>
+            </div>
+            <div style="display: flex; align-items: flex-end; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" style="padding: 10px 30px;">📅 Thêm Suất Chiếu</button>
+            </div>
+        </form>
     </div>
-</div>
 
+    <!-- Showtime Grid Table -->
+    <div class="glass-panel" style="padding: 30px; overflow-x: auto; background: rgba(22, 23, 30, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important;">
+        <h3 class="grad-text" style="margin-bottom: 20px;">📅 Danh Sách Suất Chiếu Hoạt Động</h3>
+        
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Phim</th>
+                    <th>Rạp & Phòng</th>
+                    <th>Thời Gian Chiếu</th>
+                    <th>Thời Gian Kết Thúc</th>
+                    <th>Hệ Số Giá</th>
+                    <th>Phụ Đề</th>
+                    <th>Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for st in showtimes %}
+                    <tr>
+                        <td><strong>{{ st.movie.title }}</strong></td>
+                        <td>{{ st.screen.theater.name }} - {{ st.screen.name }}</td>
+                        <td>{{ st.start_time|date:"Y-m-d H:i" }}</td>
+                        <td>{{ st.end_time|date:"Y-m-d H:i" }}</td>
+                        <td>{{ st.price_multiplier }}x</td>
+                        <td>{{ st.subtitle }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'admin_showtimes' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="showtime_id" value="{{ st.id }}">
+                                <button type="submit" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; color: var(--color-error); border-color: rgba(239,68,68,0.2);">Hủy Lịch</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--color-text-muted);">Không có suất chiếu nào được lên lịch.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
 {% endblock %}

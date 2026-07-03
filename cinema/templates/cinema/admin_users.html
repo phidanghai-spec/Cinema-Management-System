@@ -1,76 +1,68 @@
-{% extends 'cinema/base.html' %}
-{% block title %}Manage Users | CineVerse{% endblock %}
-{% block content %}
+{% extends 'cinema/base_admin.html' %}
+{% block title %}Quản Lý Khách Hàng | CineVerse Admin{% endblock %}
 
-<div class="admin-container">
-    <!-- Sidebar Menu -->
-    <div class="glass-panel admin-sidebar">
-        <div class="admin-sidebar-header">ADMIN PANEL</div>
-        <a href="{% url 'admin_dashboard' %}"  class="admin-menu-link">📊 Overview</a>
-        <a href="{% url 'admin_movies' %}"      class="admin-menu-link">🎬 Movies</a>
-        <a href="{% url 'admin_showtimes' %}"   class="admin-menu-link">📅 Showtimes</a>
-        <a href="{% url 'admin_users' %}"       class="admin-menu-link active">👥 Users</a>
-    </div>
+{% block admin_breadcrumb %}
+    <span>Users</span>
+{% endblock %}
 
-    <!-- Main Content Panel -->
-    <div class="glass-panel" style="padding: 30px; overflow-x: auto;">
-        <h3 class="grad-text" style="margin-bottom: 20px;">👥 Registered Customer Accounts</h3>
-        
-        <table class="admin-table">
-            <thead>
+{% block admin_content %}
+<!-- Main Content Panel -->
+<div class="glass-panel" style="padding: 30px; overflow-x: auto; background: rgba(22, 23, 30, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important;">
+    <h3 class="grad-text" style="margin-bottom: 20px;">👥 Danh Sách Tài Khoản Khách Hàng</h3>
+    
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Họ Tên</th>
+                <th>Địa Chỉ Email</th>
+                <th>Số Điện Thoại</th>
+                <th>Điểm Tích Lũy</th>
+                <th>Hạng Thành Viên</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
                 <tr>
-                    <th>Name</th>
-                    <th>Email Address</th>
-                    <th>Phone</th>
-                    <th>XP Points</th>
-                    <th>Tier</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <td><strong>{{ u.name }}</strong></td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.phone|default:"N/A" }}</td>
+                    <td style="color: var(--color-warning);">{{ u.points }} XP</td>
+                    <td><span style="font-weight: 500;">{{ u.tier }}</span></td>
+                    <td>
+                        <span class="user-badge" style="
+                            {% if u.status == 'active' %}background:rgba(16,185,129,0.15); border-color:var(--color-success); color:var(--color-success);
+                            {% elif u.status == 'banned' %}background:rgba(239,68,68,0.15); border-color:var(--color-error); color:var(--color-error);
+                            {% else %}background:rgba(245,158,11,0.15); border-color:var(--color-warning); color:var(--color-warning);{% endif %}
+                        ">
+                            {{ u.status|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if u.email != 'admin@cinema.com' %}
+                            <form method="POST" action="{% url 'admin_users' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                {% if u.status == 'active' %}
+                                    <input type="hidden" name="action" value="ban">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.2);">Khóa Tài Khoản</button>
+                                {% else %}
+                                    <input type="hidden" name="action" value="unban">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-success); border-color: rgba(16,185,129,0.2);">Mở Khóa</button>
+                                {% endif %}
+                            </form>
+                        {% else %}
+                            <span style="font-size: 12px; color: var(--color-text-muted);">Root Admin</span>
+                        {% endif %}
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for u in users %}
-                    <tr>
-                        <td><strong>{{ u.name }}</strong></td>
-                        <td>{{ u.email }}</td>
-                        <td>{{ u.phone|default:"N/A" }}</td>
-                        <td style="color: var(--color-warning);">{{ u.points }}</td>
-                        <td><span style="font-weight: 500;">{{ u.tier }}</span></td>
-                        <td>
-                            <span class="user-badge" style="
-                                {% if u.status == 'active' %}background:rgba(16,185,129,0.15); border-color:var(--color-success); color:var(--color-success);
-                                {% elif u.status == 'banned' %}background:rgba(239,68,68,0.15); border-color:var(--color-error); color:var(--color-error);
-                                {% else %}background:rgba(245,158,11,0.15); border-color:var(--color-warning); color:var(--color-warning);{% endif %}
-                            ">
-                                {{ u.status|upper }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if u.email != 'admin@cinema.com' %}
-                                <form method="POST" action="{% url 'admin_users' %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="user_id" value="{{ u.id }}">
-                                    {% if u.status == 'active' %}
-                                        <input type="hidden" name="action" value="ban">
-                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.2);">Ban Account</button>
-                                    {% else %}
-                                        <input type="hidden" name="action" value="unban">
-                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-success); border-color: rgba(16,185,129,0.2);">Restore Active</button>
-                                    {% endif %}
-                                </form>
-                            {% else %}
-                                <span style="font-size: 12px; color: var(--color-text-muted);">Root Admin</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: var(--color-text-muted);">No users registered yet.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--color-text-muted);">Chưa có người dùng đăng ký.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
 {% endblock %}

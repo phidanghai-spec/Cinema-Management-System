@@ -181,6 +181,15 @@ def index_view(request):
     spotlight_movies = list(Movie.objects.filter(status='now_showing').order_by('-rating')[:3])
     coming_soon_movies = list(Movie.objects.filter(status='coming_soon').order_by('release_date')[:4])
     
+    # Fetch 3-4 closest upcoming showtimes today (personalized dynamic content)
+    now = timezone.now()
+    today_end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+    upcoming_showtimes = list(Showtime.objects.filter(
+        start_time__gte=now,
+        start_time__lte=today_end,
+        movie__status='now_showing'
+    ).select_related('movie', 'screen__theater').order_by('start_time')[:4])
+    
     context = {
         'user': user,
         'movies': movies,
@@ -193,6 +202,7 @@ def index_view(request):
         'search_query': search,
         'spotlight_movies': spotlight_movies,
         'coming_soon_movies': coming_soon_movies,
+        'upcoming_showtimes': upcoming_showtimes,
     }
     return render(request, 'cinema/movie_list.html', context)
 

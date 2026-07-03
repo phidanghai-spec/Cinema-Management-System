@@ -15,8 +15,10 @@ from .views import get_session_user
 def admin_required_view(func):
     def wrapper(request, *args, **kwargs):
         user = get_session_user(request)
-        if not user or user.email != 'admin@cinema.com':
+        if not user:
             return redirect('login')
+        if user.email != 'admin@cinema.com':
+            return redirect('index')
         return func(request, user, *args, **kwargs)
     return wrapper
 

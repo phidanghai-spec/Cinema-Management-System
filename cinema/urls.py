@@ -19,14 +19,21 @@ urlpatterns = [
     path('booking/showtime/<int:showtime_id>/', views.booking_flow_view, name='booking_flow'),
     path('booking/ticket/<int:booking_id>/', views.booking_ticket_view, name='booking_ticket'),
     path('profile/', views.profile_view, name='profile'),
+    path('payment/mock-momo-gateway/', views.mock_momo_gateway_view, name='mock_momo_gateway'),
+    path('payment/mock-momo-submit/', views.mock_momo_submit_view, name='mock_momo_submit'),
+    path('payment/momo-callback/', views.momo_callback_view, name='momo_callback'),
+    path('payment/momo-ipn/', views.momo_ipn_view, name='momo_ipn'),
 
     # Async APIs
     path('api/booking/create/', views.create_booking_api, name='api_create_booking'),
     path('api/booking/cancel/<int:booking_id>/', views.cancel_booking_api, name='api_cancel_booking'),
     path('api/discount/validate/', views.validate_discount_api, name='api_validate_discount'),
+    path('api/discount/suggest/', views.suggest_discount_api, name='api_suggest_discount'),
     path('api/favorite/toggle/', views.toggle_favorite_api, name='api_toggle_favorite'),
     path('api/watchlist/toggle/', views.toggle_watchlist_api, name='api_toggle_watchlist'),
     path('api/notifications/read/', views.mark_notifications_read_api, name='api_mark_notifications_read'),
+    path('api/review/<int:review_id>/helpful/', views.toggle_review_helpful_api, name='api_toggle_review_helpful'),
+    path('api/review/<int:review_id>/reply/', views.submit_review_reply_api, name='api_submit_review_reply'),
 
     # Admin routes
     path('admin-dashboard/', views_admin.dashboard_view, name='admin_dashboard'),

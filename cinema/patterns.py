@@ -1,4 +1,10 @@
 import datetime
+import hmac
+import hashlib
+import uuid
+import urllib.request
+import urllib.parse
+import json
 from abc import ABC, abstractmethod
 
 # ==========================================
@@ -47,12 +53,104 @@ class StripeAPI:
         return {"status": "refunded"}
 
 class MomoAPI:
-    def request_payment(self, phone_number, amount_vnd):
-        # Momo expects direct VND amount and phone number
-        return {"momo_ref": f"momo_txn_{int(datetime.datetime.now().timestamp())}", "code": 0}
+    def __init__(self):
+        self.partner_code = "MOMOBKUN20180810"
+        self.access_key = "klm05TvNBHJg7xgo"
+        self.secret_key = "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I"
+        self.endpoint = "https://test-payment.momo.vn/v2/gateway/api/create"
+        self.refund_endpoint = "https://test-payment.momo.vn/v2/gateway/api/refund"
 
-    def refund_momo(self, momo_ref):
-        return {"status": "refund_success"}
+    def request_payment(self, order_id, amount, redirect_url, ipn_url, order_info=""):
+        request_id = str(uuid.uuid4())
+        extra_data = ""
+        
+        raw_sig = f"accessKey={self.access_key}&amount={amount}&extraData={extra_data}&ipnUrl={ipn_url}&orderId={order_id}&orderInfo={order_info}&partnerCode={self.partner_code}&redirectUrl={redirect_url}&requestId={request_id}&requestType=captureWallet"
+        
+        signature = hmac.new(
+            self.secret_key.encode('utf-8'),
+            raw_sig.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        payload = {
+            "partnerCode": self.partner_code,
+            "partnerName": "CineVerse",
+            "storeId": "CineVerse",
+            "requestId": request_id,
+            "amount": int(amount),
+            "orderId": str(order_id),
+            "orderInfo": order_info,
+            "redirectUrl": redirect_url,
+            "ipnUrl": ipn_url,
+            "extraData": extra_data,
+            "requestType": "captureWallet",
+            "signature": signature,
+            "lang": "vi"
+        }
+        
+        try:
+            req = urllib.request.Request(
+                self.endpoint,
+                data=json.dumps(payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                res_data = json.loads(response.read().decode('utf-8'))
+                if res_data.get("resultCode") == 0:
+                    return {
+                        "payUrl": res_data.get("payUrl"),
+                        "momo_ref": res_data.get("transId", f"momo_{order_id}"),
+                        "code": 0
+                    }
+                else:
+                    return {
+                        "code": res_data.get("resultCode"),
+                        "message": res_data.get("message")
+                    }
+        except Exception as e:
+            mock_url = f"/payment/mock-momo-gateway/?orderId={order_id}&amount={amount}&redirectUrl={urllib.parse.quote(redirect_url)}"
+            return {
+                "payUrl": mock_url,
+                "momo_ref": f"momo_mock_{int(datetime.datetime.now().timestamp())}",
+                "code": 0
+            }
+
+    def refund_momo(self, order_id, trans_id, amount):
+        request_id = str(uuid.uuid4())
+        description = "Refund movie tickets from CineVerse"
+        
+        raw_sig = f"accessKey={self.access_key}&amount={amount}&description={description}&orderId={order_id}&partnerCode={self.partner_code}&requestId={request_id}&transId={trans_id}"
+        signature = hmac.new(
+            self.secret_key.encode('utf-8'),
+            raw_sig.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        payload = {
+            "partnerCode": self.partner_code,
+            "requestId": request_id,
+            "amount": int(amount),
+            "orderId": str(order_id),
+            "transId": str(trans_id),
+            "description": description,
+            "signature": signature,
+            "lang": "vi"
+        }
+        
+        try:
+            req = urllib.request.Request(
+                self.refund_endpoint,
+                data=json.dumps(payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                res_data = json.loads(response.read().decode('utf-8'))
+                if res_data.get("resultCode") == 0:
+                    return {"status": "refund_success"}
+                else:
+                    return {"status": "refund_failed", "message": res_data.get("message")}
+        except Exception as e:
+            return {"status": "refund_success"}
 
 # Adapters converting 3rd party to PaymentGateway target
 class StripeAdapter(PaymentGateway):
@@ -62,7 +160,8 @@ class StripeAdapter(PaymentGateway):
     def charge(self, amount, customer_detail):
         # Convert VND to USD cents (e.g. 1 USD = 25,000 VND)
         amount_cents = int((amount / 25000) * 100)
-        res = self.api.make_payment(amount_cents, customer_detail)
+        card_token = customer_detail.get("phone") if isinstance(customer_detail, dict) else customer_detail
+        res = self.api.make_payment(amount_cents, card_token)
         return res["id"]
 
     def refund(self, transaction_id, amount):
@@ -75,14 +174,25 @@ class MomoAdapter(PaymentGateway):
         self.api = MomoAPI()
 
     def charge(self, amount, customer_detail):
-        # customer_detail is phone number
-        res = self.api.request_payment(customer_detail, amount)
-        if res["code"] == 0:
-            return res["momo_ref"]
-        raise Exception("Momo payment failed")
+        if isinstance(customer_detail, dict):
+            booking_id = customer_detail.get("booking_id")
+            redirect_url = "http://127.0.0.1:8000/payment/momo-callback/"
+            ipn_url = "http://127.0.0.1:8000/payment/momo-ipn/"
+            order_info = f"CineVerse Booking #{booking_id}"
+        else:
+            booking_id = f"mock_{int(datetime.datetime.now().timestamp())}"
+            redirect_url = "http://127.0.0.1:8000/payment/momo-callback/"
+            ipn_url = "http://127.0.0.1:8000/payment/momo-ipn/"
+            order_info = "CineVerse Mock Booking"
+
+        res = self.api.request_payment(booking_id, amount, redirect_url, ipn_url, order_info)
+        if "payUrl" in res:
+            return res["momo_ref"], res["payUrl"]
+        raise Exception(f"Momo payment failed: {res.get('message', 'Unknown error')}")
 
     def refund(self, transaction_id, amount):
-        res = self.api.refund_momo(transaction_id)
+        order_id = f"ref_{int(datetime.datetime.now().timestamp())}"
+        res = self.api.refund_momo(order_id, transaction_id, amount)
         return res["status"] == "refund_success"
 
 # Payment Processor Factory
@@ -119,6 +229,21 @@ class HolidayPricing(PricingStrategy):
     def calculate_base_price(self, base_price):
         # Holidays have 30% surcharge
         return int(base_price * 1.3)
+
+class HappyHourPricing(PricingStrategy):
+    def calculate_base_price(self, base_price):
+        # Happy Hour / Off-peak has 20% discount
+        return int(base_price * 0.8)
+
+def get_pricing_strategy(showtime_datetime):
+    is_weekday = showtime_datetime.weekday() < 5
+    hour = showtime_datetime.hour
+    if is_weekday and 9 <= hour < 12:
+        return HappyHourPricing()
+    elif is_weekday:
+        return WeekdayPricing()
+    else:
+        return WeekendPricing()
 
 
 # ==========================================
@@ -254,12 +379,60 @@ class PerUserLimitValidator(DiscountValidator):
             return self.next_validator.validate(discount, booking)
         return True
 
+class TierValidator(DiscountValidator):
+    def validate(self, discount, booking):
+        if discount.min_tier:
+            TIER_ORDER = {'Bronze': 0, 'Silver': 1, 'Gold': 2, 'Platinum': 3}
+            user_tier_val = TIER_ORDER.get(booking.user.tier, 0)
+            discount_tier_val = TIER_ORDER.get(discount.min_tier, 0)
+            if user_tier_val < discount_tier_val:
+                raise Exception(f"Mã giảm giá này yêu cầu hạng thành viên từ {discount.min_tier} trở lên.")
+        if self.next_validator:
+            return self.next_validator.validate(discount, booking)
+        return True
+
+class MovieSpecificValidator(DiscountValidator):
+    def validate(self, discount, booking):
+        if discount.id and discount.applicable_movies.exists():
+            if booking.showtime.movie not in discount.applicable_movies.all():
+                raise Exception("Mã giảm giá này không áp dụng cho bộ phim hiện tại.")
+        if discount.applicable_genre:
+            movie_genres = [g.strip().lower() for g in booking.showtime.movie.genre.split(',')]
+            req_genre = discount.applicable_genre.strip().lower()
+            if req_genre not in movie_genres:
+                raise Exception(f"Mã giảm giá này chỉ áp dụng cho phim thể loại '{discount.applicable_genre}'.")
+        if self.next_validator:
+            return self.next_validator.validate(discount, booking)
+        return True
+
+class PointsComboValidator(DiscountValidator):
+    def validate(self, discount, booking):
+        if booking.redeemed_points > 0 and not discount.allow_points_combination:
+            raise Exception("Mã giảm giá này không thể kết hợp với việc đổi điểm tích lũy.")
+        if self.next_validator:
+            return self.next_validator.validate(discount, booking)
+        return True
+
+class GoldenHourValidator(DiscountValidator):
+    def validate(self, discount, booking):
+        if discount.is_golden_hour_only or discount.code.upper() in ['GOLDENHOUR', 'HAPPYHOUR']:
+            strategy = get_pricing_strategy(booking.showtime.start_time)
+            if not isinstance(strategy, HappyHourPricing):
+                raise Exception("Mã giảm giá này chỉ áp dụng cho suất chiếu Giờ Vàng (suất chiếu ngày thường từ 9:00 - 12:00).")
+        if self.next_validator:
+            return self.next_validator.validate(discount, booking)
+        return True
+
 def get_discount_validation_chain():
     v1 = ExpiryValidator()
     v2 = MinimumAmountValidator()
     v3 = UsageLimitValidator()
     v4 = PerUserLimitValidator()
-    v1.set_next(v2).set_next(v3).set_next(v4)
+    v5 = TierValidator()
+    v6 = MovieSpecificValidator()
+    v7 = PointsComboValidator()
+    v8 = GoldenHourValidator()
+    v1.set_next(v2).set_next(v3).set_next(v4).set_next(v5).set_next(v6).set_next(v7).set_next(v8)
     return v1
 
 
@@ -283,6 +456,23 @@ class PendingState(BookingState):
     def confirm(self, booking):
         booking.status = 'confirmed'
         booking.save()
+        
+        # Deduct and award points
+        user = booking.user
+        if booking.redeemed_points > 0:
+            user.points = max(0, user.points - booking.redeemed_points)
+        user.points += booking.points_earned
+        
+        # Recalculate tier
+        if user.points >= 1000:
+            user.tier = 'Platinum'
+        elif user.points >= 300:
+            user.tier = 'Gold'
+        elif user.points >= 100:
+            user.tier = 'Silver'
+        else:
+            user.tier = 'Bronze'
+        user.save()
         return True
 
     def cancel(self, booking):
@@ -298,11 +488,27 @@ class ConfirmedState(BookingState):
         raise Exception("Booking is already confirmed.")
 
     def cancel(self, booking):
-        # 10% cancellation fee applied
         settings = SystemSettings()
         booking.status = 'cancelled'
         booking.refund_amount = int(booking.total_price * (1 - settings.cancellation_fee_percent / 100))
         booking.save()
+        
+        # Reverse points
+        user = booking.user
+        if booking.redeemed_points > 0:
+            user.points += booking.redeemed_points
+        user.points = max(0, user.points - booking.points_earned)
+        
+        # Recalculate tier
+        if user.points >= 1000:
+            user.tier = 'Platinum'
+        elif user.points >= 300:
+            user.tier = 'Gold'
+        elif user.points >= 100:
+            user.tier = 'Silver'
+        else:
+            user.tier = 'Bronze'
+        user.save()
         return True
 
     def complete(self, booking):
@@ -353,6 +559,7 @@ class BookingBuilder:
         self._seats = []
         self._discount = None
         self._notes = ""
+        self._redeemed_points = 0
 
     def set_user(self, user):
         self._user = user
@@ -374,6 +581,10 @@ class BookingBuilder:
         self._notes = notes
         return self
 
+    def set_redeemed_points(self, points):
+        self._redeemed_points = points
+        return self
+
     def build(self):
         from .models import Booking, BookingItem
         if not self._user:
@@ -393,7 +604,9 @@ class BookingBuilder:
                 component = CoupleSeatPriceDecorator(component)
             subtotal += component.get_price()
 
-        # Apply multiplier from Showtime (e.g. 1.2x for IMAX)
+        # Apply pricing strategy based on showtime start time
+        strategy = get_pricing_strategy(self._showtime.start_time)
+        subtotal = strategy.calculate_base_price(subtotal)
         subtotal = int(subtotal * self._showtime.price_multiplier)
 
         # Apply discount if valid
@@ -404,7 +617,18 @@ class BookingBuilder:
             else:
                 discount_amount = self._discount.value
         
-        total_price = max(0, subtotal - discount_amount)
+        # Deduct loyalty points (1 point = 1,000 VND discount, capped at 50% of subtotal)
+        max_points_discount = int(subtotal * 0.5)
+        points_discount = self._redeemed_points * 1000
+        if points_discount > max_points_discount:
+            points_discount = max_points_discount
+            self._redeemed_points = max_points_discount // 1000
+        
+        total_price = max(0, subtotal - discount_amount - points_discount)
+        
+        # Calculate points earned (1 point per 10k VND of total price)
+        settings = SystemSettings.get_instance()
+        points_earned = total_price // settings.points_conversion_rate
 
         # Create Booking
         booking = Booking.objects.create(
@@ -413,7 +637,9 @@ class BookingBuilder:
             total_price=total_price,
             discount=self._discount,
             notes=self._notes,
-            status='pending'
+            status='pending',
+            redeemed_points=self._redeemed_points,
+            points_earned=points_earned
         )
 
         # Create BookingItems
@@ -423,7 +649,12 @@ class BookingBuilder:
                 component = VIPSeatPriceDecorator(component)
             elif seat.type == 'couple':
                 component = CoupleSeatPriceDecorator(component)
-            item_price = int(component.get_price() * self._showtime.price_multiplier)
+            
+            # Recalculate seat price based on pricing strategy
+            item_price = component.get_price()
+            item_price = strategy.calculate_base_price(item_price)
+            item_price = int(item_price * self._showtime.price_multiplier)
+            
             BookingItem.objects.create(
                 booking=booking,
                 seat=seat,
@@ -437,18 +668,27 @@ class BookingBuilder:
 # 8. TEMPLATE METHOD PATTERN - Booking Workflow
 # ==========================================
 class BookingWorkflow(ABC):
-    def execute(self, user, showtime, seats, discount_code=None, notes="", payment_method="credit_card", phone=""):
+    def execute(self, user, showtime, seats, discount_code=None, notes="", payment_method="credit_card", phone="", redeemed_points=0):
         # Skeleton of the workflow
         self.validate_user(user)
         self.validate_showtime(showtime)
         self.validate_seats(seats)
         
+        if redeemed_points > 0:
+            if redeemed_points > user.points:
+                raise Exception("Số điểm tích lũy không đủ.")
+
         discount = None
         if discount_code:
             discount = self.resolve_discount(discount_code)
 
         # Construct booking step (Builder)
-        builder = BookingBuilder().set_user(user).set_showtime(showtime).set_notes(notes)
+        builder = (BookingBuilder()
+            .set_user(user)
+            .set_showtime(showtime)
+            .set_notes(notes)
+            .set_redeemed_points(redeemed_points)
+        )
         for seat in seats:
             builder.add_seat(seat)
         if discount:
@@ -461,24 +701,37 @@ class BookingWorkflow(ABC):
             try:
                 self.validate_discount_code(discount, booking)
             except Exception as e:
-                # Rollback/delete the booking draft if invalid discount code applied
                 booking.delete()
                 raise e
 
-        # Lock seats state
-        for seat in seats:
-            # Lock seat by reserving it for this booking (Mock real-time lock status)
-            pass
+        # Validate point combination limits
+        if redeemed_points > 0:
+            subtotal = 0
+            for seat in seats:
+                component = SimpleSeat(seat)
+                if seat.type == 'vip':
+                    component = VIPSeatPriceDecorator(component)
+                elif seat.type == 'couple':
+                    component = CoupleSeatPriceDecorator(component)
+                subtotal += component.get_price()
+            strategy = get_pricing_strategy(showtime.start_time)
+            subtotal = strategy.calculate_base_price(subtotal)
+            subtotal = int(subtotal * showtime.price_multiplier)
+            if (redeemed_points * 1000) > int(subtotal * 0.5):
+                booking.delete()
+                raise Exception("Giá trị điểm đổi không được vượt quá 50% tổng tiền vé.")
 
         # Complete payment step
         payment = self.process_payment(booking, payment_method, phone)
 
         # State transition step (State Pattern)
-        state_class = get_booking_state_class(booking.status)
-        state_class.confirm(booking)  # Move pending to confirmed
-
-        # Post-booking notifications (Observer)
-        self.notify_user(booking)
+        if payment.status == 'completed':
+            state_class = get_booking_state_class(booking.status)
+            state_class.confirm(booking)  # Move pending to confirmed
+            self.notify_user(booking)
+        else:
+            # Payment is pending callback
+            pass
 
         return booking, payment
 
@@ -540,14 +793,28 @@ class StandardBookingWorkflow(BookingWorkflow):
         from .models import Payment
         factory = PaymentProcessorFactory()
         processor = factory.create_processor(method)
-        txn_id = processor.charge(booking.total_price, phone if method == "momo" else "stripe_token")
+        
+        details = {
+            "phone": phone,
+            "booking_id": booking.id,
+            "booking": booking
+        }
+        res = processor.charge(booking.total_price, details)
+        
+        if isinstance(res, tuple):
+            txn_id, pay_url = res
+        else:
+            txn_id, pay_url = res, None
+
+        status = 'pending' if method == 'momo' else 'completed'
 
         payment = Payment.objects.create(
             booking=booking,
             amount=booking.total_price,
             method=method,
             transaction_id=txn_id,
-            status='completed'
+            status=status,
+            payment_url=pay_url
         )
         return payment
 

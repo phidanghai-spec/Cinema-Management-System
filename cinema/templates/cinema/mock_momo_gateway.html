@@ -1,0 +1,87 @@
+{% extends 'cinema/base.html' %}
+{% block title %}Cổng Thanh Toán MoMo Sandbox | CineVerse{% endblock %}
+{% block content %}
+<div class="auth-container" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div class="glass-panel" style="width: 100%; max-width: 500px; padding: 40px; border-radius: 24px; text-align: center; border: 1px solid rgba(229, 9, 20, 0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+        
+        <!-- Momo Logo -->
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: #a50064; border-radius: 20px; margin-bottom: 24px; box-shadow: 0 8px 16px rgba(165, 0, 100, 0.3);">
+            <span style="color: white; font-size: 36px; font-weight: 900; font-family: sans-serif;">m</span>
+        </div>
+
+        <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 8px; color: white;">MoMo Sandbox Gateway</h2>
+        <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 30px;">Mô phỏng thanh toán trực tuyến an toàn bởi CineVerse</p>
+
+        <!-- Ticket info -->
+        <div class="glass-panel" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; text-align: left; margin-bottom: 30px; border: 1px solid var(--border-glass);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;">
+                <span style="color: var(--color-text-muted);">Nhà cung cấp:</span>
+                <strong style="color: white;">CineVerse Cinema Joint Stock</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;">
+                <span style="color: var(--color-text-muted);">Mã đơn hàng (Order ID):</span>
+                <strong style="color: var(--color-secondary);">#{{ order_id }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;">
+                <span style="color: var(--color-text-muted);">Số tiền thanh toán:</span>
+                <strong style="color: var(--color-warning); font-size: 18px;">{{ amount }} VND</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                <span style="color: var(--color-text-muted);">Trạng thái kết nối:</span>
+                <span class="badge badge-primary" style="background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: var(--color-success); font-weight: 600;">Offline Simulator Mode</span>
+            </div>
+        </div>
+
+        <!-- Simulated QR Scan -->
+        <div style="background: white; padding: 16px; display: inline-block; border-radius: 16px; margin-bottom: 35px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div id="qr-target-momo" style="width: 180px; height: 180px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px solid #eee; border-radius: 8px;">
+                <span style="color: #666; font-size: 12px; text-align: center; padding: 10px;">Đang tải QR Code...</span>
+            </div>
+        </div>
+        
+        <form method="POST" action="{% url 'mock_momo_submit' %}" style="display: flex; flex-direction: column; gap: 14px;">
+            {% csrf_token %}
+            <input type="hidden" name="orderId" value="{{ order_id }}">
+            <input type="hidden" name="amount" value="{{ amount }}">
+            <input type="hidden" name="redirectUrl" value="{{ redirect_url }}">
+            
+            <button type="submit" name="status" value="success" class="btn btn-primary" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #a50064 0%, #d82d8c 100%); border: none; font-weight: 700;">
+                ✅ Xác Nhận Thanh Toán Thành Công
+            </button>
+            <button type="submit" name="status" value="fail" class="btn btn-secondary" style="width: 100%; padding: 12px; border-color: rgba(255,255,255,0.15); color: var(--color-text-secondary);">
+                ❌ Hủy Giao Dịch / Thanh Toán Thất Bại
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const target = document.getElementById('qr-target-momo');
+        const orderId = "{{ order_id }}";
+        const text = `https://momo.vn/pay?id=${orderId}&partner=CineVerse`;
+        
+        if (typeof QRCode === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+            script.onload = () => renderQR();
+            document.head.appendChild(script);
+        } else {
+            renderQR();
+        }
+
+        function renderQR() {
+            target.innerHTML = '';
+            new QRCode(target, {
+                text: text,
+                width: 180,
+                height: 180,
+                colorDark: '#a50064',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+    });
+</script>
+{% endblock %}

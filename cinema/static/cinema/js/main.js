@@ -98,12 +98,14 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
     
     let selectedSeats = [];
     let discountAmount = 0;
+    let redeemedPoints = 0;
 
     function formatVND(n) { return n.toLocaleString('vi-VN'); }
 
     function updateSummary() {
         const subtotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
-        const total    = Math.max(0, subtotal - discountAmount);
+        const pointsDiscount = redeemedPoints * 1000;
+        const total    = Math.max(0, subtotal - discountAmount - pointsDiscount);
         
         if (subtotalEl) subtotalEl.textContent = formatVND(subtotal);
         if (totalEl)    totalEl.textContent    = formatVND(total);
@@ -112,13 +114,65 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             : 'None';
         if (seatCountEl) seatCountEl.textContent = selectedSeats.length;
         
+        // Show/hide points discount row
+        const ptsDiscountRow = document.getElementById('points-discount-row');
+        const ptsDiscountDisp = document.getElementById('points-discount-display');
+        if (ptsDiscountRow && ptsDiscountDisp) {
+            if (pointsDiscount > 0) {
+                ptsDiscountDisp.textContent = formatVND(pointsDiscount);
+                ptsDiscountRow.style.display = 'flex';
+            } else {
+                ptsDiscountRow.style.display = 'none';
+            }
+        }
+
         if (checkoutBtn) {
             checkoutBtn.disabled = selectedSeats.length === 0;
         }
         
-        // Update hidden seat ids
         const hiddenInput = document.getElementById('selected-seat-ids-input');
         if (hiddenInput) hiddenInput.value = JSON.stringify(selectedSeats.map(s => s.id));
+    }
+
+    async function checkSuggestedDiscount() {
+        const box = document.getElementById('suggested-promo-box');
+        const codeEl = document.getElementById('suggested-promo-code');
+        if (!box || !codeEl) return;
+        
+        if (selectedSeats.length === 0) {
+            box.style.display = 'none';
+            return;
+        }
+        
+        const subtotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+        
+        try {
+            const res = await fetch('/api/discount/suggest/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+                body: JSON.stringify({
+                    subtotal,
+                    showtime_id: parseInt(showtimeId),
+                    seat_ids: selectedSeats.map(s => s.id),
+                    redeemed_points: redeemedPoints
+                })
+            });
+            const data = await res.json();
+            if (data.success && data.suggested) {
+                const currentCode = document.getElementById('applied-discount-code-input')?.value;
+                if (currentCode !== data.code) {
+                    codeEl.textContent = `${data.code} (-${formatVND(data.discount_amount)} VND)`;
+                    codeEl.dataset.code = data.code;
+                    box.style.display = 'block';
+                } else {
+                    box.style.display = 'none';
+                }
+            } else {
+                box.style.display = 'none';
+            }
+        } catch (err) {
+            console.error("Error suggesting coupon:", err);
+        }
     }
 
     seatsContainer.addEventListener('click', e => {
@@ -139,6 +193,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             cell.classList.add('selected');
         }
         updateSummary();
+        checkSuggestedDiscount();
     });
 
     // Promo Code
@@ -154,7 +209,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             if (!code) return;
             const subtotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
             if (subtotal === 0) {
-                showToast('Select seats first', 'Please select at least one seat before applying a voucher.', 'warning');
+                showToast('Chọn ghế trước', 'Vui lòng chọn ít nhất một ghế trước khi áp dụng voucher.', 'warning');
                 return;
             }
             try {
@@ -171,17 +226,80 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                     if (discountCodeInput) discountCodeInput.value = data.code;
                     if (promoMsg) { promoMsg.style.color = 'var(--success)'; promoMsg.textContent = `✅ Coupon applied! Saving ${formatVND(discountAmount)} VND`; }
                     updateSummary();
-                    showToast('Coupon Applied!', `You saved ${formatVND(discountAmount)} VND with ${data.code}`, 'success');
+                    showToast('Đã áp dụng Voucher!', `Bạn được giảm ${formatVND(discountAmount)} VND từ mã ${data.code}`, 'success');
+                    checkSuggestedDiscount();
                 } else {
                     if (promoMsg) { promoMsg.style.color = 'var(--danger)'; promoMsg.textContent = `❌ ${data.error}`; }
                     discountAmount = 0;
-                    showToast('Invalid Coupon', data.error, 'error');
+                    showToast('Voucher không hợp lệ', data.error, 'error');
                 }
             } catch {
-                showToast('Network Error', 'Could not validate the coupon. Please try again.', 'error');
+                showToast('Lỗi mạng', 'Không thể xác thực voucher. Vui lòng thử lại.', 'error');
             } finally {
                 applyBtn.textContent = 'Apply';
             }
+        });
+    }
+
+    // Apply Suggested Code
+    const applySuggestedBtn = document.getElementById('apply-suggested-btn');
+    if (applySuggestedBtn) {
+        applySuggestedBtn.addEventListener('click', () => {
+            const codeEl = document.getElementById('suggested-promo-code');
+            const code = codeEl?.dataset.code;
+            if (code && promoInput) {
+                promoInput.value = code;
+                applyBtn.click();
+            }
+        });
+    }
+
+    // Points Redemption
+    const applyPointsBtn = document.getElementById('apply-points-btn');
+    const pointsInput = document.getElementById('redeem-points-input');
+    const pointsMsg = document.getElementById('points-message');
+    const appliedPointsVal = document.getElementById('applied-points-value');
+
+    if (applyPointsBtn && pointsInput) {
+        applyPointsBtn.addEventListener('click', () => {
+            const pts = parseInt(pointsInput.value) || 0;
+            const subtotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+            if (subtotal === 0) {
+                showToast('Chọn ghế trước', 'Vui lòng chọn ghế trước khi đổi điểm.', 'warning');
+                return;
+            }
+            if (pts < 0) {
+                showToast('Lỗi', 'Số điểm không hợp lệ.', 'error');
+                return;
+            }
+            const maxPoints = parseInt(pointsInput.getAttribute('max')) || 0;
+            if (pts > maxPoints) {
+                showToast('Lỗi', `Số điểm vượt quá số dư hiện tại (${maxPoints} điểm).`, 'error');
+                return;
+            }
+            
+            const pointValue = pts * 1000;
+            if (pointValue > Math.floor(subtotal * 0.5)) {
+                showToast('Giới hạn đổi điểm', 'Giá trị đổi điểm không được vượt quá 50% tiền vé.', 'warning');
+                return;
+            }
+            
+            redeemedPoints = pts;
+            if (appliedPointsVal) appliedPointsVal.value = pts;
+            
+            if (pointsMsg) {
+                if (pts > 0) {
+                    pointsMsg.style.color = 'var(--success)';
+                    pointsMsg.textContent = `✅ Đã áp dụng đổi ${pts} điểm (Giảm ${formatVND(pointValue)} VND)`;
+                } else {
+                    pointsMsg.style.color = 'var(--text-muted)';
+                    pointsMsg.textContent = '1 điểm = 1,000 VND giảm giá (Tối đa 50% tiền vé)';
+                }
+            }
+            
+            updateSummary();
+            showToast('Đã đổi điểm!', `Giảm ngay ${formatVND(pointValue)} VND vào hóa đơn.`, 'success');
+            checkSuggestedDiscount();
         });
     }
 
@@ -250,20 +368,26 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                         seat_ids: selectedSeats.map(s => s.id),
                         discount_code: discCode || null,
                         payment_method: method,
-                        notes
+                        notes,
+                        redeemed_points: redeemedPoints
                     })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('Booking Confirmed! 🎉', 'Redirecting to your ticket...', 'success', 2000);
-                    setTimeout(() => { window.location.href = `/booking/ticket/${data.booking_id}/`; }, 1400);
+                    if (data.redirect_url) {
+                        showToast('Thanh toán qua MoMo... 🎉', 'Đang chuyển hướng sang cổng thanh toán...', 'success', 2000);
+                        setTimeout(() => { window.location.href = data.redirect_url; }, 1400);
+                    } else {
+                        showToast('Đặt vé thành công! 🎉', 'Đang tải vé của bạn...', 'success', 2000);
+                        setTimeout(() => { window.location.href = `/booking/ticket/${data.booking_id}/`; }, 1400);
+                    }
                 } else {
-                    showToast('Booking Failed', data.error, 'error');
+                    showToast('Đặt vé thất bại', data.error, 'error');
                     btn.disabled = false;
                     btn.textContent = 'Complete Payment';
                 }
             } catch {
-                showToast('Network Error', 'Please check your connection and try again.', 'error');
+                showToast('Lỗi mạng', 'Vui lòng kiểm tra kết nối mạng và thử lại.', 'error');
                 btn.disabled = false;
                 btn.textContent = 'Complete Payment';
             }

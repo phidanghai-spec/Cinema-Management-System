@@ -123,29 +123,95 @@
 
 <!-- Reviews Section -->
 <div style="margin: 50px 8%;">
-    <h2 class="grad-text" style="margin-bottom: 30px;">💬 Đánh Giá Khách Hàng</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+        <h2 class="grad-text" style="margin: 0;">💬 Đánh Giá Khách Hàng</h2>
+        
+        <!-- Sorting & Filtering Form -->
+        <form method="GET" action="" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <select name="sort_reviews" class="form-input" style="padding: 6px 12px; font-size: 13px; width: auto; background: rgba(15, 23, 42, 0.6);" onchange="this.form.submit()">
+                <option value="newest" {% if sort_reviews == 'newest' %}selected{% endif %}>Mới nhất</option>
+                <option value="highest_rating" {% if sort_reviews == 'highest_rating' %}selected{% endif %}>Đánh giá cao nhất</option>
+                <option value="lowest_rating" {% if sort_reviews == 'lowest_rating' %}selected{% endif %}>Đánh giá thấp nhất</option>
+                <option value="most_helpful" {% if sort_reviews == 'most_helpful' %}selected{% endif %}>Hữu ích nhất</option>
+            </select>
+            
+            <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; background: rgba(255,255,255,0.03); padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+                <input type="checkbox" name="verified_reviews" value="true" {% if verified_reviews == 'true' %}checked{% endif %} onchange="this.form.submit()" style="margin: 0;">
+                <span>Chỉ hiển thị người đã mua vé</span>
+            </label>
+        </form>
+    </div>
 
     <div style="display: grid; grid-template-columns: 1fr 360px; gap: 40px;">
         <!-- Review List -->
         <div style="display: flex; flex-direction: column; gap: 20px;">
             {% for r in reviews %}
-                <div class="glass-panel" style="padding: 22px;">
+                <div class="glass-panel" style="padding: 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div class="user-avatar" style="width: 44px; height: 44px; font-size: 16px; font-weight: 700;">{{ r.user.name|first|upper }}</div>
                             <div>
-                                <strong style="font-size: 15px;">{{ r.user.name }}</strong>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <strong style="font-size: 15px;">{{ r.user.name }}</strong>
+                                    {% if r.is_verified_purchase %}
+                                        <span style="font-size: 10px; color: #10b981; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
+                                            ✓ Đã mua vé
+                                        </span>
+                                    {% endif %}
+                                </div>
                                 <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">{{ r.created_at|date:"d/m/Y H:i" }}</div>
                             </div>
                         </div>
                         <span class="rating-badge">★ {{ r.rating }}/5</span>
                     </div>
-                    <p style="color: var(--color-text-secondary); font-size: 15px; line-height: 1.7;">{{ r.comment }}</p>
+                    
+                    <p style="color: var(--color-text-secondary); font-size: 15px; line-height: 1.7; margin-bottom: 15px; white-space: pre-line;">{{ r.comment }}</p>
+                    
+                    <!-- Photos display -->
+                    {% if r.photos %}
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
+                            {% for photo in r.photos %}
+                                <a href="{{ photo }}" target="_blank" style="display: block; width: 80px; height: 80px; overflow: hidden; border-radius: 8px; border: 1px solid var(--border-glass); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    <img src="{{ photo }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Review photo">
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Helpful & Actions bar -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 14px;">
+                        {% if user %}
+                            <button type="button" class="btn btn-secondary helpful-btn {% if r.user_voted_helpful %}active{% endif %}" data-review-id="{{ r.id }}" style="padding: 6px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;">
+                                👍 {% if r.user_voted_helpful %}Đã thích{% else %}Hữu ích{% endif %} ({{ r.helpful_count }})
+                            </button>
+                        {% else %}
+                            <span style="font-size: 13px; color: var(--color-text-muted);">👍 Hữu ích ({{ r.helpful_count }})</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Admin Reply Display -->
+                    {% if r.reply %}
+                        <div id="reply-block-{{ r.id }}" class="admin-reply-box" style="margin-top: 14px; padding: 14px; background: rgba(229, 9, 20, 0.05); border-left: 3px solid var(--color-primary); border-radius: 4px;">
+                            <div style="font-size: 13px; font-weight: 700; color: var(--color-primary); margin-bottom: 5px;">
+                                💬 Phản hồi từ Quản trị viên ({{ r.reply.admin.name }})
+                                <span style="font-weight: 400; color: var(--color-text-muted); float: right;">{{ r.reply.created_at|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            <p style="margin: 0; font-size: 14px; color: var(--color-text-secondary); line-height: 1.6;">{{ r.reply.reply_text }}</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Admin Reply Form (Visible only to System Admin) -->
+                    {% if user and user.email == 'admin@cinema.com' %}
+                        <form class="admin-reply-form" data-review-id="{{ r.id }}" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                            <textarea class="form-input" rows="2" placeholder="Trả lời nhận xét của khách hàng..." required style="padding: 8px 12px; font-size: 13px; min-height: 50px; resize: vertical; background: rgba(15, 23, 42, 0.4);"></textarea>
+                            <button type="submit" class="btn btn-primary" style="align-self: flex-end; padding: 6px 16px; font-size: 12px;">Phản Hồi</button>
+                        </form>
+                    {% endif %}
                 </div>
             {% empty %}
-                <div class="glass-panel" style="text-align: center; padding: 40px; color: var(--color-text-muted);">
+                <div class="glass-panel" style="text-align: center; padding: 50px; color: var(--color-text-muted);">
                     <div style="font-size: 40px; margin-bottom: 15px;">✍️</div>
-                    <p>Chưa có đánh giá nào. Hãy là người đầu tiên chia sẻ cảm nghĩ của bạn!</p>
+                    <p>Chưa có đánh giá nào phù hợp với bộ lọc hiện tại.</p>
                 </div>
             {% endfor %}
         </div>
@@ -154,27 +220,39 @@
         <div class="glass-panel" style="padding: 28px; height: fit-content;">
             <h3 style="margin-bottom: 20px;" class="grad-text">✍️ Viết Đánh Giá</h3>
             {% if user %}
-                <form method="POST" action="{% url 'submit_review' movie.id %}" style="display: flex; flex-direction: column; gap: 18px;">
-                    {% csrf_token %}
-                    <div>
-                        <label class="form-label">Đánh giá của bạn</label>
-                        <!-- Interactive Star Rating -->
-                        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
-                            {% for i in "12345" %}
-                                <button type="button" class="star-rating-btn" data-value="{{ forloop.counter }}"
-                                        style="font-size: 28px; background: none; border: none; cursor: pointer; color: var(--color-text-muted); padding: 0; line-height: 1; transition: all 0.15s ease;">
-                                    ☆
-                                </button>
-                            {% endfor %}
+                {% if can_review %}
+                    <form method="POST" action="{% url 'submit_review' movie.id %}" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 18px;">
+                        {% csrf_token %}
+                        <div>
+                            <label class="form-label">Đánh giá của bạn</label>
+                            <!-- Interactive Star Rating -->
+                            <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                                {% for i in "12345" %}
+                                    <button type="button" class="star-rating-btn" data-value="{{ forloop.counter }}"
+                                            style="font-size: 28px; background: none; border: none; cursor: pointer; color: var(--color-text-muted); padding: 0; line-height: 1; transition: all 0.15s ease;">
+                                        ☆
+                                    </button>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" name="rating" id="rating-hidden-input" value="5">
                         </div>
-                        <input type="hidden" name="rating" id="rating-hidden-input" value="5">
+                        <div>
+                            <label class="form-label">Bình luận của bạn</label>
+                            <textarea name="comment" class="form-input" rows="4" placeholder="Chia sẻ trải nghiệm xem phim của bạn..." required style="resize: vertical; min-height: 80px;"></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Đính kèm hình ảnh (Tùy chọn)</label>
+                            <input type="file" name="photos" multiple accept="image/*" class="form-input" style="padding: 6px; font-size: 13px;">
+                            <span style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px; display: block;">Có thể chọn nhiều hình ảnh cùng lúc.</span>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Gửi Đánh Giá ✨</button>
+                    </form>
+                {% else %}
+                    <div style="text-align: center; padding: 20px; color: var(--color-text-muted); background: rgba(229, 9, 20, 0.05); border: 1px dashed rgba(229, 9, 20, 0.3); border-radius: var(--radius-md);">
+                        <p style="margin: 0; font-size: 14px; line-height: 1.6; font-weight: 500; color: var(--color-primary);">🔒 Chưa Có Vé Đã Đặt</p>
+                        <p style="margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: var(--color-text-muted);">Hệ thống chỉ cho phép khách hàng đã mua vé phim này gửi đánh giá để đảm bảo tính khách quan.</p>
                     </div>
-                    <div>
-                        <label class="form-label">Bình luận của bạn</label>
-                        <textarea name="comment" class="form-input" rows="5" placeholder="Chia sẻ trải nghiệm xem phim của bạn..." required style="resize: vertical; min-height: 100px;"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Gửi Đánh Giá ✨</button>
-                </form>
+                {% endif %}
             {% else %}
                 <div style="text-align: center; padding: 20px; color: var(--color-text-muted);">
                     <p style="margin-bottom: 15px;">Đăng nhập để viết đánh giá</p>
@@ -184,4 +262,112 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Helpful Vote Toggle
+    const helpfulBtns = document.querySelectorAll('.helpful-btn');
+    helpfulBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const reviewId = btn.dataset.reviewId;
+            try {
+                const res = await fetch(`/api/review/${reviewId}/helpful/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    btn.classList.toggle('active', data.state === 'voted');
+                    const icon = data.state === 'voted' ? '👍 Đã thích' : '👍 Hữu ích';
+                    btn.innerHTML = `${icon} (${data.helpful_count})`;
+                    window.showToast('Thành công', data.state === 'voted' ? 'Đã bình chọn đánh giá này hữu ích.' : 'Đã bỏ bình chọn.', 'success');
+                } else {
+                    window.showToast('Lỗi', data.error, 'error');
+                }
+            } catch (err) {
+                window.showToast('Lỗi kết nối', 'Không thể gửi bình chọn.', 'error');
+            }
+        });
+    });
+
+    // Admin Reply Submission
+    const replyForms = document.querySelectorAll('.admin-reply-form');
+    replyForms.forEach(form => {
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            const reviewId = form.dataset.reviewId;
+            const text = form.querySelector('textarea').value.trim();
+            if (!text) return;
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ ...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('reply_text', text);
+                
+                const res = await fetch(`/api/review/${reviewId}/reply/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    let replyBlock = document.getElementById(`reply-block-${reviewId}`);
+                    if (!replyBlock) {
+                        replyBlock = document.createElement('div');
+                        replyBlock.id = `reply-block-${reviewId}`;
+                        replyBlock.className = 'admin-reply-box';
+                        replyBlock.style = 'margin-top: 14px; padding: 14px; background: rgba(229, 9, 20, 0.05); border-left: 3px solid var(--color-primary); border-radius: 4px;';
+                        form.parentNode.insertBefore(replyBlock, form);
+                    }
+                    replyBlock.innerHTML = `
+                        <div style="font-size: 13px; font-weight: 700; color: var(--color-primary); margin-bottom: 5px;">
+                            💬 Phản hồi từ Quản trị viên (${data.admin_name})
+                            <span style="font-weight: 400; color: var(--color-text-muted); float: right;">${data.created_at}</span>
+                        </div>
+                        <p style="margin: 0; font-size: 14px; color: var(--color-text-secondary); line-height: 1.6;">${data.reply_text}</p>
+                    `;
+                    form.querySelector('textarea').value = '';
+                    window.showToast('Thành công', 'Đã gửi phản hồi đánh giá.', 'success');
+                } else {
+                    window.showToast('Lỗi', data.error, 'error');
+                }
+            } catch (err) {
+                window.showToast('Lỗi kết nối', 'Không thể gửi phản hồi.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Phản Hồi';
+            }
+        });
+    });
+
+    // Star Rating
+    const starBtns = document.querySelectorAll('.star-rating-btn');
+    const ratingInput = document.getElementById('rating-hidden-input');
+    starBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = parseInt(btn.dataset.value);
+            if (ratingInput) ratingInput.value = val;
+            
+            starBtns.forEach(s => {
+                const sVal = parseInt(s.dataset.value);
+                if (sVal <= val) {
+                    s.textContent = '★';
+                    s.style.color = 'var(--color-warning)';
+                } else {
+                    s.textContent = '☆';
+                    s.style.color = 'var(--color-text-muted)';
+                }
+            });
+        });
+    });
+    if (ratingInput) {
+        const defaultVal = parseInt(ratingInput.value) || 5;
+        const targetBtn = Array.from(starBtns).find(b => parseInt(b.dataset.value) === defaultVal);
+        if (targetBtn) targetBtn.click();
+    }
+});
+</script>
 {% endblock %}

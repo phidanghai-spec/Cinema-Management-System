@@ -302,7 +302,8 @@ class BookingService:
         discount_code: Optional[str] = None,
         method: str = "credit_card",
         phone: str = "",
-        notes: str = ""
+        notes: str = "",
+        redeemed_points: int = 0
     ) -> Booking:
         """
         Execute the full booking workflow for a user.
@@ -320,6 +321,7 @@ class BookingService:
             method:        Payment method slug: 'credit_card' or 'momo'.
             phone:         Phone number for MoMo payments.
             notes:         Optional special requests from the user.
+            redeemed_points: Loyalty points redeemed for cash discount.
 
         Returns:
             The confirmed Booking instance with payment completed.
@@ -339,7 +341,7 @@ class BookingService:
             >>> print(booking.status)
             'confirmed'
         """
-        logger.info(f"Starting booking: user={user_id}, showtime={showtime_id}, seats={seat_ids}")
+        logger.info(f"Starting booking: user={user_id}, showtime={showtime_id}, seats={seat_ids}, points={redeemed_points}")
 
         user = UserRepository.get_by_id(user_id)
         if not user:
@@ -361,11 +363,36 @@ class BookingService:
             discount_code=discount_code,
             notes=notes,
             payment_method=method,
-            phone=phone
+            phone=phone,
+            redeemed_points=redeemed_points
         )
 
         logger.info(f"Booking id={booking.id} completed successfully — total={booking.total_price}")
         return booking
+
+    @staticmethod
+    @transaction.atomic
+    def cleanup_expired_bookings():
+        from django.utils import timezone
+        from datetime import timedelta
+        from .patterns import SystemSettings, get_booking_state_class
+        
+        settings = SystemSettings.get_instance()
+        timeout_minutes = settings.seat_lock_timeout_minutes
+        cutoff_time = timezone.now() - timedelta(minutes=timeout_minutes)
+        
+        expired_bookings = Booking.objects.filter(
+            status='pending',
+            created_at__lt=cutoff_time
+        )
+        
+        for booking in expired_bookings:
+            try:
+                state = get_booking_state_class(booking.status)
+                state.cancel(booking)
+                logger.info(f"Automatically cancelled expired pending booking #{booking.id}")
+            except Exception as e:
+                logger.error(f"Error auto-cancelling expired booking #{booking.id}: {e}")
 
     @staticmethod
     @transaction.atomic

@@ -1,10 +1,16 @@
 import json
 import functools
-from datetime import date
+import hmac
+import hashlib
+import uuid
+import datetime
+from django.db import models
+from django.utils import timezone
+from datetime import date, timedelta
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Movie, Theater, Screen, Seat, Showtime, Booking, BookingItem, Payment, Review, Discount, Favorite, Watchlist, Address, InAppNotification
+from .models import User, Movie, Theater, Screen, Seat, Showtime, Booking, BookingItem, Payment, Review, Discount, Favorite, Watchlist, Address, InAppNotification, ReviewHelpfulVote, ReviewReply
 from .services import (
     UserService, MovieService, BookingService,
     DuplicateEmailException, InvalidCredentialsException,
@@ -195,7 +201,40 @@ def movie_detail_view(request, movie_id):
     try:
         movie = MovieService.get_details(movie_id)
         showtimes = ShowtimeRepository.get_movie_showtimes(movie_id)
-        reviews = movie.reviews.all().order_by('-created_at')
+        
+        # Run lazy seat release
+        BookingService.cleanup_expired_bookings()
+        
+        # Sorting and filtering reviews
+        sort_by = request.GET.get('sort_reviews', 'newest')
+        verified_only = request.GET.get('verified_reviews') == 'true'
+        
+        reviews_qs = movie.reviews.all()
+        
+        # Verified purchase user IDs
+        verified_user_ids = set(Booking.objects.filter(
+            showtime__movie=movie,
+            status__in=['confirmed', 'completed']
+        ).values_list('user_id', flat=True).distinct())
+        
+        if verified_only:
+            reviews_qs = reviews_qs.filter(user_id__in=verified_user_ids)
+            
+        if sort_by == 'highest_rating':
+            reviews_qs = reviews_qs.order_by('-rating', '-created_at')
+        elif sort_by == 'lowest_rating':
+            reviews_qs = reviews_qs.order_by('rating', '-created_at')
+        elif sort_by == 'most_helpful':
+            reviews_qs = reviews_qs.order_by('-helpful_count', '-created_at')
+        else:
+            reviews_qs = reviews_qs.order_by('-created_at')
+            
+        # Attach dynamic fields for verified purchase & helpful votes
+        for r in reviews_qs:
+            r.is_verified_purchase = r.user_id in verified_user_ids
+            r.user_voted_helpful = False
+            if user:
+                r.user_voted_helpful = r.helpful_votes.filter(user=user).exists()
         
         # Group showtimes by date and theater name
         grouped_showtimes = {}
@@ -210,23 +249,27 @@ def movie_detail_view(request, movie_id):
 
         is_favorite = False
         is_watchlist = False
+        can_review = False
         if user:
             is_favorite = Favorite.objects.filter(user=user, movie=movie).exists()
             is_watchlist = Watchlist.objects.filter(user=user, movie=movie).exists()
+            can_review = user.id in verified_user_ids
         
-        # Calculate points-based loyalty progress
-        tier_thresholds = {'Bronze': 0, 'Silver': 100, 'Gold': 300, 'Platinum': 1000}
-
         context = {
             'user': user,
             'movie': movie,
             'grouped_showtimes': grouped_showtimes,
-            'reviews': reviews,
+            'reviews': reviews_qs,
             'is_favorite': is_favorite,
-            'is_watchlist': is_watchlist
+            'is_watchlist': is_watchlist,
+            'can_review': can_review,
+            'sort_reviews': sort_by,
+            'verified_reviews': 'true' if verified_only else 'false'
         }
         return render(request, 'cinema/movie_detail.html', context)
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         return redirect('index')
 
 # Booking Views
@@ -236,10 +279,20 @@ def booking_flow_view(request, user, showtime_id):
     if not showtime:
         return redirect('index')
 
-    # Get already booked seats for this showtime
+    # Run lazy seat release
+    BookingService.cleanup_expired_bookings()
+
+    from .patterns import SystemSettings
+    settings = SystemSettings.get_instance()
+    timeout_minutes = settings.seat_lock_timeout_minutes
+    cutoff_time = timezone.now() - timedelta(minutes=timeout_minutes)
+
+    # Get already booked seats (including unexpired pending ones)
     booked_seat_ids = BookingItem.objects.filter(
-        booking__showtime=showtime,
-        booking__status__in=['confirmed', 'completed']
+        models.Q(booking__showtime=showtime) & (
+            models.Q(booking__status__in=['confirmed', 'completed']) |
+            (models.Q(booking__status='pending') & models.Q(booking__created_at__gte=cutoff_time))
+        )
     ).values_list('seat_id', flat=True)
 
     # Fetch all seats for the screen and group them by row label
@@ -270,6 +323,7 @@ def create_booking_api(request, user):
             payment_method = data.get('payment_method', 'credit_card')
             phone = data.get('phone', '')
             notes = data.get('notes', '')
+            redeemed_points = int(data.get('redeemed_points', 0))
 
             booking = BookingService.make_booking(
                 user_id=user.id,
@@ -278,26 +332,198 @@ def create_booking_api(request, user):
                 discount_code=discount_code,
                 method=payment_method,
                 phone=phone,
-                notes=notes
+                notes=notes,
+                redeemed_points=redeemed_points
             )
-            return JsonResponse({'success': True, 'booking_id': booking.id})
+            
+            payment = booking.payments.first()
+            redirect_url = payment.payment_url if payment else None
+            
+            return JsonResponse({
+                'success': True,
+                'booking_id': booking.id,
+                'redirect_url': redirect_url
+            })
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 @login_required_view
 def booking_ticket_view(request, user, booking_id):
+    # Run lazy seat release
+    BookingService.cleanup_expired_bookings()
+
     booking = BookingRepository.get_by_id(booking_id)
     if not booking or booking.user_id != user.id:
         return redirect('index')
 
-    # Ticket structure
     context = {
         'user': user,
         'booking': booking,
         'qr_content': f"CINEMA-BOOKING-ID:{booking.id}"
     }
     return render(request, 'cinema/booking_ticket.html', context)
+
+@login_required_view
+def mock_momo_gateway_view(request, user):
+    order_id = request.GET.get('orderId')
+    amount = request.GET.get('amount')
+    redirect_url = request.GET.get('redirectUrl')
+    
+    context = {
+        'user': user,
+        'order_id': order_id,
+        'amount': amount,
+        'redirect_url': redirect_url,
+    }
+    return render(request, 'cinema/mock_momo_gateway.html', context)
+
+@csrf_exempt
+def mock_momo_submit_view(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('orderId')
+        amount = request.POST.get('amount')
+        redirect_url = request.POST.get('redirectUrl')
+        status = request.POST.get('status')
+        
+        request_id = str(uuid.uuid4())
+        trans_id = f"trans_{int(datetime.datetime.now().timestamp())}"
+        result_code = 0 if status == 'success' else 49
+        message = "Thành công" if status == 'success' else "Giao dịch bị từ chối"
+        response_time = str(int(datetime.datetime.now().timestamp() * 1000))
+        
+        raw_sig = f"accessKey=klm05TvNBHJg7xgo&amount={amount}&extraData=&message={message}&orderId={order_id}&orderInfo=CineVerse Booking #{order_id}&orderType=momo_wallet&partnerCode=MOMOBKUN20180810&requestId={request_id}&responseTime={response_time}&resultCode={result_code}&payType=qr&transId={trans_id}"
+        signature = hmac.new(
+            "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I".encode('utf-8'),
+            raw_sig.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        # Build callback redirect URL
+        import urllib.parse
+        params = {
+            'partnerCode': 'MOMOBKUN20180810',
+            'orderId': order_id,
+            'requestId': request_id,
+            'amount': amount,
+            'orderInfo': f"CineVerse Booking #{order_id}",
+            'orderType': 'momo_wallet',
+            'transId': trans_id,
+            'resultCode': result_code,
+            'message': message,
+            'payType': 'qr',
+            'responseTime': response_time,
+            'extraData': '',
+            'signature': signature
+        }
+        query_string = urllib.parse.urlencode(params)
+        
+        if redirect_url:
+            target = f"{redirect_url}?{query_string}"
+        else:
+            target = f"/payment/momo-callback/?{query_string}"
+            
+        return redirect(target)
+    return redirect('index')
+
+def handle_momo_payment_update(params):
+    order_id = params.get('orderId')
+    result_code = int(params.get('resultCode', 1))
+    trans_id = params.get('transId')
+    
+    try:
+        booking = Booking.objects.get(id=int(order_id))
+    except (Booking.DoesNotExist, ValueError):
+        return False
+        
+    payment = booking.payments.filter(method='momo').first()
+    if not payment:
+        return False
+        
+    if result_code == 0:
+        if booking.status == 'pending':
+            from .patterns import get_booking_state_class, BookingSubject, EmailObserver, InAppObserver
+            payment.status = 'completed'
+            payment.transaction_id = trans_id
+            payment.save()
+            
+            state_class = get_booking_state_class(booking.status)
+            state_class.confirm(booking)
+            
+            subject = BookingSubject()
+            subject.attach(EmailObserver())
+            subject.attach(InAppObserver())
+            subject.notify(booking, "booking_confirmed")
+    else:
+        if booking.status == 'pending':
+            from .patterns import get_booking_state_class
+            payment.status = 'failed'
+            payment.transaction_id = trans_id
+            payment.save()
+            
+            state_class = get_booking_state_class(booking.status)
+            state_class.cancel(booking)
+            
+    return True
+
+@login_required_view
+def momo_callback_view(request, user):
+    params = request.GET.dict()
+    secret_key = "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I"
+    access_key = "klm05TvNBHJg7xgo"
+    raw_sig = f"accessKey={access_key}&amount={params.get('amount')}&extraData={params.get('extraData', '')}&message={params.get('message', '')}&orderId={params.get('orderId')}&orderInfo={params.get('orderInfo', '')}&orderType={params.get('orderType', '')}&partnerCode={params.get('partnerCode')}&requestId={params.get('requestId')}&responseTime={params.get('responseTime', '')}&resultCode={params.get('resultCode')}&payType={params.get('payType', '')}&transId={params.get('transId', '')}"
+    
+    computed_sig = hmac.new(
+        secret_key.encode('utf-8'),
+        raw_sig.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    is_valid = (computed_sig == params.get('signature'))
+    order_id = params.get('orderId')
+    
+    if is_valid:
+        handle_momo_payment_update(params)
+        result_code = int(params.get('resultCode', 1))
+        if result_code == 0:
+            return redirect('booking_ticket', booking_id=order_id)
+        else:
+            return render(request, 'cinema/booking_ticket.html', {
+                'user': user,
+                'error': f"Thanh toán MoMo thất bại: {params.get('message')}"
+            })
+    else:
+        return render(request, 'cinema/booking_ticket.html', {
+            'user': user,
+            'error': "Xác minh chữ ký số MoMo thất bại."
+        })
+
+@csrf_exempt
+def momo_ipn_view(request):
+    if request.method == 'POST':
+        try:
+            params = json.loads(request.body)
+        except Exception:
+            params = request.POST.dict()
+            
+        secret_key = "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I"
+        access_key = "klm05TvNBHJg7xgo"
+        raw_sig = f"accessKey={access_key}&amount={params.get('amount')}&extraData={params.get('extraData', '')}&message={params.get('message', '')}&orderId={params.get('orderId')}&orderInfo={params.get('orderInfo', '')}&orderType={params.get('orderType', '')}&partnerCode={params.get('partnerCode')}&requestId={params.get('requestId')}&responseTime={params.get('responseTime', '')}&resultCode={params.get('resultCode')}&payType={params.get('payType', '')}&transId={params.get('transId', '')}"
+        
+        computed_sig = hmac.new(
+            secret_key.encode('utf-8'),
+            raw_sig.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if computed_sig == params.get('signature'):
+            handle_momo_payment_update(params)
+            return JsonResponse({'message': 'IPN received successfully'}, status=200)
+            
+        return JsonResponse({'error': 'Invalid signature'}, status=400)
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 # Profile, Favorites & Social Reviews
 @login_required_view
@@ -464,14 +690,176 @@ def submit_review_view(request, user, movie_id):
         comment = request.POST.get('comment', '')
         movie = MovieRepository.get_by_id(movie_id)
         if movie:
+            # Enforce verified purchase check
+            has_booked = Booking.objects.filter(
+                user=user,
+                showtime__movie=movie,
+                status__in=['confirmed', 'completed']
+            ).exists()
+            if not has_booked:
+                return redirect('movie_detail', movie_id=movie_id)
+
+            # Handle photo uploads
+            photos = []
+            uploaded_files = request.FILES.getlist('photos')
+            if uploaded_files:
+                import os
+                from django.core.files.storage import default_storage
+                from django.core.files.base import ContentFile
+                
+                os.makedirs(os.path.join('media', 'reviews'), exist_ok=True)
+                
+                for f in uploaded_files:
+                    path = default_storage.save(os.path.join('reviews', f.name), ContentFile(f.read()))
+                    photos.append('/media/' + path.replace('\\', '/'))
+
             Review.objects.create(
                 user=user,
                 movie=movie,
                 rating=rating,
-                comment=comment
+                comment=comment,
+                photos=photos
             )
             # Re-calculate average rating for movie
             all_reviews = movie.reviews.all()
-            movie.rating = round(sum(r.rating for r in all_reviews) / len(all_reviews), 1)
-            movie.save()
+            if all_reviews.exists():
+                movie.rating = round(sum(r.rating for r in all_reviews) / len(all_reviews), 1)
+                movie.save()
     return redirect('movie_detail', movie_id=movie_id)
+
+@csrf_exempt
+@login_required_view
+def toggle_review_helpful_api(request, user, review_id):
+    if request.method == 'POST':
+        try:
+            review = Review.objects.get(id=review_id)
+            vote, created = ReviewHelpfulVote.objects.get_or_create(user=user, review=review)
+            if not created:
+                vote.delete()
+                review.helpful_count = max(0, review.helpful_count - 1)
+                state = 'unvoted'
+            else:
+                review.helpful_count += 1
+                state = 'voted'
+            review.save()
+            return JsonResponse({'success': True, 'state': state, 'helpful_count': review.helpful_count})
+        except Review.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Đánh giá không tồn tại.'})
+    return JsonResponse({'success': False, 'error': 'Method not allowed'})
+
+@csrf_exempt
+@login_required_view
+def submit_review_reply_api(request, user, review_id):
+    if request.method == 'POST':
+        if user.email != 'admin@cinema.com':
+            return JsonResponse({'success': False, 'error': 'Bạn không có quyền thực hiện chức năng này.'})
+            
+        reply_text = request.POST.get('reply_text', '').strip()
+        if not reply_text:
+            return JsonResponse({'success': False, 'error': 'Nội dung phản hồi không được để trống.'})
+            
+        try:
+            review = Review.objects.get(id=review_id)
+            reply, created = ReviewReply.objects.update_or_create(
+                review=review,
+                defaults={'admin': user, 'reply_text': reply_text}
+            )
+            return JsonResponse({
+                'success': True,
+                'reply_text': reply.reply_text,
+                'admin_name': user.name,
+                'created_at': reply.created_at.strftime('%d/%m/%Y %H:%M')
+            })
+        except Review.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Đánh giá không tồn tại.'})
+    return JsonResponse({'success': False, 'error': 'Method not allowed'})
+
+@csrf_exempt
+@login_required_view
+def suggest_discount_api(request, user):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            subtotal = int(data.get('subtotal', 0))
+            showtime_id = data.get('showtime_id')
+            seat_ids = data.get('seat_ids', [])
+            redeemed_points = int(data.get('redeemed_points', 0))
+            
+            showtime = Showtime.objects.filter(id=showtime_id).first()
+            if not showtime:
+                return JsonResponse({'success': False, 'error': 'Suất chiếu không tồn tại.'})
+                
+            seats = Seat.objects.filter(id__in=seat_ids)
+            if not seats.exists():
+                return JsonResponse({'success': False, 'error': 'Chưa chọn ghế.'})
+            
+            today = date.today()
+            discounts = Discount.objects.filter(valid_to__gte=today, valid_from__lte=today)
+            
+            best_discount = None
+            best_amount = 0
+            
+            from django.db import transaction
+            from .patterns import get_discount_validation_chain, BookingBuilder
+            
+            for d in discounts:
+                try:
+                    with transaction.atomic():
+                        builder = (BookingBuilder()
+                            .set_user(user)
+                            .set_showtime(showtime)
+                            .set_discount(d)
+                            .set_redeemed_points(redeemed_points)
+                        )
+                        for s in seats:
+                            builder.add_seat(s)
+                        booking = builder.build()
+                        
+                        chain = get_discount_validation_chain()
+                        chain.validate(d, booking)
+                        
+                        subtotal_val = 0
+                        for s in seats:
+                            from .patterns import SimpleSeat, VIPSeatPriceDecorator, CoupleSeatPriceDecorator, get_pricing_strategy
+                            comp = SimpleSeat(s)
+                            if s.type == 'vip':
+                                comp = VIPSeatPriceDecorator(comp)
+                            elif s.type == 'couple':
+                                comp = CoupleSeatPriceDecorator(comp)
+                            subtotal_val += comp.get_price()
+                        
+                        strategy = get_pricing_strategy(showtime.start_time)
+                        subtotal_val = strategy.calculate_base_price(subtotal_val)
+                        subtotal_val = int(subtotal_val * showtime.price_multiplier)
+                        
+                        val = d.value
+                        if d.type == 'percentage':
+                            calc_val = int(subtotal_val * (val / 100.0))
+                        else:
+                            calc_val = val
+                        
+                        if calc_val > best_amount:
+                            best_amount = calc_val
+                            best_discount = d
+                            
+                        raise Exception("Rollback intentional")
+                except Exception as e:
+                    if str(e) != "Rollback intentional":
+                        pass
+            
+            if best_discount:
+                return JsonResponse({
+                    'success': True,
+                    'suggested': True,
+                    'code': best_discount.code,
+                    'discount_amount': best_amount
+                })
+            else:
+                return JsonResponse({
+                    'success': True,
+                    'suggested': False,
+                    'message': 'Không có mã giảm giá khả dụng phù hợp.'
+                })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Method not allowed'})

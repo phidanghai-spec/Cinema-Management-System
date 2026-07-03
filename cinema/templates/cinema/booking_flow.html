@@ -122,6 +122,10 @@
                 <span style="color: var(--color-success);">Discount Applied</span>
                 <span style="color: var(--color-success);">- <span id="discount-display">0</span> VND</span>
             </div>
+            <div class="summary-row" id="points-discount-row" style="display: none;">
+                <span style="color: var(--color-success);">Loyalty Points Discount</span>
+                <span style="color: var(--color-success);">- <span id="points-discount-display">0</span> VND</span>
+            </div>
         </div>
 
         <!-- Voucher Code -->
@@ -134,7 +138,32 @@
             <p id="promo-message" style="font-size: 12px; margin-top: 6px;"></p>
             <input type="hidden" id="applied-discount-value" value="0">
             <input type="hidden" id="applied-discount-code-input" value="">
+            
+            <!-- Suggested Voucher Suggestion box -->
+            <div id="suggested-promo-box" style="display: none; margin-top: 10px; padding: 12px; background: rgba(59,130,246,0.06); border: 1px dashed rgba(59,130,246,0.3); border-radius: var(--radius-md);">
+                <span style="font-size: 12px; color: var(--color-secondary); display: block; margin-bottom: 6px; font-weight: 500;">💡 Đề xuất mã tốt nhất cho bạn:</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <strong id="suggested-promo-code" style="color: white; font-size: 14px;">CODE</strong>
+                    <button type="button" id="apply-suggested-btn" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px; height: auto; min-height: auto;">Áp dụng</button>
+                </div>
+            </div>
         </div>
+
+        <!-- Loyalty Points Redemption -->
+        {% if user.points > 0 %}
+        <div style="margin-bottom: 20px; padding-top: 16px; border-top: 1px dashed var(--border-glass);">
+            <label class="form-label" style="display: flex; justify-content: space-between;">
+                <span>Tích điểm thành viên (Loyalty Points)</span>
+                <span style="color: var(--color-success); font-weight: 600;">Sở hữu: {{ user.points }} điểm</span>
+            </label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="number" id="redeem-points-input" class="form-input" min="0" max="{{ user.points }}" value="0" placeholder="Số điểm muốn dùng..." style="padding: 9px 14px; font-size: 14px;">
+                <button type="button" id="apply-points-btn" class="btn btn-secondary" style="padding: 9px 16px; font-size: 14px; white-space: nowrap;">Đổi điểm</button>
+            </div>
+            <p id="points-message" style="font-size: 12px; margin-top: 6px; color: var(--color-text-muted);">1 điểm = 1,000 VND giảm giá (Tối đa 50% tiền vé)</p>
+            <input type="hidden" id="applied-points-value" value="0">
+        </div>
+        {% endif %}
 
         <!-- Total -->
         <div class="total-row">

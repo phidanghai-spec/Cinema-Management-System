@@ -152,6 +152,13 @@ class Discount(models.Model):
     usage_limit = models.IntegerField(default=1000)
     usage_count = models.IntegerField(default=0)
     per_user_limit = models.IntegerField(default=1)
+    
+    # New fields for advanced validators
+    min_tier = models.CharField(max_length=15, choices=User.TIER_CHOICES, default='Bronze', blank=True, null=True)
+    applicable_movies = models.ManyToManyField(Movie, blank=True, related_name='applicable_discounts')
+    applicable_genre = models.CharField(max_length=100, blank=True, null=True)
+    allow_points_combination = models.BooleanField(default=True)
+    is_golden_hour_only = models.BooleanField(default=False)
 
     def __str__(self):
         return self.code
@@ -171,6 +178,10 @@ class Booking(models.Model):
     refund_amount = models.IntegerField(default=0)
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    # New fields for points
+    redeemed_points = models.IntegerField(default=0)
+    points_earned = models.IntegerField(default=0)
 
     def __str__(self):
         return f"Booking #{self.id} - {self.user.email} - {self.status}"
@@ -199,6 +210,7 @@ class Payment(models.Model):
     method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    payment_url = models.CharField(max_length=1000, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -215,6 +227,26 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.movie.title} ({self.rating}*)"
+
+class ReviewHelpfulVote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='helpful_votes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'review')
+
+    def __str__(self):
+        return f"{self.user.email} helpful vote for Review #{self.review.id}"
+
+class ReviewReply(models.Model):
+    review = models.OneToOneField(Review, on_delete=models.CASCADE, related_name='reply')
+    admin = models.ForeignKey(User, on_delete=models.CASCADE)
+    reply_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reply to Review #{self.review.id} by {self.admin.email}"
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')

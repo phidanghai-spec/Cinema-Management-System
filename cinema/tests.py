@@ -400,8 +400,8 @@ class BuilderPatternTests(BaseTestCase):
         )
         self.assertIsNotNone(booking.id)
         self.assertEqual(booking.notes, "Window seat please")
-        # (80k + 180k) * 1.2 = 312k, discount 20% = 62.4k → 249600
-        self.assertEqual(booking.total_price, 249600)
+        # (80k + 180k) * 1.2 (multiplier) * 1.2 (weekend strategy) = 374.4k, discount 20% = 74.88k → 299520
+        self.assertEqual(booking.total_price, 299520)
 
     def test_builder_without_discount(self):
         """Builder without discount should not apply any deduction."""
@@ -411,8 +411,8 @@ class BuilderPatternTests(BaseTestCase):
             .add_seat(self.seat_normal)
             .build()
         )
-        # 80000 * 1.2 = 96000
-        self.assertEqual(booking.total_price, 96000)
+        # 80000 * 1.2 (multiplier) * 1.2 (weekend strategy) = 115200
+        self.assertEqual(booking.total_price, 115200)
 
     def test_builder_requires_user(self):
         """Builder must raise an error if build() is called without a user."""
@@ -448,7 +448,7 @@ class TemplateMethodTests(BaseTestCase):
             user=self.user,
             showtime=self.showtime,
             seats=[self.seat_vip],
-            payment_method="momo"
+            payment_method="credit_card"
         )
         self.assertEqual(booking.status, "confirmed")
         self.assertIsNotNone(payment.transaction_id)
@@ -873,3 +873,242 @@ class APITests(BaseTestCase):
         resp = self.client.get(reverse('theaters'))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, self.theater.name)
+
+class CineVerseExpansionTests(TestCase):
+    def setUp(self):
+        from .models import User, Movie, Theater, Screen, Seat, Showtime, Discount, Booking, BookingItem
+        import datetime
+        
+        self.user = User.objects.create(email="test@cinema.com", name="Test User", status="active", points=150)
+        self.user.set_password("testpass123")
+        self.user.save()
+        
+        self.admin = User.objects.create(email="admin@cinema.com", name="System Admin", status="active")
+        self.admin.set_password("admin123")
+        self.admin.save()
+        
+        self.movie = Movie.objects.create(
+            title="Inception 2",
+            genre="Sci-Fi, Action",
+            duration=148,
+            release_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(days=30),
+            status="now_showing",
+            rating=8.8
+        )
+        self.theater = Theater.objects.create(name="CineVerse HCM", city="HCM", address="456 Cinema Blvd")
+        self.screen = Screen.objects.create(theater=self.theater, name="Screen 1", format="Standard", capacity=50, rows=5, columns=10)
+        self.seat = Seat.objects.create(screen=self.screen, row="A", column=1, seat_number="A1", type="standard", price=100000)
+        
+        start_t = datetime.datetime.now() + datetime.timedelta(days=1)
+        self.showtime = Showtime.objects.create(
+            movie=self.movie,
+            screen=self.screen,
+            start_time=start_t,
+            end_time=start_t + datetime.timedelta(hours=2),
+            price_multiplier=1.0
+        )
+        
+    def _login(self, email="test@cinema.com", password="testpass123"):
+        self.client.post(reverse('login'), {
+            'email': email,
+            'password': password
+        })
+
+    def test_loyalty_points_discount_limit(self):
+        from .patterns import BookingBuilder
+        
+        # 150 points = 150,000 VND discount. Subtotal is 120,000 VND (due to weekend pricing strategy).
+        # Limit 50% => points discount should be capped at 60,000 VND (60 points).
+        builder = (BookingBuilder()
+            .set_user(self.user)
+            .set_showtime(self.showtime)
+            .add_seat(self.seat)
+            .set_redeemed_points(150)
+        )
+        booking = builder.build()
+        self.assertEqual(booking.redeemed_points, 60)
+        self.assertEqual(booking.total_price, 60000)
+        
+    def test_loyalty_tier_progression_and_cancellation(self):
+        from .models import Booking
+        booking = Booking.objects.create(
+            user=self.user,
+            showtime=self.showtime,
+            total_price=80000,
+            status='pending',
+            redeemed_points=20,
+            points_earned=8
+        )
+        
+        from .patterns import get_booking_state_class
+        state = get_booking_state_class(booking.status)
+        state.confirm(booking)
+        
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.points, 138)
+        self.assertEqual(self.user.tier, 'Silver')
+        
+        state = get_booking_state_class(booking.status)
+        state.cancel(booking)
+        
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.points, 150)
+        self.assertEqual(self.user.tier, 'Silver')
+        
+    def test_verified_purchase_review_enforcement(self):
+        self._login()
+        resp = self.client.post(reverse('submit_review', args=[self.movie.id]), {
+            'rating': 5,
+            'comment': 'Awesome movie!'
+        })
+        from .models import Review
+        self.assertFalse(Review.objects.filter(movie=self.movie).exists())
+        
+        from .models import Booking
+        Booking.objects.create(user=self.user, showtime=self.showtime, total_price=100000, status='confirmed')
+        
+        resp = self.client.post(reverse('submit_review', args=[self.movie.id]), {
+            'rating': 5,
+            'comment': 'Awesome movie!'
+        })
+        self.assertTrue(Review.objects.filter(movie=self.movie).exists())
+        
+    def test_review_helpful_votes_api(self):
+        from .models import Review, Booking
+        Booking.objects.create(user=self.user, showtime=self.showtime, total_price=100000, status='confirmed')
+        review = Review.objects.create(user=self.user, movie=self.movie, rating=4, comment='Good movie')
+        
+        self._login()
+        resp = self.client.post(reverse('api_toggle_review_helpful', args=[review.id]))
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertTrue(data['success'])
+        self.assertEqual(data['state'], 'voted')
+        self.assertEqual(data['helpful_count'], 1)
+        
+        resp = self.client.post(reverse('api_toggle_review_helpful', args=[review.id]))
+        data = json.loads(resp.content)
+        self.assertEqual(data['state'], 'unvoted')
+        self.assertEqual(data['helpful_count'], 0)
+        
+    def test_admin_reply_api(self):
+        from .models import Review, Booking
+        Booking.objects.create(user=self.user, showtime=self.showtime, total_price=100000, status='confirmed')
+        review = Review.objects.create(user=self.user, movie=self.movie, rating=4, comment='Good movie')
+        
+        self._login()
+        resp = self.client.post(reverse('api_submit_review_reply', args=[review.id]), {'reply_text': 'Thank you!'})
+        data = json.loads(resp.content)
+        self.assertFalse(data['success'])
+        
+        self._login(email="admin@cinema.com", password="admin123")
+        resp = self.client.post(reverse('api_submit_review_reply', args=[review.id]), {'reply_text': 'Thank you from admin!'})
+        data = json.loads(resp.content)
+        self.assertTrue(data['success'])
+        self.assertEqual(data['reply_text'], 'Thank you from admin!')
+        
+    def test_momo_payment_flow(self):
+        self._login()
+        resp = self.client.post(reverse('api_create_booking'), json.dumps({
+            'showtime_id': self.showtime.id,
+            'seat_ids': [self.seat.id],
+            'payment_method': 'momo',
+            'phone': '0987654321',
+            'redeemed_points': 0
+        }), content_type='application/json')
+        
+        data = json.loads(resp.content)
+        self.assertTrue(data['success'])
+        self.assertIsNotNone(data['redirect_url'])
+        
+        import hmac, hashlib
+        order_id = data['booking_id']
+        amount = 100000
+        request_id = "req_123"
+        trans_id = "trans_123"
+        result_code = 0
+        message = "Thành công"
+        response_time = "123456789"
+        
+        raw_sig = f"accessKey=klm05TvNBHJg7xgo&amount={amount}&extraData=&message={message}&orderId={order_id}&orderInfo=CineVerse Booking #{order_id}&orderType=momo_wallet&partnerCode=MOMOBKUN20180810&requestId={request_id}&responseTime={response_time}&resultCode={result_code}&payType=qr&transId={trans_id}"
+        sig = hmac.new(b"at170ccm1Uv1gJtGLYgo12qqg6tEHg3I", raw_sig.encode('utf-8'), hashlib.sha256).hexdigest()
+        
+        callback_resp = self.client.get(reverse('momo_callback'), {
+            'partnerCode': 'MOMOBKUN20180810',
+            'orderId': order_id,
+            'requestId': request_id,
+            'amount': amount,
+            'orderInfo': f"CineVerse Booking #{order_id}",
+            'orderType': 'momo_wallet',
+            'transId': trans_id,
+            'resultCode': result_code,
+            'message': message,
+            'payType': 'qr',
+            'responseTime': response_time,
+            'extraData': '',
+            'signature': sig
+        })
+        
+        self.assertEqual(callback_resp.status_code, 302)
+        
+        from .models import Booking
+        booking = Booking.objects.get(id=order_id)
+        self.assertEqual(booking.status, 'confirmed')
+        self.assertEqual(booking.payments.first().status, 'completed')
+        
+    def test_discount_validation_chain_rules(self):
+        from .models import Discount
+        gold_discount = Discount.objects.create(
+            code="GOLDONLY",
+            value=20000,
+            type="fixed",
+            valid_from=datetime.date.today(),
+            valid_to=datetime.date.today() + datetime.timedelta(days=1),
+            min_tier="Gold"
+        )
+        
+        from .patterns import BookingBuilder, get_discount_validation_chain
+        builder = (BookingBuilder()
+            .set_user(self.user)
+            .set_showtime(self.showtime)
+            .add_seat(self.seat)
+            .set_discount(gold_discount)
+        )
+        booking = builder.build()
+        chain = get_discount_validation_chain()
+        
+        # Expect generic exception
+        with self.assertRaises(Exception):
+            chain.validate(gold_discount, booking)
+            
+        self.user.points = 400
+        self.user.tier = "Gold"
+        self.user.save()
+        
+        # Update user instance on booking to reflect tier progression
+        booking.user.tier = "Gold"
+        chain.validate(gold_discount, booking)
+        
+    def test_suggest_discount_api(self):
+        from .models import Discount
+        discount = Discount.objects.create(
+            code="SAVE10",
+            value=10,
+            type="percentage",
+            valid_from=datetime.date.today(),
+            valid_to=datetime.date.today() + datetime.timedelta(days=1)
+        )
+        self._login()
+        resp = self.client.post(reverse('api_suggest_discount'), json.dumps({
+            'showtime_id': self.showtime.id,
+            'seat_ids': [self.seat.id],
+            'subtotal': 100000,
+            'redeemed_points': 0
+        }), content_type='application/json')
+        
+        data = json.loads(resp.content)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['suggested'])
+        self.assertEqual(data['code'], "SAVE10")
+        self.assertEqual(data['discount_amount'], 12000)

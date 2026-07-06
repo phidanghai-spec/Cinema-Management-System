@@ -113,12 +113,21 @@ class BaseTestCase(TestCase):
             seat_number="E1-2", type="couple", price=200000, status="available"
         )
 
-        # Showtime
+        # Showtime (Set to next Saturday to make pricing strategy tests deterministic and in the future)
+        from django.utils import timezone
+        today = timezone.now().date()
+        days_until_saturday = (5 - today.weekday()) % 7
+        if days_until_saturday == 0:
+            days_until_saturday = 7
+        next_saturday = today + datetime.timedelta(days=days_until_saturday)
+        fixed_saturday = timezone.make_aware(
+            datetime.datetime.combine(next_saturday, datetime.time(18, 0, 0))
+        )
         self.showtime = Showtime.objects.create(
             movie=self.movie,
             screen=self.screen,
-            start_time=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1),
-            end_time=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1, hours=2),
+            start_time=fixed_saturday,
+            end_time=fixed_saturday + datetime.timedelta(hours=2),
             price_multiplier=1.2
         )
 
@@ -900,12 +909,20 @@ class CineVerseExpansionTests(TestCase):
         self.screen = Screen.objects.create(theater=self.theater, name="Screen 1", format="Standard", capacity=50, rows=5, columns=10)
         self.seat = Seat.objects.create(screen=self.screen, row="A", column=1, seat_number="A1", type="standard", price=100000)
         
-        start_t = datetime.datetime.now() + datetime.timedelta(days=1)
+        from django.utils import timezone
+        today = timezone.now().date()
+        days_until_saturday = (5 - today.weekday()) % 7
+        if days_until_saturday == 0:
+            days_until_saturday = 7
+        next_saturday = today + datetime.timedelta(days=days_until_saturday)
+        fixed_saturday = timezone.make_aware(
+            datetime.datetime.combine(next_saturday, datetime.time(18, 0, 0))
+        )
         self.showtime = Showtime.objects.create(
             movie=self.movie,
             screen=self.screen,
-            start_time=start_t,
-            end_time=start_t + datetime.timedelta(hours=2),
+            start_time=fixed_saturday,
+            end_time=fixed_saturday + datetime.timedelta(hours=2),
             price_multiplier=1.0
         )
         

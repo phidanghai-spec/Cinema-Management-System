@@ -22,6 +22,12 @@ class User(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='unverified')
     verification_token = models.CharField(max_length=255, blank=True, null=True)
     reset_token = models.CharField(max_length=255, blank=True, null=True)
+    ROLE_CHOICES = [
+        ('customer', 'Customer'),
+        ('admin', 'Admin'),
+        ('staff', 'Staff'),
+    ]
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='customer')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def set_password(self, password):

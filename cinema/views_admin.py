@@ -11,18 +11,9 @@ from .services import BookingService, TheaterService
 from .repositories import UserRepository, MovieRepository, BookingRepository, ShowtimeRepository
 from .views import get_session_user
 
-# Decorator to restrict access to admin user
-def admin_required_view(func):
-    def wrapper(request, *args, **kwargs):
-        user = get_session_user(request)
-        if not user:
-            return redirect('login')
-        if user.email != 'admin@cinema.com':
-            return redirect('index')
-        return func(request, user, *args, **kwargs)
-    return wrapper
+from .utils.decorators import role_required
 
-@admin_required_view
+@role_required('admin')
 def dashboard_view(request, admin):
     bookings = Booking.objects.filter(status__in=['confirmed', 'completed'])
     total_revenue = sum(b.total_price for b in bookings)
@@ -104,9 +95,9 @@ def dashboard_view(request, admin):
         'monthly_revenue_data': json.dumps(monthly_revenue_data),
         'monthly_labels': json.dumps(monthly_labels),
     }
-    return render(request, 'cinema/admin_dashboard.html', context)
+    return render(request, 'cinema/pages/admin/dashboard.html', context)
 
-@admin_required_view
+@role_required('admin')
 def admin_movies_view(request, admin):
     movies = Movie.objects.all().order_by('-release_date')
     if request.method == 'POST':
@@ -151,10 +142,10 @@ def admin_movies_view(request, admin):
             Movie.objects.filter(id=movie_id).delete()
             return redirect('admin_movies')
             
-    return render(request, 'cinema/admin_movies.html', {'admin': admin, 'user': admin, 'movies': movies})
+    return render(request, 'cinema/pages/admin/movies.html', {'admin': admin, 'user': admin, 'movies': movies})
 
 @csrf_exempt
-@admin_required_view
+@role_required('admin')
 def csv_bulk_upload_api(request, admin):
     if request.method == 'POST' and request.FILES.get('csv_file'):
         csv_file = request.FILES['csv_file']
@@ -192,7 +183,7 @@ def csv_bulk_upload_api(request, admin):
         return JsonResponse({'success': True, 'count': success_count, 'errors': error_rows})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
-@admin_required_view
+@role_required('admin')
 def admin_showtimes_view(request, admin):
     showtimes = Showtime.objects.all().select_related('movie', 'screen__theater').order_by('start_time')
     movies = Movie.objects.all()
@@ -217,7 +208,7 @@ def admin_showtimes_view(request, admin):
             ).exists()
 
             if overlap:
-                return render(request, 'cinema/admin_showtimes.html', {
+                return render(request, 'cinema/pages/admin/showtimes.html', {
                     'admin': admin, 'user': admin, 'showtimes': showtimes, 'movies': movies, 'screens': screens,
                     'error': 'Showtime overlaps with an existing schedule on this screen.'
                 })
@@ -237,12 +228,12 @@ def admin_showtimes_view(request, admin):
             Showtime.objects.filter(id=showtime_id).delete()
             return redirect('admin_showtimes')
 
-    return render(request, 'cinema/admin_showtimes.html', {
+    return render(request, 'cinema/pages/admin/showtimes.html', {
         'admin': admin, 'user': admin, 'showtimes': showtimes, 'movies': movies, 'screens': screens
     })
 
 @csrf_exempt
-@admin_required_view
+@role_required('admin')
 def admin_verify_ticket_api(request, admin):
     if request.method == 'POST':
         try:
@@ -264,7 +255,7 @@ def admin_verify_ticket_api(request, admin):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
-@admin_required_view
+@role_required('admin')
 def admin_users_view(request, admin):
     users = User.objects.all().order_by('-created_at')
     if request.method == 'POST':
@@ -278,4 +269,4 @@ def admin_users_view(request, admin):
             user_obj.status = 'active'
             user_obj.save()
         return redirect('admin_users')
-    return render(request, 'cinema/admin_users.html', {'admin': admin, 'user': admin, 'users': users})
+    return render(request, 'cinema/pages/admin/users.html', {'admin': admin, 'user': admin, 'users': users})

@@ -6,11 +6,28 @@ import urllib.request
 import urllib.parse
 import json
 from abc import ABC, abstractmethod
+from .exceptions import (
+    CineVerseException,
+    SeatAlreadyBookedException,
+    InsufficientPointsException,
+    DiscountNotApplicableException,
+    PaymentTimeoutException,
+    InvalidStateTransitionException,
+    AccountBannedException
+)
 
 # ==========================================
 # 2. SINGLETON PATTERN - System Settings
 # ==========================================
 class SystemSettings:
+    """
+    SINGLETON PATTERN: SystemSettings.
+    
+    WHY: Only one instance of system configurations (cancellation fee, seat lock timeout, tax rate)
+    should exist in memory to prevent inconsistency and configuration discrepancies.
+    
+    BENEFIT: Centralized global state control.
+    """
     _instance = None
 
     def __new__(cls):
@@ -154,6 +171,14 @@ class MomoAPI:
 
 # Adapters converting 3rd party to PaymentGateway target
 class StripeAdapter(PaymentGateway):
+    """
+    ADAPTER PATTERN: StripeAdapter.
+    
+    WHY: StripeAPI expects charge amounts in cents and uses incompatible method signatures.
+    StripeAdapter wraps StripeAPI and conforms to our standard PaymentGateway interface.
+    
+    BENEFIT: Decouples our core booking workflow from Stripe's specific class definitions.
+    """
     def __init__(self):
         self.api = StripeAPI()
 
@@ -170,6 +195,14 @@ class StripeAdapter(PaymentGateway):
         return res["status"] == "refunded"
 
 class MomoAdapter(PaymentGateway):
+    """
+    ADAPTER PATTERN: MomoAdapter.
+    
+    WHY: MomoAPI handles redirection-based wallets and signs transactions using custom signatures.
+    MomoAdapter adapts Momo's payment/refund calls to behave like standard PaymentGateway tasks.
+    
+    BENEFIT: Unified payment pipeline across credit cards and digital wallets.
+    """
     def __init__(self):
         self.api = MomoAPI()
 
@@ -197,6 +230,14 @@ class MomoAdapter(PaymentGateway):
 
 # Payment Processor Factory
 class PaymentProcessorFactory:
+    """
+    FACTORY PATTERN: PaymentProcessorFactory.
+    
+    WHY: The client code (booking workflow) should not know which adapter class to instantiate.
+    This factory encapsulates gateway instantiation based on payment method strings.
+    
+    BENEFIT: Easy to extend. To add PayPal, simply create PayPalAdapter and register it here.
+    """
     @staticmethod
     def create_processor(method):
         if method == "credit_card":
@@ -211,6 +252,14 @@ class PaymentProcessorFactory:
 # 4. STRATEGY PATTERN - Movie Pricing Strategy
 # ==========================================
 class PricingStrategy(ABC):
+    """
+    STRATEGY PATTERN: PricingStrategy.
+    
+    WHY: Ticket pricing rules (Weekday, Weekend, Holiday, HappyHour) change frequently and depend on time context.
+    Encapsulating these rules into strategies allows the pricing engine to swap behaviors dynamically at runtime.
+    
+    BENEFIT: Eliminates complex conditional blocks and supports open-closed principle.
+    """
     @abstractmethod
     def calculate_base_price(self, base_price):
         pass
@@ -250,6 +299,14 @@ def get_pricing_strategy(showtime_datetime):
 # 5. OBSERVER PATTERN - Booking Notifications
 # ==========================================
 class BookingObserver(ABC):
+    """
+    OBSERVER PATTERN: BookingObserver.
+    
+    WHY: Booking state changes (confirmations, completions, cancellations) should trigger various notifications 
+    (email logs, database alerts, third-party push notifications) without tightly coupling the booking class.
+    
+    BENEFIT: Clear separation of concerns; notifications can be added/removed without altering booking logic.
+    """
     @abstractmethod
     def update(self, booking, message_type):
         pass
@@ -296,6 +353,14 @@ class BookingSubject:
 # 6. DECORATOR PATTERN - Seat Custom Pricing
 # ==========================================
 class SeatComponent(ABC):
+    """
+    DECORATOR PATTERN: SeatComponent & SeatPriceDecorator.
+    
+    WHY: Seat pricing is dynamic and layered (e.g. VIP premium, Couple premium) and can stack.
+    Using a decorator structure permits wrapping seat pricing functionality at runtime without changing the Seat model.
+    
+    BENEFIT: Extensible pricing decoration without subclass pollution.
+    """
     @abstractmethod
     def get_price(self):
         pass
@@ -329,6 +394,14 @@ class CoupleSeatPriceDecorator(SeatPriceDecorator):
 # 9. CHAIN OF RESPONSIBILITY - Promo Validation
 # ==========================================
 class DiscountValidator(ABC):
+    """
+    CHAIN OF RESPONSIBILITY PATTERN: DiscountValidator.
+    
+    WHY: Promo code validity depends on multiple criteria (expiration, user tier, minimum spend, usage limit, movie limitations, points combi).
+    A chain of validators processes validation checks sequentially. Each handler can either fail the request or delegate it further.
+    
+    BENEFIT: Decouples validation steps from each other and allows custom ordering or validation steps.
+    """
     def __init__(self):
         self.next_validator = None
 
@@ -344,7 +417,7 @@ class ExpiryValidator(DiscountValidator):
     def validate(self, discount, booking):
         today = datetime.date.today()
         if today < discount.valid_from or today > discount.valid_to:
-            raise Exception("Voucher has expired or is not yet valid.")
+            raise DiscountNotApplicableException("Voucher has expired or is not yet valid.")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -352,7 +425,7 @@ class ExpiryValidator(DiscountValidator):
 class MinimumAmountValidator(DiscountValidator):
     def validate(self, discount, booking):
         if booking.total_price < discount.min_amount:
-            raise Exception(f"This code requires a minimum purchase of {discount.min_amount} VND.")
+            raise DiscountNotApplicableException(f"This code requires a minimum purchase of {discount.min_amount} VND.")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -360,7 +433,7 @@ class MinimumAmountValidator(DiscountValidator):
 class UsageLimitValidator(DiscountValidator):
     def validate(self, discount, booking):
         if discount.usage_count >= discount.usage_limit:
-            raise Exception("This discount code is fully redeemed.")
+            raise DiscountNotApplicableException("This discount code is fully redeemed.")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -374,7 +447,7 @@ class PerUserLimitValidator(DiscountValidator):
             status__in=['confirmed', 'completed']
         ).count()
         if user_usage >= discount.per_user_limit:
-            raise Exception("You have already used this discount code.")
+            raise DiscountNotApplicableException("You have already used this discount code.")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -386,7 +459,7 @@ class TierValidator(DiscountValidator):
             user_tier_val = TIER_ORDER.get(booking.user.tier, 0)
             discount_tier_val = TIER_ORDER.get(discount.min_tier, 0)
             if user_tier_val < discount_tier_val:
-                raise Exception(f"Mã giảm giá này yêu cầu hạng thành viên từ {discount.min_tier} trở lên.")
+                raise DiscountNotApplicableException(f"Mã giảm giá này yêu cầu hạng thành viên từ {discount.min_tier} trở lên.")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -395,12 +468,12 @@ class MovieSpecificValidator(DiscountValidator):
     def validate(self, discount, booking):
         if discount.id and discount.applicable_movies.exists():
             if booking.showtime.movie not in discount.applicable_movies.all():
-                raise Exception("Mã giảm giá này không áp dụng cho bộ phim hiện tại.")
+                raise DiscountNotApplicableException("Mã giảm giá này không áp dụng cho bộ phim hiện tại.")
         if discount.applicable_genre:
             movie_genres = [g.strip().lower() for g in booking.showtime.movie.genre.split(',')]
             req_genre = discount.applicable_genre.strip().lower()
             if req_genre not in movie_genres:
-                raise Exception(f"Mã giảm giá này chỉ áp dụng cho phim thể loại '{discount.applicable_genre}'.")
+                raise DiscountNotApplicableException(f"Mã giảm giá này chỉ áp dụng cho phim thể loại '{discount.applicable_genre}'.")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -408,7 +481,7 @@ class MovieSpecificValidator(DiscountValidator):
 class PointsComboValidator(DiscountValidator):
     def validate(self, discount, booking):
         if booking.redeemed_points > 0 and not discount.allow_points_combination:
-            raise Exception("Mã giảm giá này không thể kết hợp với việc đổi điểm tích lũy.")
+            raise DiscountNotApplicableException("Mã giảm giá này không thể kết hợp với việc đổi điểm tích lũy.")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -418,7 +491,7 @@ class GoldenHourValidator(DiscountValidator):
         if discount.is_golden_hour_only or discount.code.upper() in ['GOLDENHOUR', 'HAPPYHOUR']:
             strategy = get_pricing_strategy(booking.showtime.start_time)
             if not isinstance(strategy, HappyHourPricing):
-                raise Exception("Mã giảm giá này chỉ áp dụng cho suất chiếu Giờ Vàng (suất chiếu ngày thường từ 9:00 - 12:00).")
+                raise DiscountNotApplicableException("Mã giảm giá này chỉ áp dụng cho suất chiếu Giờ Vàng (suất chiếu ngày thường từ 9:00 - 12:00).")
         if self.next_validator:
             return self.next_validator.validate(discount, booking)
         return True
@@ -440,6 +513,15 @@ def get_discount_validation_chain():
 # 10. STATE PATTERN - Booking Status State Transitions
 # ==========================================
 class BookingState(ABC):
+    """
+    STATE PATTERN: BookingState (Pending, Confirmed, Completed, Cancelled).
+    
+    WHY: Booking workflows transition through distinct statuses, and behavior changes depending on the current status 
+    (e.g., confirmations, cancellations, points reversal, tier updates).
+    Instead of bloated conditional logic, we delegate actions to specific State classes.
+    
+    BENEFIT: Clear transitions, self-contained business rules per state.
+    """
     @abstractmethod
     def confirm(self, booking):
         pass
@@ -481,11 +563,11 @@ class PendingState(BookingState):
         return True
 
     def complete(self, booking):
-        raise Exception("Cannot complete a booking from pending state directly. Must confirm/pay first.")
+        raise InvalidStateTransitionException("Cannot complete a booking from pending state directly. Must confirm/pay first.")
 
 class ConfirmedState(BookingState):
     def confirm(self, booking):
-        raise Exception("Booking is already confirmed.")
+        raise InvalidStateTransitionException("Booking is already confirmed.")
 
     def cancel(self, booking):
         settings = SystemSettings()
@@ -518,23 +600,23 @@ class ConfirmedState(BookingState):
 
 class CompletedState(BookingState):
     def confirm(self, booking):
-        raise Exception("Booking is already completed.")
+        raise InvalidStateTransitionException("Booking is already completed.")
 
     def cancel(self, booking):
-        raise Exception("Cannot cancel a completed/used booking.")
+        raise InvalidStateTransitionException("Cannot cancel a completed/used booking.")
 
     def complete(self, booking):
-        raise Exception("Booking is already completed.")
+        raise InvalidStateTransitionException("Booking is already completed.")
 
 class CancelledState(BookingState):
     def confirm(self, booking):
-        raise Exception("Cannot confirm a cancelled booking.")
+        raise InvalidStateTransitionException("Cannot confirm a cancelled booking.")
 
     def cancel(self, booking):
-        raise Exception("Booking is already cancelled.")
+        raise InvalidStateTransitionException("Booking is already cancelled.")
 
     def complete(self, booking):
-        raise Exception("Cannot complete a cancelled booking.")
+        raise InvalidStateTransitionException("Cannot complete a cancelled booking.")
 
 def get_booking_state_class(status):
     if status == 'pending':
@@ -553,6 +635,15 @@ def get_booking_state_class(status):
 # 11. BUILDER PATTERN - Complex Booking Builder
 # ==========================================
 class BookingBuilder:
+    """
+    BUILDER PATTERN: BookingBuilder.
+    
+    WHY: Building a Booking object is complex because it involves multiple relationships (User, Showtime, Discount),
+    calculated prices (derived from seats and strategies), and multiple list items (seats).
+    Using a step-by-step Builder prevents "telescoping constructor" anti-pattern and separates representation logic.
+    
+    BENEFIT: Readable creation code and precise step execution.
+    """
     def __init__(self):
         self._user = None
         self._showtime = None
@@ -668,6 +759,15 @@ class BookingBuilder:
 # 8. TEMPLATE METHOD PATTERN - Booking Workflow
 # ==========================================
 class BookingWorkflow(ABC):
+    """
+    TEMPLATE METHOD PATTERN: BookingWorkflow.
+    
+    WHY: The booking pipeline is a standard series of steps (validate user, validate showtime, validate seats,
+    check points, resolve discount, build booking, process payment, transition state, notify).
+    The abstract base class defines the skeleton, and subclasses can customize specific hooks.
+    
+    BENEFIT: Enforces structured transaction flow while allowing customizable step overrides.
+    """
     def execute(self, user, showtime, seats, discount_code=None, notes="", payment_method="credit_card", phone="", redeemed_points=0):
         # Skeleton of the workflow
         self.validate_user(user)
@@ -676,7 +776,7 @@ class BookingWorkflow(ABC):
         
         if redeemed_points > 0:
             if redeemed_points > user.points:
-                raise Exception("Số điểm tích lũy không đủ.")
+                raise InsufficientPointsException("Số điểm tích lũy không đủ.")
 
         discount = None
         if discount_code:
@@ -719,7 +819,7 @@ class BookingWorkflow(ABC):
             subtotal = int(subtotal * showtime.price_multiplier)
             if (redeemed_points * 1000) > int(subtotal * 0.5):
                 booking.delete()
-                raise Exception("Giá trị điểm đổi không được vượt quá 50% tổng tiền vé.")
+                raise InsufficientPointsException("Giá trị điểm đổi không được vượt quá 50% tổng tiền vé.")
 
         # Complete payment step
         payment = self.process_payment(booking, payment_method, phone)
@@ -764,26 +864,30 @@ class BookingWorkflow(ABC):
         pass
 
 class StandardBookingWorkflow(BookingWorkflow):
+    """
+    TEMPLATE METHOD PATTERN implementation: StandardBookingWorkflow.
+    Concretely overrides user, showtime, seat validation, and payment/notification handlers.
+    """
     def validate_user(self, user):
         if user.status == 'banned':
-            raise Exception("User is banned from system.")
+            raise AccountBannedException("User is banned from system.")
 
     def validate_showtime(self, showtime):
         now = datetime.datetime.now(datetime.timezone.utc)
         if showtime.start_time < now:
-            raise Exception("Showtime is in the past.")
+            raise CineVerseException("Showtime is in the past.")
 
     def validate_seats(self, seats):
         for seat in seats:
             if seat.status != 'available':
-                raise Exception(f"Seat {seat.seat_number} is not available.")
+                raise SeatAlreadyBookedException(f"Seat {seat.seat_number} is not available.")
 
     def resolve_discount(self, discount_code):
         from .models import Discount
         try:
             return Discount.objects.get(code__iexact=discount_code)
         except Discount.DoesNotExist:
-            raise Exception("Discount code not found.")
+            raise DiscountNotApplicableException("Discount code not found.")
 
     def validate_discount_code(self, discount, booking):
         chain = get_discount_validation_chain()

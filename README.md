@@ -92,9 +92,10 @@ Dưới đây là danh sách các mẫu thiết kế phần mềm được tích
 
 ## 🎨 Giao Diện Người Dùng (Glassmorphism Dark Theme)
 
-* **Trang chủ (`movie_list.html`):** Hero Carousel tự động trượt hiển thị 3 phim nổi bật, các thẻ phim ứng dụng hiệu ứng Hover Scale & Stagger Fade-in mượt mà.
-* **Chi tiết phim (`movie_detail.html`):** Ảnh nền mờ điện ảnh (Cinematic backdrop blur), widget chấm điểm sao tương tác trực quan.
-* **Luồng đặt vé (`booking_flow.html`):** Thanh tiến trình 3 bước trực quan, sơ đồ chọn ghế có armrest mô phỏng thực tế kèm hiệu ứng nảy (bounce) sinh động khi chọn.
-* **Vé điện tử (`booking_ticket.html`):** Render mã QR thực bằng `qrcode.js` từ CDN, hỗ trợ nút in vé nhanh và sao chép mã đặt vé kèm Toast thông báo.
-* **Profile cá nhân (`profile.html`):** Phân chia 5 tab nội dung (Lịch sử đặt vé, Phim yêu thích, Phim xem sau, Hộp thư thông báo, Cài đặt tài khoản) kèm thanh cấp độ thành viên (Loyalty progress bar) chuyển động mượt mà.
-* **Trang Dashboard Admin (`admin_dashboard.html`):** Biểu đồ doanh thu dạng đường cong Bezier vẽ bằng Canvas thuần, bảng xếp hạng phim bán chạy tích hợp thanh tỷ lệ phần trăm trực quan, ô quét QR xác thực vé trực tiếp tại quầy và lịch sử thực thi các design pattern.
+* **Trang chủ (`pages/movie_list.html`):** Hero Carousel tự động trượt hiển thị 3 phim nổi bật, các thẻ phim ứng dụng hiệu ứng Hover Scale & Stagger Fade-in mượt mà.
+* **Chi tiết phim (`pages/movie_detail.html`):** Ảnh nền mờ điện ảnh (Cinematic backdrop blur), widget chấm điểm sao tương tác trực quan.
+* **Luồng đặt vé (`pages/booking_flow.html`):** Thanh tiến trình 3 bước trực quan, sơ đồ chọn ghế có armrest mô phỏng thực tế kèm hiệu ứng nảy (bounce) sinh động khi chọn.
+* **Vé điện tử (`pages/booking_ticket.html`):** Render mã QR thực bằng `qrcode.js` từ CDN, hỗ trợ nút in vé nhanh và sao chép mã đặt vé kèm Toast thông báo.
+* **Profile cá nhân (`pages/profile.html`):** Phân chia 5 tab nội dung (Lịch sử đặt vé, Phim yêu thích, Phim xem sau, Hộp thư thông báo, Cài đặt tài khoản) kèm thanh cấp độ thành viên (Loyalty progress bar) chuyển động mượt mà.
+* **Trang Dashboard Admin (`pages/admin/dashboard.html`):** Biểu đồ doanh thu dạng đường cong Bezier vẽ bằng Canvas thuần, bảng xếp hạng phim bán chạy tích hợp thanh tỷ lệ phần trưng trực quan, ô quét QR xác thực vé trực tiếp tại quầy và lịch sử thực thi các design pattern.
+

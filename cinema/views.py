@@ -49,8 +49,8 @@ def register_view(request):
             request.session['user_id'] = user.id
             return redirect('index')
         except Exception as e:
-            return render(request, 'cinema/register.html', {'error': str(e)})
-    return render(request, 'cinema/register.html')
+            return render(request, 'cinema/auth/register.html', {'error': str(e)})
+    return render(request, 'cinema/auth/register.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -59,11 +59,11 @@ def login_view(request):
         try:
             user = UserService.login(email, password)
             request.session['user_id'] = user.id
-            request.session['is_admin'] = (user.email == 'admin@cinema.com')
+            request.session['is_admin'] = (user.role == 'admin')
             return redirect('index')
         except Exception as e:
-            return render(request, 'cinema/login.html', {'error': str(e)})
-    return render(request, 'cinema/login.html')
+            return render(request, 'cinema/auth/login.html', {'error': str(e)})
+    return render(request, 'cinema/auth/login.html')
 
 def logout_view(request):
     request.session.flush()
@@ -82,41 +82,41 @@ def forgot_password_view(request):
             reset_url = request.build_absolute_uri(f"/reset-password/{token}/")
             print(f"[Email SIMULATOR] Password reset link for {email}: {reset_url}")
             
-            return render(request, 'cinema/forgot_password.html', {
+            return render(request, 'cinema/auth/forgot_password.html', {
                 'success': "We've generated a mock password reset link.",
                 'mock_reset_url': reset_url
             })
         except User.DoesNotExist:
-            return render(request, 'cinema/forgot_password.html', {'error': "Email address is not registered."})
-    return render(request, 'cinema/forgot_password.html')
+            return render(request, 'cinema/auth/forgot_password.html', {'error': "Email address is not registered."})
+    return render(request, 'cinema/auth/forgot_password.html')
 
 def reset_password_view(request, token):
     try:
         user = User.objects.get(reset_token=token)
     except User.DoesNotExist:
-        return render(request, 'cinema/reset_password.html', {'error': "Invalid or expired reset token.", 'token': token})
+        return render(request, 'cinema/auth/reset_password.html', {'error': "Invalid or expired reset token.", 'token': token})
         
     if request.method == 'POST':
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         if password != confirm_password:
-            return render(request, 'cinema/reset_password.html', {'error': "Passwords do not match.", 'token': token})
+            return render(request, 'cinema/auth/reset_password.html', {'error': "Passwords do not match.", 'token': token})
         if len(password) < 8:
-            return render(request, 'cinema/reset_password.html', {'error': "Password must be at least 8 characters.", 'token': token})
+            return render(request, 'cinema/auth/reset_password.html', {'error': "Password must be at least 8 characters.", 'token': token})
             
         user.set_password(password)
         user.reset_token = None
         user.save()
-        return render(request, 'cinema/login.html', {'success': "Password reset successfully. Please sign in with your new password."})
+        return render(request, 'cinema/auth/login.html', {'success': "Password reset successfully. Please sign in with your new password."})
         
-    return render(request, 'cinema/reset_password.html', {'token': token})
+    return render(request, 'cinema/auth/reset_password.html', {'token': token})
 
 def offers_view(request):
     user = get_session_user(request)
     import datetime
     today = datetime.date.today()
     discounts = Discount.objects.filter(valid_to__gte=today, valid_from__lte=today)
-    return render(request, 'cinema/offers.html', {'user': user, 'discounts': discounts})
+    return render(request, 'cinema/pages/offers.html', {'user': user, 'discounts': discounts})
 
 def watchlist_view(request):
     user = get_session_user(request)
@@ -125,7 +125,7 @@ def watchlist_view(request):
     watchlist_items = Watchlist.objects.filter(user=user).select_related('movie')
     watchlist_ids = watchlist_items.values_list('movie_id', flat=True)
     is_favorites = Favorite.objects.filter(user=user).values_list('movie_id', flat=True)
-    return render(request, 'cinema/watchlist.html', {
+    return render(request, 'cinema/pages/watchlist.html', {
         'user': user,
         'watchlist_items': watchlist_items,
         'favorite_ids': list(is_favorites),
@@ -134,7 +134,7 @@ def watchlist_view(request):
 
 def faq_view(request):
     user = get_session_user(request)
-    return render(request, 'cinema/faq.html', {'user': user})
+    return render(request, 'cinema/pages/faq.html', {'user': user})
 
 def genre_movies_view(request, genre_slug):
     user = get_session_user(request)
@@ -146,7 +146,7 @@ def genre_movies_view(request, genre_slug):
         Q(genre__icontains=clean_genre_space) |
         Q(genre__icontains=genre_slug)
     ).exclude(status='inactive').order_by('-release_date')
-    return render(request, 'cinema/genre_movies.html', {
+    return render(request, 'cinema/pages/genre_movies.html', {
         'user': user,
         'genre_name': clean_genre_space,
         'genre_slug': genre_slug,
@@ -161,7 +161,7 @@ def theaters_view(request):
             t.amenity_list = [a.strip() for a in t.amenities.split(',')]
         else:
             t.amenity_list = []
-    return render(request, 'cinema/theaters.html', {
+    return render(request, 'cinema/pages/theaters.html', {
         'user': user,
         'theaters': theaters,
     })
@@ -204,7 +204,7 @@ def index_view(request):
         'coming_soon_movies': coming_soon_movies,
         'upcoming_showtimes': upcoming_showtimes,
     }
-    return render(request, 'cinema/movie_list.html', context)
+    return render(request, 'cinema/pages/movie_list.html', context)
 
 def movie_detail_view(request, movie_id):
     user = get_session_user(request)
@@ -276,7 +276,7 @@ def movie_detail_view(request, movie_id):
             'sort_reviews': sort_by,
             'verified_reviews': 'true' if verified_only else 'false'
         }
-        return render(request, 'cinema/movie_detail.html', context)
+        return render(request, 'cinema/pages/movie_detail.html', context)
     except Exception as e:
         import traceback
         print(traceback.format_exc())
@@ -319,7 +319,7 @@ def booking_flow_view(request, user, showtime_id):
         'seats_by_row': seats_by_row,
         'booked_seat_ids': list(booked_seat_ids),
     }
-    return render(request, 'cinema/booking_flow.html', context)
+    return render(request, 'cinema/pages/booking_flow.html', context)
 
 @csrf_exempt
 @login_required_view
@@ -374,7 +374,7 @@ def booking_ticket_view(request, user, booking_id):
         'booking': booking,
         'qr_content': f"CINEMA-BOOKING-ID:{booking.id}"
     }
-    return render(request, 'cinema/booking_ticket.html', context)
+    return render(request, 'cinema/pages/booking_ticket.html', context)
 
 @login_required_view
 def mock_momo_gateway_view(request, user):
@@ -388,7 +388,7 @@ def mock_momo_gateway_view(request, user):
         'amount': amount,
         'redirect_url': redirect_url,
     }
-    return render(request, 'cinema/mock_momo_gateway.html', context)
+    return render(request, 'cinema/pages/mock_momo_gateway.html', context)
 
 @csrf_exempt
 def mock_momo_submit_view(request):
@@ -500,12 +500,12 @@ def momo_callback_view(request, user):
         if result_code == 0:
             return redirect('booking_ticket', booking_id=order_id)
         else:
-            return render(request, 'cinema/booking_ticket.html', {
+            return render(request, 'cinema/pages/booking_ticket.html', {
                 'user': user,
                 'error': f"Thanh toán MoMo thất bại: {params.get('message')}"
             })
     else:
-        return render(request, 'cinema/booking_ticket.html', {
+        return render(request, 'cinema/pages/booking_ticket.html', {
             'user': user,
             'error': "Xác minh chữ ký số MoMo thất bại."
         })
@@ -596,7 +596,7 @@ def profile_view(request, user):
         'points_to_next': points_to_next,
         'unread_count': unread_count,
     }
-    return render(request, 'cinema/profile.html', context)
+    return render(request, 'cinema/pages/profile.html', context)
 
 @csrf_exempt
 @login_required_view

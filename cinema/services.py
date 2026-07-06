@@ -29,61 +29,24 @@ from .patterns import (
 logger = logging.getLogger(__name__)
 
 
-# ── Custom Exceptions ─────────────────────────────────────────────────────────
-
-class CinemaException(Exception):
-    """Base exception for all cinema business rule violations."""
-    pass
-
-
-class UserNotFoundException(CinemaException):
-    """Raised when a referenced user does not exist."""
-    pass
-
-
-class DuplicateEmailException(CinemaException):
-    """Raised when registering with an already-used email address."""
-    pass
-
-
-class AccountBannedException(CinemaException):
-    """Raised when a banned user attempts to log in."""
-    pass
-
-
-class InvalidCredentialsException(CinemaException):
-    """Raised on login failure due to wrong email or password."""
-    pass
-
-
-class MovieNotFoundException(CinemaException):
-    """Raised when a referenced movie does not exist."""
-    pass
-
-
-class ShowtimeNotFoundException(CinemaException):
-    """Raised when a referenced showtime does not exist."""
-    pass
-
-
-class SeatNotFoundException(CinemaException):
-    """Raised when one or more requested seats cannot be found."""
-    pass
-
-
-class BookingNotFoundException(CinemaException):
-    """Raised when a referenced booking does not exist."""
-    pass
-
-
-class UnauthorizedActionException(CinemaException):
-    """Raised when a user attempts an action on another user's resource."""
-    pass
-
-
-class InvalidTicketException(CinemaException):
-    """Raised when a QR ticket code is malformed or not found."""
-    pass
+from .exceptions import (
+    CinemaException,
+    UserNotFoundException,
+    DuplicateEmailException,
+    AccountBannedException,
+    InvalidCredentialsException,
+    MovieNotFoundException,
+    ShowtimeNotFoundException,
+    SeatNotFoundException,
+    BookingNotFoundException,
+    UnauthorizedActionException,
+    InvalidTicketException,
+    SeatAlreadyBookedException,
+    InsufficientPointsException,
+    DiscountNotApplicableException,
+    PaymentTimeoutException,
+    InvalidStateTransitionException
+)
 
 
 # ── UserService ───────────────────────────────────────────────────────────────

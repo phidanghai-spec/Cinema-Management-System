@@ -25,7 +25,8 @@ def seed_database():
         name="System Admin",
         tier="Platinum",
         points=1200,
-        status="active"
+        status="active",
+        role="admin"
     )
     admin.set_password("admin123")
     admin.save()
@@ -36,7 +37,8 @@ def seed_database():
         name="Alex Mercer",
         tier="Gold",
         points=340,
-        status="active"
+        status="active",
+        role="customer"
     )
     customer.set_password("customer123")
     customer.save()

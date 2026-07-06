@@ -150,27 +150,7 @@
 
     <!-- Admin Panel Workspace Grid -->
     <div class="admin-container" style="margin-top: 24px;">
-        <!-- Grouped Sidebar Navigation -->
-        <aside class="glass-panel admin-sidebar">
-            <!-- Group 1: General -->
-            <div class="admin-sidebar-group">
-                <div class="admin-sidebar-group-title">Tổng quan</div>
-                <a href="{% url 'admin_dashboard' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">📊 Thống Kê Overview</a>
-            </div>
-            
-            <!-- Group 2: Content -->
-            <div class="admin-sidebar-group">
-                <div class="admin-sidebar-group-title">Nội dung</div>
-                <a href="{% url 'admin_movies' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_movies' %}active{% endif %}">🎬 Quản Lý Phim</a>
-                <a href="{% url 'admin_showtimes' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_showtimes' %}active{% endif %}">📅 Quản Lý Suất Chiếu</a>
-            </div>
-            
-            <!-- Group 3: Operations -->
-            <div class="admin-sidebar-group">
-                <div class="admin-sidebar-group-title">Người dùng & Giao dịch</div>
-                <a href="{% url 'admin_users' %}" class="admin-menu-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">👥 Quản Lý Khách Hàng</a>
-            </div>
-        </aside>
+        {% include 'cinema/components/sidebar_admin.html' %}
 
         <!-- Dynamic Admin Content Block -->
         <div class="admin-workspace-body">

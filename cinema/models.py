@@ -290,3 +290,35 @@ class InAppNotification(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.title} ({self.status})"
+
+class AuditLog(models.Model):
+    """
+    AUDIT TRAIL LOGGING: AuditLog.
+    
+    WHY: Requirements for traceability of admin/staff actions on bookings, prices, and security rules.
+    """
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_logs')
+    action = models.CharField(max_length=255)
+    ip_address = models.CharField(max_length=45, blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        user_email = self.user.email if self.user else "Anonymous"
+        return f"[{self.created_at.strftime('%Y-%m-%d %H:%M')}] {user_email} -> {self.action}"
+
+class EmployeeShift(models.Model):
+    """
+    STAFFING SYSTEM: EmployeeShift.
+    
+    WHY: Handles staffing schedule tracking for cinema staff.
+    """
+    employee = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ['admin', 'staff']}, related_name='shifts')
+    shift_start = models.DateTimeField()
+    shift_end = models.DateTimeField()
+    role_on_shift = models.CharField(max_length=50, default='Ticket Seller')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.employee.name} | {self.role_on_shift} | {self.shift_start.strftime('%d/%m %H:%M')}-{self.shift_end.strftime('%H:%M')}"
+

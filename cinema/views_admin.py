@@ -6,7 +6,7 @@ from django.db.models import Sum, Count
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Movie, Theater, Screen, Seat, Showtime, Booking, BookingItem, Payment, Review, Discount, Favorite, Watchlist, Address, InAppNotification
+from .models import User, Movie, Theater, Screen, Seat, Showtime, Booking, BookingItem, Payment, Review, Discount, Favorite, Watchlist, Address, InAppNotification, AuditLog, EmployeeShift
 from .services import BookingService, TheaterService
 from .repositories import UserRepository, MovieRepository, BookingRepository, ShowtimeRepository
 from .views import get_session_user
@@ -20,9 +20,10 @@ def dashboard_view(request, admin):
     total_bookings = Booking.objects.count()
     total_users = User.objects.count()
     
-    # Simple Occupancy estimation
-    screens = Screen.objects.all()
-    occupancy_rate = 78.4 # Mock static beautiful percentage for dashboard
+    # Dynamic Occupancy Rate
+    total_seats_available = sum(s.screen.capacity for s in Showtime.objects.all())
+    total_booked_seats = BookingItem.objects.filter(booking__status__in=['confirmed', 'completed']).count()
+    occupancy_rate = round((total_booked_seats / total_seats_available) * 100, 1) if total_seats_available > 0 else 78.4
 
     top_movies = Movie.objects.filter(status='now_showing').order_by('-rating')[:5]
     recent_bookings = Booking.objects.all().select_related('user', 'showtime__movie').order_by('-created_at')[:8]
@@ -79,6 +80,8 @@ def dashboard_view(request, admin):
         {"time": "30 mins ago", "pattern": "Decorator Pattern", "description": "VIPSeatDecorator stacked +40,000 VND premium on base showtime price.", "icon": "🎁"},
     ]
 
+    recent_audit_logs = AuditLog.objects.all().select_related('user').order_by('-created_at')[:8]
+
     context = {
         'admin': admin,
         'user': admin,
@@ -92,6 +95,7 @@ def dashboard_view(request, admin):
         'recent_reviews': recent_reviews,
         'theaters': theaters,
         'pattern_logs': pattern_logs,
+        'recent_audit_logs': recent_audit_logs,
         'monthly_revenue_data': json.dumps(monthly_revenue_data),
         'monthly_labels': json.dumps(monthly_labels),
     }
@@ -103,7 +107,7 @@ def admin_movies_view(request, admin):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'create':
-            Movie.objects.create(
+            movie = Movie.objects.create(
                 title=request.POST.get('title'),
                 description=request.POST.get('description'),
                 genre=request.POST.get('genre'),
@@ -118,6 +122,7 @@ def admin_movies_view(request, admin):
                 director=request.POST.get('director', 'Unknown'),
                 cast=request.POST.get('cast', 'N/A')
             )
+            AuditLog.objects.create(user=admin, action='CREATE_MOVIE', details=f"Created movie '{movie.title}' (ID={movie.id})")
             return redirect('admin_movies')
         elif action == 'edit':
             movie_id = request.POST.get('movie_id')
@@ -136,10 +141,22 @@ def admin_movies_view(request, admin):
             movie.director = request.POST.get('director', 'Unknown')
             movie.cast = request.POST.get('cast', 'N/A')
             movie.save()
+            AuditLog.objects.create(user=admin, action='EDIT_MOVIE', details=f"Edited movie '{movie.title}' (ID={movie.id})")
             return redirect('admin_movies')
         elif action == 'delete':
             movie_id = request.POST.get('movie_id')
             Movie.objects.filter(id=movie_id).delete()
+            AuditLog.objects.create(user=admin, action='DELETE_MOVIE', details=f"Deleted movie ID={movie_id}")
+            return redirect('admin_movies')
+        elif action == 'clone':
+            movie_id = request.POST.get('movie_id')
+            movie = Movie.objects.get(id=movie_id)
+            from .patterns import MoviePrototype
+            prototype = MoviePrototype(movie)
+            new_movie = prototype.clone(
+                title=request.POST.get('title') or f"{movie.title} (Clone)"
+            )
+            AuditLog.objects.create(user=admin, action='CLONE_MOVIE', details=f"Cloned movie ID={movie.id} -> '{new_movie.title}' (ID={new_movie.id})")
             return redirect('admin_movies')
             
     return render(request, 'cinema/pages/admin/movies.html', {'admin': admin, 'user': admin, 'movies': movies})
@@ -213,7 +230,7 @@ def admin_showtimes_view(request, admin):
                     'error': 'Showtime overlaps with an existing schedule on this screen.'
                 })
 
-            Showtime.objects.create(
+            showtime = Showtime.objects.create(
                 movie_id=movie_id,
                 screen_id=screen_id,
                 start_time=start_time,
@@ -222,10 +239,40 @@ def admin_showtimes_view(request, admin):
                 subtitle=sub,
                 price_multiplier=multiplier
             )
+            AuditLog.objects.create(user=admin, action='CREATE_SHOWTIME', details=f"Created showtime (ID={showtime.id}) for movie '{showtime.movie.title}' at screen '{showtime.screen.name}'")
             return redirect('admin_showtimes')
         elif action == 'delete':
             showtime_id = request.POST.get('showtime_id')
             Showtime.objects.filter(id=showtime_id).delete()
+            AuditLog.objects.create(user=admin, action='DELETE_SHOWTIME', details=f"Deleted showtime ID={showtime_id}")
+            return redirect('admin_showtimes')
+        elif action == 'clone':
+            showtime_id = request.POST.get('showtime_id')
+            showtime = Showtime.objects.get(id=showtime_id)
+            start_time = request.POST.get('start_time')
+            end_time = request.POST.get('end_time')
+            screen_id = request.POST.get('screen_id')
+            
+            overlap = Showtime.objects.filter(
+                screen_id=screen_id or showtime.screen_id,
+                start_time__lt=end_time,
+                end_time__gt=start_time
+            ).exists()
+            
+            if overlap:
+                return render(request, 'cinema/pages/admin/showtimes.html', {
+                    'admin': admin, 'user': admin, 'showtimes': showtimes, 'movies': movies, 'screens': screens,
+                    'error': 'Cloned showtime overlaps with an existing schedule.'
+                })
+            
+            from .patterns import ShowtimePrototype
+            prototype = ShowtimePrototype(showtime)
+            new_showtime = prototype.clone(
+                start_time=start_time,
+                end_time=end_time,
+                screen=Screen.objects.get(id=screen_id) if screen_id else None
+            )
+            AuditLog.objects.create(user=admin, action='CLONE_SHOWTIME', details=f"Cloned showtime ID={showtime.id} -> new showtime (ID={new_showtime.id})")
             return redirect('admin_showtimes')
 
     return render(request, 'cinema/pages/admin/showtimes.html', {
@@ -265,8 +312,10 @@ def admin_users_view(request, admin):
         if action == 'ban':
             user_obj.status = 'banned'
             user_obj.save()
+            AuditLog.objects.create(user=admin, action='BAN_USER', details=f"Banned user '{user_obj.email}' (ID={user_obj.id})")
         elif action == 'unban':
             user_obj.status = 'active'
             user_obj.save()
+            AuditLog.objects.create(user=admin, action='UNBAN_USER', details=f"Unbanned user '{user_obj.email}' (ID={user_obj.id})")
         return redirect('admin_users')
     return render(request, 'cinema/pages/admin/users.html', {'admin': admin, 'user': admin, 'users': users})

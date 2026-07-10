@@ -929,3 +929,153 @@ class StandardBookingWorkflow(BookingWorkflow):
         subject.attach(email_observer)
         subject.attach(inapp_observer)
         subject.notify(booking, "booking_confirmed")
+
+
+# ==========================================
+# 11. FACADE PATTERN - Booking Facade
+# ==========================================
+class BookingFacade:
+    """
+    FACADE PATTERN: BookingFacade.
+    
+    WHY: Booking ticket process coordinates multiple sub-systems: Resolving User, resolving Showtime,
+    fetching seats, applying discount validators sequence, calculating price strategies,
+    creating booking entries, generating checkout URLs, and firing observers/notifications.
+    The BookingFacade encapsulates this orchestration into a single entry-point for views.
+    
+    BENEFIT: Reduces coupling between views layer and lower domain subsystems.
+    """
+    @staticmethod
+    def book_ticket(user_id, showtime_id, seat_ids, discount_code=None, method="credit_card", phone="", notes="", redeemed_points=0):
+        from .services import BookingService
+        return BookingService.make_booking(
+            user_id=user_id,
+            showtime_id=showtime_id,
+            seat_ids=seat_ids,
+            discount_code=discount_code,
+            method=method,
+            phone=phone,
+            notes=notes,
+            redeemed_points=redeemed_points
+        )
+
+
+# ==========================================
+# 12. COMMAND PATTERN - Booking/Cancellation Commands
+# ==========================================
+class Command(ABC):
+    @abstractmethod
+    def execute(self):
+        pass
+
+class BookCommand(Command):
+    """
+    COMMAND PATTERN: BookCommand.
+    
+    WHY: Represents a request to book a ticket as an object. This allows us to track, queue,
+    audit, and log booking invocations.
+    """
+    def __init__(self, facade, user_id, showtime_id, seat_ids, discount_code=None, method="credit_card", phone="", notes="", redeemed_points=0):
+        self.facade = facade
+        self.user_id = user_id
+        self.showtime_id = showtime_id
+        self.seat_ids = seat_ids
+        self.discount_code = discount_code
+        self.method = method
+        self.phone = phone
+        self.notes = notes
+        self.redeemed_points = redeemed_points
+        self.booking = None
+
+    def execute(self):
+        self.booking = self.facade.book_ticket(
+            user_id=self.user_id,
+            showtime_id=self.showtime_id,
+            seat_ids=self.seat_ids,
+            discount_code=self.discount_code,
+            method=self.method,
+            phone=self.phone,
+            notes=self.notes,
+            redeemed_points=self.redeemed_points
+        )
+        return self.booking
+
+class CancelCommand(Command):
+    """
+    COMMAND PATTERN: CancelCommand.
+    
+    WHY: Represents the request to cancel an existing booking as a standalone Command object.
+    Allows for auditing, rollback, and scheduling of cancellation sequences.
+    """
+    def __init__(self, user_id, booking_id):
+        self.user_id = user_id
+        self.booking_id = booking_id
+        self.cancelled = False
+
+    def execute(self):
+        from .services import BookingService
+        self.cancelled = BookingService.cancel_booking(self.booking_id, self.user_id)
+        return self.cancelled
+
+
+# ==========================================
+# 13. PROTOTYPE PATTERN - Administrative Entity Cloning
+# ==========================================
+class Prototype(ABC):
+    @abstractmethod
+    def clone(self):
+        pass
+
+class MoviePrototype(Prototype):
+    """
+    PROTOTYPE PATTERN: MoviePrototype.
+    
+    WHY: Admins frequently schedule multiple days for the same movie structure or add seasonal variations.
+    Cloning an existing movie saves manual entry and guarantees data consistency.
+    """
+    def __init__(self, movie):
+        self.movie = movie
+
+    def clone(self, title=None, release_date=None, end_date=None):
+        from .models import Movie
+        new_movie = Movie.objects.create(
+            title=title or f"{self.movie.title} (Clone)",
+            description=self.movie.description,
+            genre=self.movie.genre,
+            duration=self.movie.duration,
+            rating=self.movie.rating,
+            formats=self.movie.formats,
+            poster_url=self.movie.poster_url,
+            trailer_url=self.movie.trailer_url,
+            release_date=release_date or self.movie.release_date,
+            end_date=end_date or self.movie.end_date,
+            status='draft',
+            age_rating=self.movie.age_rating,
+            director=self.movie.director,
+            cast=self.movie.cast
+        )
+        return new_movie
+
+class ShowtimePrototype(Prototype):
+    """
+    PROTOTYPE PATTERN: ShowtimePrototype.
+    
+    WHY: Scheduling screens requires copying showtime configurations (language, subtitle, price multiplier)
+    across multiple days.
+    """
+    def __init__(self, showtime):
+        self.showtime = showtime
+
+    def clone(self, start_time, end_time, screen=None):
+        from .models import Showtime
+        new_showtime = Showtime.objects.create(
+            movie=self.showtime.movie,
+            screen=screen or self.showtime.screen,
+            start_time=start_time,
+            end_time=end_time,
+            language=self.showtime.language,
+            subtitle=self.showtime.subtitle,
+            price_multiplier=self.showtime.price_multiplier
+        )
+        return new_showtime
+

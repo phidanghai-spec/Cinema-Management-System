@@ -20,6 +20,7 @@ from .services import (
     UnauthorizedActionException, InvalidTicketException
 )
 from .repositories import UserRepository, MovieRepository, BookingRepository, ShowtimeRepository, DiscountRepository
+from .patterns import BookingFacade, BookCommand, CancelCommand
 
 # Helper to get current session user
 def get_session_user(request):
@@ -335,7 +336,9 @@ def create_booking_api(request, user):
             notes = data.get('notes', '')
             redeemed_points = int(data.get('redeemed_points', 0))
 
-            booking = BookingService.make_booking(
+            facade = BookingFacade()
+            command = BookCommand(
+                facade=facade,
                 user_id=user.id,
                 showtime_id=showtime_id,
                 seat_ids=seat_ids,
@@ -345,6 +348,7 @@ def create_booking_api(request, user):
                 notes=notes,
                 redeemed_points=redeemed_points
             )
+            booking = command.execute()
             
             payment = booking.payments.first()
             redirect_url = payment.payment_url if payment else None
@@ -603,7 +607,8 @@ def profile_view(request, user):
 def cancel_booking_api(request, user, booking_id):
     if request.method == 'POST':
         try:
-            booking = BookingService.cancel_booking(booking_id, user.id)
+            command = CancelCommand(user_id=user.id, booking_id=booking_id)
+            booking = command.execute()
             return JsonResponse({'success': True, 'refund_amount': booking.refund_amount})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})

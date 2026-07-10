@@ -13,6 +13,7 @@ import json
 import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import (
     User, Movie, Theater, Screen, Seat,
@@ -1129,3 +1130,96 @@ class CineVerseExpansionTests(TestCase):
         self.assertTrue(data['suggested'])
         self.assertEqual(data['code'], "SAVE10")
         self.assertEqual(data['discount_amount'], 12000)
+
+
+class FacadePatternTests(BaseTestCase):
+    """Tests for Facade pattern (BookingFacade)."""
+    def test_facade_booking_success(self):
+        from .patterns import BookingFacade
+        facade = BookingFacade()
+        booking = facade.book_ticket(
+            user_id=self.user.id,
+            showtime_id=self.showtime.id,
+            seat_ids=[self.seat_normal.id]
+        )
+        self.assertIsNotNone(booking)
+        self.assertEqual(booking.status, 'confirmed')
+        self.assertEqual(booking.total_price, 115200)  # 80000 * 1.2 (weekend) * 1.2 (showtime multiplier)
+
+
+class CommandPatternTests(BaseTestCase):
+    """Tests for Command pattern (BookCommand & CancelCommand)."""
+    def test_book_and_cancel_commands(self):
+        from .patterns import BookingFacade, BookCommand, CancelCommand
+        facade = BookingFacade()
+        
+        # Test BookCommand
+        book_cmd = BookCommand(
+            facade=facade,
+            user_id=self.user.id,
+            showtime_id=self.showtime.id,
+            seat_ids=[self.seat_normal.id]
+        )
+        booking = book_cmd.execute()
+        self.assertIsNotNone(booking)
+        self.assertEqual(booking.status, 'confirmed')
+
+        # Test CancelCommand
+        cancel_cmd = CancelCommand(
+            user_id=self.user.id,
+            booking_id=booking.id
+        )
+        cancelled = cancel_cmd.execute()
+        self.assertTrue(cancelled)
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, 'cancelled')
+
+
+class PrototypePatternTests(BaseTestCase):
+    """Tests for Prototype pattern (cloning movies and showtimes)."""
+    def test_movie_and_showtime_cloning(self):
+        from .patterns import MoviePrototype, ShowtimePrototype
+        from .models import Movie, Showtime
+        
+        # Clone Movie
+        movie_prototype = MoviePrototype(self.movie)
+        cloned_movie = movie_prototype.clone(title="Inception Season 2")
+        self.assertNotEqual(cloned_movie.id, self.movie.id)
+        self.assertEqual(cloned_movie.title, "Inception Season 2")
+        self.assertEqual(cloned_movie.status, 'draft')
+        
+        # Clone Showtime
+        showtime_prototype = ShowtimePrototype(self.showtime)
+        new_start = self.showtime.start_time + datetime.timedelta(days=2)
+        new_end = self.showtime.end_time + datetime.timedelta(days=2)
+        cloned_showtime = showtime_prototype.clone(start_time=new_start, end_time=new_end)
+        self.assertNotEqual(cloned_showtime.id, self.showtime.id)
+        self.assertEqual(cloned_showtime.movie, self.showtime.movie)
+        self.assertEqual(cloned_showtime.screen, self.showtime.screen)
+
+
+class AuditLogAndShiftTests(BaseTestCase):
+    """Tests for AuditLog logging and EmployeeShift scheduling models."""
+    def test_audit_log_and_employee_shift_creation(self):
+        from .models import AuditLog, EmployeeShift
+        
+        # Create AuditLog
+        log = AuditLog.objects.create(
+            user=self.admin,
+            action="CHANGE_TICKET_PRICE",
+            details="Admin increased IMAX ticket price by 15%"
+        )
+        self.assertEqual(log.user, self.admin)
+        self.assertEqual(log.action, "CHANGE_TICKET_PRICE")
+        self.assertIn("IMAX", log.details)
+        
+        # Create EmployeeShift
+        shift = EmployeeShift.objects.create(
+            employee=self.admin,
+            shift_start=timezone.now(),
+            shift_end=timezone.now() + datetime.timedelta(hours=8),
+            role_on_shift="Supervisor"
+        )
+        self.assertEqual(shift.employee, self.admin)
+        self.assertEqual(shift.role_on_shift, "Supervisor")
+

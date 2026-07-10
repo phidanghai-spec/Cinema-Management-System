@@ -56,7 +56,7 @@ class BaseTestCase(TestCase):
         self.user.save()
 
         self.admin = User.objects.create(
-            email="admin@cinema.com", name="Admin", status="active"
+            email="admin@cinema.com", name="Admin", status="active", role="admin"
         )
         self.admin.set_password("admin123")
         self.admin.save()
@@ -892,7 +892,7 @@ class CineVerseExpansionTests(TestCase):
         self.user.set_password("testpass123")
         self.user.save()
         
-        self.admin = User.objects.create(email="admin@cinema.com", name="System Admin", status="active")
+        self.admin = User.objects.create(email="admin@cinema.com", name="System Admin", status="active", role="admin")
         self.admin.set_password("admin123")
         self.admin.save()
         

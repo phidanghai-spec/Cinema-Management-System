@@ -761,7 +761,7 @@ def toggle_review_helpful_api(request, user, review_id):
 @login_required_view
 def submit_review_reply_api(request, user, review_id):
     if request.method == 'POST':
-        if user.email != 'admin@cinema.com':
+        if user.role != 'admin':
             return JsonResponse({'success': False, 'error': 'Bạn không có quyền thực hiện chức năng này.'})
             
         reply_text = request.POST.get('reply_text', '').strip()

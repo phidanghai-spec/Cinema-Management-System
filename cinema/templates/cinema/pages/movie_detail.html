@@ -201,7 +201,7 @@
                     {% endif %}
 
                     <!-- Admin Reply Form (Visible only to System Admin) -->
-                    {% if user and user.email == 'admin@cinema.com' %}
+                    {% if user and user.role == 'admin' %}
                         <form class="admin-reply-form" data-review-id="{{ r.id }}" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
                             <textarea class="form-input" rows="2" placeholder="Trả lời nhận xét của khách hàng..." required style="padding: 8px 12px; font-size: 13px; min-height: 50px; resize: vertical; background: rgba(15, 23, 42, 0.4);"></textarea>
                             <button type="submit" class="btn btn-primary" style="align-self: flex-end; padding: 6px 16px; font-size: 12px;">Phản Hồi</button>

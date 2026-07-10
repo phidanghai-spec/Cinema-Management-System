@@ -40,7 +40,7 @@
                         </span>
                     </td>
                     <td>
-                        {% if u.email != 'admin@cinema.com' %}
+                        {% if u.role != 'admin' %}
                             <form method="POST" action="{% url 'admin_users' %}" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="user_id" value="{{ u.id }}">

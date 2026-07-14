@@ -193,7 +193,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             if (data.success && data.suggested) {
                 const currentCode = document.getElementById('applied-discount-code-input')?.value;
                 if (currentCode !== data.code) {
-                    codeEl.textContent = `${data.code} (-${formatVND(data.discount_amount)} VND)`;
+                    codeEl.textContent = `${data.code} (-${formatVND(data.discount_amount)} VNĐ)`;
                     codeEl.dataset.code = data.code;
                     box.style.display = 'block';
                 } else {
@@ -369,7 +369,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             }
             
             updateSummary();
-            showToast('Đã đổi điểm!', `Giảm ngay ${formatVND(pointValue)} VND vào hóa đơn.`, 'success');
+            showToast('Đã đổi điểm!', `Giảm ngay ${formatVND(pointValue)} VNĐ vào hóa đơn.`, 'success');
             checkSuggestedDiscount();
         });
     }
@@ -727,25 +727,25 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                     result.style.padding    = '12px';
                     result.style.borderRadius = '8px';
                     result.innerHTML = `
-                        <div style="color:var(--success);font-weight:700;margin-bottom:8px;">✅ Ticket Valid!</div>
+                        <div style="color:var(--success);font-weight:700;margin-bottom:8px;">✅ Vé Hợp Lệ!</div>
                         <div style="color:var(--text-secondary);font-size:13px;line-height:1.8;">
                             👤 ${data.details.user}<br>
                             🎬 ${data.details.movie}<br>
-                            🎫 Seats: ${data.details.seats}<br>
-                            💰 ${parseInt(data.details.price).toLocaleString('vi-VN')} VND
+                            🎫 Ghế: ${data.details.seats}<br>
+                            💰 ${parseInt(data.details.price).toLocaleString('vi-VN')} VNĐ
                         </div>
                     `;
-                    showToast('Ticket Verified!', `Guest: ${data.details.user}`, 'success');
+                    showToast('Xác Thực Vé Thành Công!', `Khách: ${data.details.user}`, 'success');
                 } else {
                     result.style.background = 'rgba(239,68,68,0.1)';
                     result.style.borderLeft = '3px solid var(--danger)';
                     result.style.padding    = '12px';
                     result.style.borderRadius = '8px';
                     result.innerHTML = `<div style="color:var(--danger);font-weight:600;">❌ ${data.error}</div>`;
-                    showToast('Invalid Ticket', data.error, 'error');
+                    showToast('Vé Không Hợp Lệ', data.error, 'error');
                 }
             }
-        } catch { showToast('Error', 'Could not verify ticket.', 'error'); }
+        } catch { showToast('Lỗi', 'Không thể xác thực vé.', 'error'); }
     });
 })();
 
@@ -755,11 +755,11 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
         const btn = e.target.closest('.cancel-booking-btn');
         if (!btn) return;
         
-        if (!confirm('Are you sure you want to cancel this booking? A partial refund may apply.')) return;
+        if (!confirm('Bạn có chắc muốn hủy vé này không? Có thể áp dụng hoàn tiền một phần.')) return;
         
         const bookingId = btn.dataset.bookingId;
         btn.disabled    = true;
-        btn.textContent = '⏳ Cancelling...';
+        btn.textContent = '⏳ Đang Hủy...';
         
         try {
             const res  = await fetch(`/api/booking/cancel/${bookingId}/`, {
@@ -769,17 +769,17 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             });
             const data = await res.json();
             if (data.success) {
-                showToast('Booking Cancelled', `Refund: ${parseInt(data.refund_amount || 0).toLocaleString('vi-VN')} VND`, 'info');
+                showToast('Đã Hủy Vé', `Hoàn tiền: ${parseInt(data.refund_amount || 0).toLocaleString('vi-VN')} VNĐ`, 'info');
                 setTimeout(() => location.reload(), 1500);
             } else {
-                showToast('Error', data.error, 'error');
+                showToast('Lỗi', data.error, 'error');
                 btn.disabled    = false;
-                btn.textContent = 'Cancel Ticket';
+                btn.textContent = 'Hủy Vé';
             }
         } catch {
-            showToast('Network Error', 'Please try again.', 'error');
+            showToast('Lỗi Kết Nối', 'Vui lòng thử lại.', 'error');
             btn.disabled    = false;
-            btn.textContent = 'Cancel Ticket';
+            btn.textContent = 'Hủy Vé';
         }
     });
 })();

@@ -80,16 +80,16 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 12px; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <span style="color: var(--color-text-muted); font-size: 13px;">Seats: </span>
+                        <span style="color: var(--color-text-muted); font-size: 13px;">Ghế: </span>
                         {% for item in booking.items.all %}
                             <span class="seat-badge {{ item.seat.type }}" style="font-size: 12px; padding: 3px 10px;">{{ item.seat.seat_number }}</span>
                         {% endfor %}
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <strong style="color: var(--color-success); font-size: 16px;">{{ booking.total_price|floatformat:"0" }} VND</strong>
+                        <strong style="color: var(--color-success); font-size: 16px;">{{ booking.total_price|floatformat:"0" }} VNĐ</strong>
                         {% if booking.status == 'confirmed' %}
-                            <a href="{% url 'booking_ticket' booking.id %}" class="btn btn-secondary btn-sm">🎫 View Ticket</a>
-                            <button class="btn btn-secondary btn-sm cancel-booking-btn" data-booking-id="{{ booking.id }}" style="color: var(--color-error); border-color: rgba(239,68,68,0.3);">Cancel</button>
+                            <a href="{% url 'booking_ticket' booking.id %}" class="btn btn-secondary btn-sm">🎫 Xem Vé</a>
+                            <button class="btn btn-secondary btn-sm cancel-booking-btn" data-booking-id="{{ booking.id }}" style="color: var(--color-error); border-color: rgba(239,68,68,0.3);">Hủy Vé</button>
                         {% endif %}
                     </div>
                 </div>
@@ -97,9 +97,9 @@
         {% empty %}
             <div class="glass-panel" style="text-align: center; padding: 60px;">
                 <div style="font-size: 50px; margin-bottom: 16px;">🎬</div>
-                <h3 style="color: var(--color-text-secondary); margin-bottom: 10px;">No Bookings Yet</h3>
-                <p style="color: var(--color-text-muted); margin-bottom: 20px;">Start your cinema journey!</p>
-                <a href="{% url 'index' %}" class="btn btn-primary">Browse Movies</a>
+                <h3 style="color: var(--color-text-secondary); margin-bottom: 10px;">Chưa Có Lịch Sử Đặt Vé</h3>
+                <p style="color: var(--color-text-muted); margin-bottom: 20px;">Hãy bắt đầu hành trình điện ảnh của bạn ngay thôi!</p>
+                <a href="{% url 'index' %}" class="btn btn-primary">Khám Phá Phim Chiếu</a>
             </div>
         {% endfor %}
     </div>

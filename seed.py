@@ -6,8 +6,13 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cinema_project.settings')
 django.setup()
 
+from django.utils import timezone
 from cinema.models import User, Movie, Theater, Screen, Seat, Showtime, Discount, Address, Review, Combo
 from cinema.services import TheaterService
+
+def make_dt(d, t):
+    return timezone.make_aware(datetime.datetime.combine(d, t))
+
 
 def seed_database():
     print("Seeding CineVerse Database...")
@@ -260,8 +265,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[0],
             screen=s1_t1,
-            start_time=datetime.datetime.combine(current_date, datetime.time(10, 0)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(11, 36)),
+            start_time=make_dt(current_date, datetime.time(10, 0)),
+            end_time=make_dt(current_date, datetime.time(11, 36)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.2
@@ -269,8 +274,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[0],
             screen=s2_t1,
-            start_time=datetime.datetime.combine(current_date, datetime.time(14, 0)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(15, 36)),
+            start_time=make_dt(current_date, datetime.time(14, 0)),
+            end_time=make_dt(current_date, datetime.time(15, 36)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.0
@@ -280,8 +285,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[1],
             screen=s2_t1,
-            start_time=datetime.datetime.combine(current_date, datetime.time(17, 0)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(19, 7)),
+            start_time=make_dt(current_date, datetime.time(17, 0)),
+            end_time=make_dt(current_date, datetime.time(19, 7)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.0
@@ -289,8 +294,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[1],
             screen=s1_t1,
-            start_time=datetime.datetime.combine(current_date, datetime.time(20, 30)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(22, 37)),
+            start_time=make_dt(current_date, datetime.time(20, 30)),
+            end_time=make_dt(current_date, datetime.time(22, 37)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.2
@@ -300,8 +305,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[2],
             screen=s2_t2,
-            start_time=datetime.datetime.combine(current_date, datetime.time(19, 30)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(22, 19)),
+            start_time=make_dt(current_date, datetime.time(19, 30)),
+            end_time=make_dt(current_date, datetime.time(22, 19)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.3
@@ -309,8 +314,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[2],
             screen=s1_t2,
-            start_time=datetime.datetime.combine(current_date, datetime.time(13, 0)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(15, 49)),
+            start_time=make_dt(current_date, datetime.time(13, 0)),
+            end_time=make_dt(current_date, datetime.time(15, 49)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.5
@@ -320,8 +325,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[3],
             screen=s1_t2,
-            start_time=datetime.datetime.combine(current_date, datetime.time(19, 0)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(21, 46)),
+            start_time=make_dt(current_date, datetime.time(19, 0)),
+            end_time=make_dt(current_date, datetime.time(21, 46)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.5
@@ -329,8 +334,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[3],
             screen=s2_t2,
-            start_time=datetime.datetime.combine(current_date, datetime.time(10, 30)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(13, 16)),
+            start_time=make_dt(current_date, datetime.time(10, 30)),
+            end_time=make_dt(current_date, datetime.time(13, 16)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.3
@@ -340,8 +345,8 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[4],
             screen=s2_t1,
-            start_time=datetime.datetime.combine(current_date, datetime.time(11, 45)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(13, 19)),
+            start_time=make_dt(current_date, datetime.time(11, 45)),
+            end_time=make_dt(current_date, datetime.time(13, 19)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.0
@@ -349,12 +354,13 @@ def seed_database():
         Showtime.objects.create(
             movie=created_movies[4],
             screen=s1_t1,
-            start_time=datetime.datetime.combine(current_date, datetime.time(15, 0)),
-            end_time=datetime.datetime.combine(current_date, datetime.time(16, 34)),
+            start_time=make_dt(current_date, datetime.time(15, 0)),
+            end_time=make_dt(current_date, datetime.time(16, 34)),
             language="English",
             subtitle="Vietnamese",
             price_multiplier=1.2
         )
+
         
     print("Created Active Showtimes for the next 7 days.")
     

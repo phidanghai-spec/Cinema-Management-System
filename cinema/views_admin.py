@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from django.db.models import Sum, Count
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import User, Movie, Theater, Screen, Seat, Showtime, Booking, BookingItem, Payment, Review, Discount, Favorite, Watchlist, Address, InAppNotification, AuditLog, EmployeeShift
 from .services import BookingService, TheaterService
 from .repositories import UserRepository, MovieRepository, BookingRepository, ShowtimeRepository
@@ -161,7 +160,6 @@ def admin_movies_view(request, admin):
             
     return render(request, 'cinema/pages/admin/movies.html', {'admin': admin, 'user': admin, 'movies': movies})
 
-@csrf_exempt
 @role_required('admin')
 def csv_bulk_upload_api(request, admin):
     if request.method == 'POST' and request.FILES.get('csv_file'):
@@ -279,7 +277,6 @@ def admin_showtimes_view(request, admin):
         'admin': admin, 'user': admin, 'showtimes': showtimes, 'movies': movies, 'screens': screens
     })
 
-@csrf_exempt
 @role_required('admin')
 def admin_verify_ticket_api(request, admin):
     if request.method == 'POST':

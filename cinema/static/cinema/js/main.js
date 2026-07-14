@@ -131,7 +131,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                 summaryCombosList.innerHTML = selectedCombos.map(c => 
                     `<div style="display:flex; justify-content:space-between; color:white;">
                         <span>${c.name} x${c.quantity}</span>
-                        <span>${formatVND(c.price * c.quantity)} VND</span>
+                        <span>${formatVND(c.price * c.quantity)} VNĐ</span>
                      </div>`
                 ).join('');
                 summaryCombosRow.style.display = 'flex';
@@ -295,9 +295,9 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                     discountAmount = data.discount_amount;
                     if (discountInput)    discountInput.value    = discountAmount;
                     if (discountCodeInput) discountCodeInput.value = data.code;
-                    if (promoMsg) { promoMsg.style.color = 'var(--success)'; promoMsg.textContent = `✅ Coupon applied! Saving ${formatVND(discountAmount)} VND`; }
+                    if (promoMsg) { promoMsg.style.color = 'var(--success)'; promoMsg.textContent = `✅ Áp dụng coupon thành công! Giảm ${formatVND(discountAmount)} VNĐ`; }
                     updateSummary();
-                    showToast('Đã áp dụng Voucher!', `Bạn được giảm ${formatVND(discountAmount)} VND từ mã ${data.code}`, 'success');
+                    showToast('Đã áp dụng Voucher!', `Bạn được giảm ${formatVND(discountAmount)} VNĐ từ mã ${data.code}`, 'success');
                     checkSuggestedDiscount();
                 } else {
                     if (promoMsg) { promoMsg.style.color = 'var(--danger)'; promoMsg.textContent = `❌ ${data.error}`; }
@@ -361,10 +361,10 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             if (pointsMsg) {
                 if (pts > 0) {
                     pointsMsg.style.color = 'var(--success)';
-                    pointsMsg.textContent = `✅ Đã áp dụng đổi ${pts} điểm (Giảm ${formatVND(pointValue)} VND)`;
+                    pointsMsg.textContent = `✅ Đã áp dụng đổi ${pts} điểm (Giảm ${formatVND(pointValue)} VNĐ)`;
                 } else {
                     pointsMsg.style.color = 'var(--text-muted)';
-                    pointsMsg.textContent = '1 điểm = 1,000 VND giảm giá (Tối đa 50% tiền vé)';
+                    pointsMsg.textContent = '1 điểm = 1,000 VNĐ giảm giá (Tối đa 50% tiền vé)';
                 }
             }
             

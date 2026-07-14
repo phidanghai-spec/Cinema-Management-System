@@ -1,5 +1,5 @@
 {% extends 'cinema/base.html' %}
-{% block title %}Book Tickets | CineVerse{% endblock %}
+{% block title %}Đặt Vé | CineVerse{% endblock %}
 {% block content %}
 
 <!-- Hidden values for JS -->
@@ -12,15 +12,15 @@
 <div class="booking-steps">
     <div class="booking-step active" id="step-indicator-1">
         <div class="step-circle">1</div>
-        <span class="step-label">Select Seats</span>
+        <span class="step-label">Chọn Ghế</span>
     </div>
     <div class="booking-step" id="step-indicator-2">
         <div class="step-circle">2</div>
-        <span class="step-label">Review Order</span>
+        <span class="step-label">Chọn Bắp Nước</span>
     </div>
     <div class="booking-step" id="step-indicator-3">
         <div class="step-circle">3</div>
-        <span class="step-label">Payment</span>
+        <span class="step-label">Thanh Toán</span>
     </div>
 </div>
 
@@ -29,22 +29,22 @@
     <div class="glass-panel seat-map-wrapper booking-step-panel" id="booking-step-panel-1">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 6px;">
             <div>
-                <h2 style="font-size: 24px;">🎭 Choose Your Seats</h2>
+                <h2 style="font-size: 24px;">🎭 Chọn Ghế Của Bạn</h2>
                 <p style="color: var(--color-text-muted); font-size: 14px; margin-top: 4px;">
                     <strong style="color: white;">{{ showtime.movie.title }}</strong> ·
                     {{ showtime.screen.name }} ({{ showtime.screen.format }}) ·
-                    {{ showtime.start_time|date:"l, M d • H:i" }}
+                    {{ showtime.start_time|date:"l, d/m • H:i" }}
                 </p>
             </div>
             <div style="text-align: right;">
-                <span class="badge badge-primary">{{ showtime.price_multiplier }}x Multiplier</span>
+                <span class="badge badge-primary">Hệ Số Nhân {{ showtime.price_multiplier }}x</span>
                 <div id="seat-count-badge" style="margin-top: 6px; font-size: 22px; font-weight: 800; color: var(--color-primary);">0</div>
-                <div style="font-size: 12px; color: var(--color-text-muted);">seats selected</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">ghế đã chọn</div>
             </div>
         </div>
 
         <!-- Screen -->
-        <div class="screen-indicator" style="width: 70%; margin: 30px auto 40px;">SCREEN</div>
+        <div class="screen-indicator" style="width: 70%; margin: 30px auto 40px;">MÀN HÌNH</div>
 
         <!-- Seat Grid -->
         <div class="seat-grid">
@@ -56,7 +56,7 @@
                              data-seat-id="{{ seat.id }}"
                              data-number="{{ seat.seat_number }}"
                              data-price="{{ seat.price }}"
-                             title="{{ seat.seat_number }} · {{ seat.type|title }} · {{ seat.price|floatformat:"0" }} VND">
+                             title="{{ seat.seat_number }} · {{ seat.type|title }} · {{ seat.price|floatformat:"0" }} VNĐ">
                             {% if seat.type == 'couple' %}👥{% else %}{{ seat.column }}{% endif %}
                         </div>
                     {% endfor %}
@@ -68,7 +68,7 @@
         <div class="seat-legend">
             <div class="legend-item">
                 <div class="legend-color" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass);"></div>
-                <span>Standard <em style="color:var(--color-text-muted);">(80k)</em></span>
+                <span>Thường <em style="color:var(--color-text-muted);">(80k)</em></span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4);"></div>
@@ -76,28 +76,28 @@
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.4);"></div>
-                <span>Couple <em style="color:var(--color-text-muted);">(200k)</em></span>
+                <span>Đôi <em style="color:var(--color-text-muted);">(200k)</em></span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background:var(--color-primary);"></div>
-                <span>Selected</span>
+                <span>Đã Chọn</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35);"></div>
-                <span>Booked</span>
+                <span>Đã Đặt</span>
             </div>
         </div>
 
         <!-- Continue Button -->
         <button class="btn btn-primary" type="button" data-goto-step="2" style="margin-top: 24px; padding: 13px 40px; font-size: 16px;">
-            Continue to Combos →
+            Tiếp Tục Chọn Combo →
         </button>
     </div>
 
     <!-- Left: Select Combos (Step 2) -->
     <div class="glass-panel booking-step-panel" id="booking-step-panel-2" style="display: none;">
-        <h2 style="font-size: 24px; margin-bottom: 15px;">🍿 Select Food & Drinks</h2>
-        <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 20px;">Enhance your movie experience with our fresh popcorn and beverages.</p>
+        <h2 style="font-size: 24px; margin-bottom: 15px;">🍿 Chọn Bắp Nước</h2>
+        <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 20px;">Tăng trải nghiệm xem phim của bạn với bắp ngô và nước giải khát tươi ngon của chúng tôi.</p>
         
         <div class="combo-list" style="display: flex; flex-direction: column; gap: 16px;">
             {% for combo in combos %}
@@ -107,7 +107,7 @@
                     <div>
                         <h4 style="font-weight: 700; font-size: 16px; margin: 0; color: white;">{{ combo.name }}</h4>
                         <p style="color: var(--color-text-muted); font-size: 13px; margin: 4px 0 0 0;">{{ combo.description }}</p>
-                        <span style="color: var(--color-secondary); font-weight: 600; font-size: 14px; display: inline-block; margin-top: 4px;">{{ combo.price|floatformat:"0" }} VND</span>
+                        <span style="color: var(--color-secondary); font-weight: 600; font-size: 14px; display: inline-block; margin-top: 4px;">{{ combo.price|floatformat:"0" }} VNĐ</span>
                     </div>
                 </div>
                 <div class="quantity-selector" style="display: flex; align-items: center; gap: 12px;" data-combo-id="{{ combo.id }}" data-combo-name="{{ combo.name }}" data-combo-price="{{ combo.price }}">
@@ -121,36 +121,37 @@
         
         <div style="margin-top: 30px; display: flex; gap: 16px;">
             <button class="btn btn-secondary" type="button" data-goto-step="1" style="padding: 13px 30px; font-size: 16px;">
-                ← Back to Seats
+                ← Quay Lại Chọn Ghế
             </button>
             <button class="btn btn-primary" type="button" data-goto-step="3" style="padding: 13px 40px; font-size: 16px;">
-                Continue to Payment →
+                Tiếp Tục Thanh Toán →
             </button>
         </div>
     </div>
 
     <!-- Left: Payment & Checkout (Step 3) -->
     <div class="glass-panel booking-step-panel" id="booking-step-panel-3" style="display: none;">
-        <h2 style="font-size: 24px; margin-bottom: 15px;">🔒 Payment & Checkout</h2>
-        <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 20px;">Review your order details on the right and complete the payment below.</p>
+        <h2 style="font-size: 24px; margin-bottom: 15px;">🔒 Thanh Toán & Đặt Vé</h2>
+        <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 20px;">Kiểm tra thông tin chi tiết đơn hàng của bạn ở bên phải và hoàn tất thanh toán bên dưới.</p>
         
         <!-- Checkout Form -->
         <form id="checkout-form" style="display: flex; flex-direction: column; gap: 16px;">
             {% csrf_token %}
 
+
             <!-- Payment Methods -->
             <div>
-                <label class="form-label">Payment Method</label>
+                <label class="form-label">Phương Thức Thanh Toán</label>
                 <div class="payment-methods">
                     <label class="payment-card selected" data-method="credit_card">
                         <input type="radio" name="payment_method" value="credit_card" checked style="display: none;">
                         <span class="payment-icon">💳</span>
-                        <span class="payment-label">Stripe Card</span>
+                        <span class="payment-label">Thẻ Stripe</span>
                     </label>
                     <label class="payment-card" data-method="momo">
                         <input type="radio" name="payment_method" value="momo" style="display: none;">
                         <span class="payment-icon">💜</span>
-                        <span class="payment-label">MoMo Wallet</span>
+                        <span class="payment-label">Ví MoMo</span>
                     </label>
                 </div>
             </div>
@@ -158,12 +159,12 @@
             <!-- Credit Card Fields -->
             <div id="credit-card-fields">
                 <div style="margin-bottom: 10px;">
-                    <label class="form-label">Card Number</label>
+                    <label class="form-label">Số Thẻ</label>
                     <input type="text" class="form-input" placeholder="4242 •••• •••• 4242" style="padding: 9px 14px; font-size: 14px;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>
-                        <label class="form-label">Expiry</label>
+                        <label class="form-label">Ngày Hết Hạn</label>
                         <input type="text" class="form-input" placeholder="12/28" style="padding: 9px 14px; font-size: 14px;">
                     </div>
                     <div>
@@ -175,22 +176,22 @@
 
             <!-- Momo Fields -->
             <div id="momo-fields" style="display: none;">
-                <label class="form-label">MoMo Phone Number</label>
+                <label class="form-label">Số Điện Thoại MoMo</label>
                 <input type="text" id="momo-phone-input" class="form-input" placeholder="0912 345 678" style="padding: 9px 14px; font-size: 14px;">
             </div>
 
             <!-- Notes -->
             <div>
-                <label class="form-label">Special Requests (Optional)</label>
-                <input type="text" id="booking-notes" class="form-input" placeholder="e.g. Need wheelchair access..." style="padding: 9px 14px; font-size: 14px;">
+                <label class="form-label">Yêu Cầu Đặc Biệt (Tùy Chọn)</label>
+                <input type="text" id="booking-notes" class="form-input" placeholder="Ví dụ: Cần lối đi xe lăn..." style="padding: 9px 14px; font-size: 14px;">
             </div>
 
             <div style="margin-top: 20px; display: flex; gap: 16px;">
                 <button class="btn btn-secondary" type="button" data-goto-step="2" style="padding: 13px 30px; font-size: 16px; flex: 1;">
-                    ← Back to Combos
+                    ← Quay Lại Chọn Combo
                 </button>
                 <button type="submit" id="booking-checkout-btn" class="btn btn-primary" style="padding: 13px 30px; font-size: 16px; flex: 2;" disabled>
-                    🔒 Complete Payment
+                    🔒 Hoàn Tất Thanh Toán
                 </button>
             </div>
         </form>
@@ -198,7 +199,7 @@
 
     <!-- Right: Booking Summary & Checkout -->
     <div class="glass-panel summary-panel">
-        <h3 class="summary-title grad-text">🧾 Booking Summary</h3>
+        <h3 class="summary-title grad-text">🧾 Tóm Tắt Đơn Hàng</h3>
 
         <!-- Movie Info -->
         <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
@@ -206,45 +207,45 @@
             <p style="color: var(--color-text-muted); font-size: 13px; line-height: 1.7;">
                 🏢 {{ showtime.screen.theater.name }}<br>
                 🎭 {{ showtime.screen.name }} ({{ showtime.screen.format }})<br>
-                📅 {{ showtime.start_time|date:"l, M d, Y • H:i" }}
+                📅 {{ showtime.start_time|date:"l, d/m/Y • H:i" }}
             </p>
         </div>
 
         <!-- Seat & Price Summary -->
         <div style="border-top: 1px dashed var(--border-glass); padding-top: 16px; margin-bottom: 16px;">
             <div class="summary-row">
-                <span style="color: var(--color-text-muted);">Selected Seats</span>
-                <span id="selected-seats-list" style="font-weight: 700; color: var(--color-secondary); max-width: 200px; text-align: right; word-break: break-all;">None</span>
+                <span style="color: var(--color-text-muted);">Ghế Đã Chọn</span>
+                <span id="selected-seats-list" style="font-weight: 700; color: var(--color-secondary); max-width: 200px; text-align: right; word-break: break-all;">Chưa Chọn</span>
             </div>
             <div class="summary-row">
-                <span style="color: var(--color-text-muted);">Tickets Subtotal</span>
-                <span><span id="booking-subtotal">0</span> VND</span>
+                <span style="color: var(--color-text-muted);">Tạm Tính Vé</span>
+                <span><span id="booking-subtotal">0</span> VNĐ</span>
             </div>
             <!-- Combos selection in summary -->
             <div class="summary-row" id="summary-combos-row" style="display: none; flex-direction: column; align-items: flex-start; gap: 4px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px; margin-top: 8px;">
-                <span style="color: var(--color-text-muted); font-size: 13px;">Selected Combos:</span>
+                <span style="color: var(--color-text-muted); font-size: 13px;">Combo Đã Chọn:</span>
                 <div id="summary-combos-list" style="font-size: 13px; font-weight: 600; width: 100%; display: flex; flex-direction: column; gap: 4px;"></div>
             </div>
             <div class="summary-row" id="combos-subtotal-row" style="display: none; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px; margin-top: 8px;">
-                <span style="color: var(--color-text-muted);">Combos Subtotal</span>
-                <span><span id="booking-combos-subtotal">0</span> VND</span>
+                <span style="color: var(--color-text-muted);">Tạm Tính Combo</span>
+                <span><span id="booking-combos-subtotal">0</span> VNĐ</span>
             </div>
             <div class="summary-row" id="discount-row" style="display: none; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
-                <span style="color: var(--color-success);">Discount Applied</span>
-                <span style="color: var(--color-success);">- <span id="discount-display">0</span> VND</span>
+                <span style="color: var(--color-success);">Đã Giảm Giá</span>
+                <span style="color: var(--color-success);">- <span id="discount-display">0</span> VNĐ</span>
             </div>
             <div class="summary-row" id="points-discount-row" style="display: none;">
-                <span style="color: var(--color-success);">Loyalty Points Discount</span>
-                <span style="color: var(--color-success);">- <span id="points-discount-display">0</span> VND</span>
+                <span style="color: var(--color-success);">Giảm Giá Tích Điểm</span>
+                <span style="color: var(--color-success);">- <span id="points-discount-display">0</span> VNĐ</span>
             </div>
         </div>
 
         <!-- Voucher Code -->
         <div style="margin-bottom: 20px;">
-            <label class="form-label">Voucher Code</label>
+            <label class="form-label">Mã Giảm Giá</label>
             <div style="display: flex; gap: 8px;">
                 <input type="text" id="promo-code-input" class="form-input" placeholder="SUMMER2026" style="padding: 9px 14px; font-size: 14px;">
-                <button type="button" id="apply-promo-btn" class="btn btn-secondary" style="padding: 9px 16px; font-size: 14px; white-space: nowrap;">Apply</button>
+                <button type="button" id="apply-promo-btn" class="btn btn-secondary" style="padding: 9px 16px; font-size: 14px; white-space: nowrap;">Áp Dụng</button>
             </div>
             <p id="promo-message" style="font-size: 12px; margin-top: 6px;"></p>
             <input type="hidden" id="applied-discount-value" value="0">
@@ -271,17 +272,18 @@
                 <input type="number" id="redeem-points-input" class="form-input" min="0" max="{{ user.points }}" value="0" placeholder="Số điểm muốn dùng..." style="padding: 9px 14px; font-size: 14px;">
                 <button type="button" id="apply-points-btn" class="btn btn-secondary" style="padding: 9px 16px; font-size: 14px; white-space: nowrap;">Đổi điểm</button>
             </div>
-            <p id="points-message" style="font-size: 12px; margin-top: 6px; color: var(--color-text-muted);">1 điểm = 1,000 VND giảm giá (Tối đa 50% tiền vé)</p>
+            <p id="points-message" style="font-size: 12px; margin-top: 6px; color: var(--color-text-muted);">1 điểm = 1,000 VNĐ giảm giá (Tối đa 50% tiền vé)</p>
             <input type="hidden" id="applied-points-value" value="0">
         </div>
         {% endif %}
 
         <!-- Total -->
         <div class="total-row" style="border-top: 1px solid var(--border-glass); padding-top: 16px;">
-            <span>Total</span>
-            <span style="color: var(--color-warning); font-size: 24px; font-weight: 800;"><span id="booking-total">0</span> VND</span>
+            <span>Tổng Cộng</span>
+            <span style="color: var(--color-warning); font-size: 24px; font-weight: 800;"><span id="booking-total">0</span> VNĐ</span>
         </div>
     </div>
 </div>
 
 {% endblock %}
+

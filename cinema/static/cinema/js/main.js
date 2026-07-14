@@ -97,6 +97,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
     const seatCountEl   = document.getElementById('seat-count-badge');
     
     let selectedSeats = [];
+    let selectedCombos = [];
     let discountAmount = 0;
     let redeemedPoints = 0;
 
@@ -104,10 +105,41 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
 
     function updateSummary() {
         const subtotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+        const combosSubtotal = selectedCombos.reduce((sum, c) => sum + (c.price * c.quantity), 0);
         const pointsDiscount = redeemedPoints * 1000;
-        const total    = Math.max(0, subtotal - discountAmount - pointsDiscount);
+        const total    = Math.max(0, subtotal - discountAmount - pointsDiscount) + combosSubtotal;
         
         if (subtotalEl) subtotalEl.textContent = formatVND(subtotal);
+        
+        // Update combos subtotal in UI
+        const combosSubtotalRow = document.getElementById('combos-subtotal-row');
+        const combosSubtotalEl = document.getElementById('booking-combos-subtotal');
+        if (combosSubtotalRow && combosSubtotalEl) {
+            if (combosSubtotal > 0) {
+                combosSubtotalEl.textContent = formatVND(combosSubtotal);
+                combosSubtotalRow.style.display = 'flex';
+            } else {
+                combosSubtotalRow.style.display = 'none';
+            }
+        }
+        
+        // Update combos list in summary
+        const summaryCombosRow = document.getElementById('summary-combos-row');
+        const summaryCombosList = document.getElementById('summary-combos-list');
+        if (summaryCombosRow && summaryCombosList) {
+            if (selectedCombos.length > 0) {
+                summaryCombosList.innerHTML = selectedCombos.map(c => 
+                    `<div style="display:flex; justify-content:space-between; color:white;">
+                        <span>${c.name} x${c.quantity}</span>
+                        <span>${formatVND(c.price * c.quantity)} VND</span>
+                     </div>`
+                ).join('');
+                summaryCombosRow.style.display = 'flex';
+            } else {
+                summaryCombosRow.style.display = 'none';
+            }
+        }
+
         if (totalEl)    totalEl.textContent    = formatVND(total);
         if (seatListEl) seatListEl.textContent = selectedSeats.length
             ? selectedSeats.map(s => s.number).join(', ')
@@ -195,6 +227,45 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
         updateSummary();
         checkSuggestedDiscount();
     });
+
+    // Select combo quantities
+    const comboSelectors = document.querySelectorAll('.quantity-selector');
+    comboSelectors.forEach(container => {
+        const comboId = parseInt(container.dataset.comboId);
+        const comboName = container.dataset.comboName;
+        const comboPrice = parseInt(container.dataset.comboPrice);
+        const qtyEl = container.querySelector('.combo-qty');
+        
+        container.querySelector('.combo-minus-btn').addEventListener('click', () => {
+            let qty = parseInt(qtyEl.textContent);
+            if (qty > 0) {
+                qty--;
+                qtyEl.textContent = qty;
+                updateComboQty(comboId, comboName, comboPrice, qty);
+            }
+        });
+        
+        container.querySelector('.combo-plus-btn').addEventListener('click', () => {
+            let qty = parseInt(qtyEl.textContent);
+            qty++;
+            qtyEl.textContent = qty;
+            updateComboQty(comboId, comboName, comboPrice, qty);
+        });
+    });
+
+    function updateComboQty(id, name, price, qty) {
+        const existingIdx = selectedCombos.findIndex(c => c.id === id);
+        if (qty === 0) {
+            if (existingIdx >= 0) selectedCombos.splice(existingIdx, 1);
+        } else {
+            if (existingIdx >= 0) {
+                selectedCombos[existingIdx].quantity = qty;
+            } else {
+                selectedCombos.push({ id, name, price, quantity: qty });
+            }
+        }
+        updateSummary();
+    }
 
     // Promo Code
     const applyBtn = document.getElementById('apply-promo-btn');
@@ -366,6 +437,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                     body: JSON.stringify({
                         showtime_id: parseInt(showtimeId),
                         seat_ids: selectedSeats.map(s => s.id),
+                        combo_items: selectedCombos.map(c => ({ combo_id: c.id, quantity: c.quantity })),
                         discount_code: discCode || null,
                         payment_method: method,
                         notes,

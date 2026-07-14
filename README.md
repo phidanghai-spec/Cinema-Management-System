@@ -59,7 +59,7 @@ Sau khi chạy thành công, truy cập trình duyệt tại địa chỉ [http:
 
 ## 🧪 Hệ Thống Kiểm Thử (Unit Tests)
 
-Dự án sở hữu bộ unit test bao phủ toàn bộ chức năng từ Design Patterns, Repositories, Services đến API Endpoints với **69 ca kiểm thử** hoàn chỉnh.
+Dự án sở hữu bộ unit test bao phủ toàn bộ chức năng từ Design Patterns, Repositories, Services đến API Endpoints với **92 ca kiểm thử** hoàn chỉnh.
 
 Chạy toàn bộ unit tests bằng lệnh:
 ```bash
@@ -68,25 +68,29 @@ python manage.py test cinema -v 2
 
 ---
 
-## 🏗️ Thiết Kế Kiến Trúc & 12 Design Patterns Áp Dụng
+## 🏗️ Thiết Kế Kiến Trúc & 15 Design Patterns Áp Dụng
 
 Hệ thống được thiết kế theo mô hình phân lớp chuẩn:
-`Template / Frontend (MVT)` ➔ `View (Controller)` ➔ `Service (Business Logic)` ➔ `Repository (Data Access)` ➔ `Database (SQLite)`
+`Template / Frontend (MVT)` ➔ `View (Controller)` ➔ `Service (Business Logic)` ➔ `Repository (Data Access)` ➔ `Database (MySQL)`
 
 Dưới đây là danh sách các mẫu thiết kế phần mềm được tích hợp trực tiếp trong mã nguồn:
 
 1. **Model-View-Template (MVT):** Cấu trúc chuẩn của Django phân tách rõ ràng giao diện, cơ sở dữ liệu và logic điều hướng.
 2. **Singleton (`SystemSettings`):** Quản lý cấu hình toàn hệ thống (phí hủy vé, thuế suất, tỷ lệ quy đổi điểm) đảm bảo duy nhất một thực thể cấu hình tồn tại.
 3. **Factory (`PaymentProcessorFactory`):** Khởi tạo bộ xử lý thanh toán tương ứng dựa trên phương thức người dùng chọn (`momo` hoặc `credit_card`).
-4. **Strategy (Pricing Strategy):** Tính toán giá vé linh hoạt dựa trên thời gian chiếu (`WeekdayPricing` - giảm 10%, `WeekendPricing` - tăng 20%, `HolidayPricing` - tăng 30%).
+4. **Strategy (Pricing Strategy):** Tính toán giá vé linh hoạt dựa trên thời gian chiếu (`WeekdayPricing` - giảm 10%, `WeekendPricing` - tăng 20%, `HolidayPricing` - tăng 30`).
 5. **Observer (Booking Notifications):** Tự động gửi Email mô phỏng và cập nhật thông báo In-App (`InAppNotification`) khi trạng thái đơn hàng thay đổi.
 6. **Decorator (Seat Price Decorators):** Tính toán phụ thu động dựa trên loại ghế ngồi (`VIPSeatPriceDecorator` tăng 1.5 lần, `CoupleSeatPriceDecorator` tăng 2.0 lần trên giá gốc).
 7. **Repository (Data Access Layer):** Phân tách các câu truy vấn phức tạp ra khỏi tầng xử lý logic nghiệp vụ qua lớp [`repositories.py`](cinema/repositories.py).
 8. **Template Method (`StandardBookingWorkflow`):** Định nghĩa khung quy trình đặt vé chuẩn (Tạo nháp ➔ Áp mã ➔ Thanh toán ➔ Xác nhận ➔ Gửi thông báo).
 9. **Chain of Responsibility (Discount Validation):** Chuỗi kiểm tra điều kiện áp dụng Voucher (Hạn sử dụng ➔ Giá trị tối thiểu ➔ Lượt dùng toàn hệ thống ➔ Lượt dùng của User).
 10. **State (Booking Lifecycle):** Quản lý vòng đời đơn đặt vé (`PendingState` ➔ `ConfirmedState` ➔ `CompletedState` hoặc `CancelledState`) đi kèm điều kiện chuyển trạng thái nghiêm ngặt.
-11. **Builder (`BookingBuilder`):** Hỗ trợ lắp ráp các thành phần phức tạp của đối tượng đặt vé (User, Showtime, Seats, Discount, Notes) một cách tuần tự.
+11. **Builder (`BookingBuilder`):** Hỗ trợ lắp ráp các thành phần phức tạp của đối tượng đặt vé (User, Showtime, Seats, Combo items, Discount, Notes) một cách tuần tự.
 12. **Adapter (Payment Adapters):** Bọc các API không tương thích của bên thứ ba (`MomoAPI`, `StripeAPI`) về một giao diện chung duy nhất (`PaymentGateway`).
+13. **Facade (`BookingFacade`):** Cung cấp giao diện cấp cao đơn giản điều phối đặt vé giữa builder, strategies, và workflow.
+14. **Command (`BookCommand`, `CancelCommand`):** Đóng gói yêu cầu đặt vé/hủy vé thành các đối tượng riêng biệt để ghi log kiểm toán và quản lý giao dịch.
+15. **Prototype (`MoviePrototype`, `ShowtimePrototype`):** Cho phép nhân bản đối tượng Phim/Suất chiếu nhanh chóng để hỗ trợ thiết lập lịch chiếu quy mô lớn.
+
 
 ---
 

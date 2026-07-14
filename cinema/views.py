@@ -314,15 +314,18 @@ def booking_flow_view(request, user, showtime_id):
             seats_by_row[seat.row] = []
         seats_by_row[seat.row].append(seat)
 
+    from .models import Combo
+    combos = Combo.objects.all()
+
     context = {
         'user': user,
         'showtime': showtime,
         'seats_by_row': seats_by_row,
         'booked_seat_ids': list(booked_seat_ids),
+        'combos': combos,
     }
     return render(request, 'cinema/pages/booking_flow.html', context)
 
-@csrf_exempt
 @login_required_view
 def create_booking_api(request, user):
     if request.method == 'POST':
@@ -330,6 +333,7 @@ def create_booking_api(request, user):
             data = json.loads(request.body)
             showtime_id = data.get('showtime_id')
             seat_ids = data.get('seat_ids', [])
+            combo_items = data.get('combo_items', [])
             discount_code = data.get('discount_code')
             payment_method = data.get('payment_method', 'credit_card')
             phone = data.get('phone', '')
@@ -342,6 +346,7 @@ def create_booking_api(request, user):
                 user_id=user.id,
                 showtime_id=showtime_id,
                 seat_ids=seat_ids,
+                combo_items=combo_items,
                 discount_code=discount_code,
                 method=payment_method,
                 phone=phone,
@@ -602,7 +607,6 @@ def profile_view(request, user):
     }
     return render(request, 'cinema/pages/profile.html', context)
 
-@csrf_exempt
 @login_required_view
 def cancel_booking_api(request, user, booking_id):
     if request.method == 'POST':
@@ -614,7 +618,6 @@ def cancel_booking_api(request, user, booking_id):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-@csrf_exempt
 @login_required_view
 def validate_discount_api(request, user):
     if request.method == 'POST':
@@ -646,7 +649,6 @@ def validate_discount_api(request, user):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-@csrf_exempt
 @login_required_view
 def toggle_favorite_api(request, user):
     if request.method == 'POST':
@@ -668,7 +670,6 @@ def toggle_favorite_api(request, user):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-@csrf_exempt
 @login_required_view
 def toggle_watchlist_api(request, user):
     if request.method == 'POST':
@@ -690,7 +691,6 @@ def toggle_watchlist_api(request, user):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-@csrf_exempt
 @login_required_view
 def mark_notifications_read_api(request, user):
     if request.method == 'POST':
@@ -742,7 +742,6 @@ def submit_review_view(request, user, movie_id):
                 movie.save()
     return redirect('movie_detail', movie_id=movie_id)
 
-@csrf_exempt
 @login_required_view
 def toggle_review_helpful_api(request, user, review_id):
     if request.method == 'POST':
@@ -762,7 +761,6 @@ def toggle_review_helpful_api(request, user, review_id):
             return JsonResponse({'success': False, 'error': 'Đánh giá không tồn tại.'})
     return JsonResponse({'success': False, 'error': 'Method not allowed'})
 
-@csrf_exempt
 @login_required_view
 def submit_review_reply_api(request, user, review_id):
     if request.method == 'POST':
@@ -789,7 +787,6 @@ def submit_review_reply_api(request, user, review_id):
             return JsonResponse({'success': False, 'error': 'Đánh giá không tồn tại.'})
     return JsonResponse({'success': False, 'error': 'Method not allowed'})
 
-@csrf_exempt
 @login_required_view
 def suggest_discount_api(request, user):
     if request.method == 'POST':

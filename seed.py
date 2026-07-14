@@ -6,7 +6,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cinema_project.settings')
 django.setup()
 
-from cinema.models import User, Movie, Theater, Screen, Seat, Showtime, Discount, Address, Review
+from cinema.models import User, Movie, Theater, Screen, Seat, Showtime, Discount, Address, Review, Combo
 from cinema.services import TheaterService
 
 def seed_database():
@@ -18,6 +18,8 @@ def seed_database():
     Theater.objects.all().delete()
     Showtime.objects.all().delete()
     Discount.objects.all().delete()
+    Combo.objects.all().delete()
+
 
     # 2. Create Users
     admin = User.objects.create(
@@ -355,7 +357,32 @@ def seed_database():
         )
         
     print("Created Active Showtimes for the next 7 days.")
+    
+    # 8. Create Combos
+    Combo.objects.create(
+        name="Combo Solo",
+        description="1 Bắp Ngọt Vừa + 1 Nước Ngọt (Medium)",
+        price=75000
+    )
+    Combo.objects.create(
+        name="Combo Đôi",
+        description="1 Bắp Lớn + 2 Nước Ngọt (Medium)",
+        price=105000
+    )
+    Combo.objects.create(
+        name="Combo Gia Đình",
+        description="2 Bắp Ngọt Vừa + 3 Nước Ngọt (Medium)",
+        price=155000
+    )
+    Combo.objects.create(
+        name="Combo Siêu Cấp VIP",
+        description="1 Bắp Lớn Đặc Biệt + 2 Nước Ngọt Lớn + 1 Khoai Tây Chiên",
+        price=135000
+    )
+    print("Created food & drinks combos.")
+
     print("Database seeding completed successfully! Ready for launch.")
+
 
 if __name__ == '__main__':
     seed_database()

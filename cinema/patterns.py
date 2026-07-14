@@ -648,6 +648,7 @@ class BookingBuilder:
         self._user = None
         self._showtime = None
         self._seats = []
+        self._combos = []
         self._discount = None
         self._notes = ""
         self._redeemed_points = 0
@@ -662,6 +663,10 @@ class BookingBuilder:
 
     def add_seat(self, seat):
         self._seats.append(seat)
+        return self
+
+    def add_combo(self, combo, quantity):
+        self._combos.append((combo, quantity))
         return self
 
     def set_discount(self, discount):
@@ -700,7 +705,7 @@ class BookingBuilder:
         subtotal = strategy.calculate_base_price(subtotal)
         subtotal = int(subtotal * self._showtime.price_multiplier)
 
-        # Apply discount if valid
+        # Apply discount if valid (discounts apply ONLY to tickets/seats)
         discount_amount = 0
         if self._discount:
             if self._discount.type == 'percentage':
@@ -715,7 +720,11 @@ class BookingBuilder:
             points_discount = max_points_discount
             self._redeemed_points = max_points_discount // 1000
         
-        total_price = max(0, subtotal - discount_amount - points_discount)
+        seat_total = max(0, subtotal - discount_amount - points_discount)
+        
+        # Calculate combos subtotal
+        combo_subtotal = sum(combo.price * qty for combo, qty in self._combos)
+        total_price = seat_total + combo_subtotal
         
         # Calculate points earned (1 point per 10k VND of total price)
         settings = SystemSettings.get_instance()
@@ -733,7 +742,7 @@ class BookingBuilder:
             points_earned=points_earned
         )
 
-        # Create BookingItems
+        # Create BookingItems for seats
         for seat in self._seats:
             component = SimpleSeat(seat)
             if seat.type == 'vip':
@@ -752,7 +761,17 @@ class BookingBuilder:
                 price=item_price
             )
 
+        # Create BookingItems for combos
+        for combo, qty in self._combos:
+            BookingItem.objects.create(
+                booking=booking,
+                combo=combo,
+                quantity=qty,
+                price=combo.price
+            )
+
         return booking
+
 
 
 # ==========================================
@@ -768,7 +787,7 @@ class BookingWorkflow(ABC):
     
     BENEFIT: Enforces structured transaction flow while allowing customizable step overrides.
     """
-    def execute(self, user, showtime, seats, discount_code=None, notes="", payment_method="credit_card", phone="", redeemed_points=0):
+    def execute(self, user, showtime, seats, combo_items=None, discount_code=None, notes="", payment_method="credit_card", phone="", redeemed_points=0):
         # Skeleton of the workflow
         self.validate_user(user)
         self.validate_showtime(showtime)
@@ -791,10 +810,19 @@ class BookingWorkflow(ABC):
         )
         for seat in seats:
             builder.add_seat(seat)
+        if combo_items:
+            from .models import Combo
+            for item in combo_items:
+                combo_id = item.get('combo_id')
+                quantity = item.get('quantity', 1)
+                if quantity > 0:
+                    combo = Combo.objects.get(id=combo_id)
+                    builder.add_combo(combo, quantity)
         if discount:
             builder.set_discount(discount)
             
         booking = builder.build()
+
 
         # Validate discount sequentially if code was provided (Chain of Responsibility)
         if discount:
@@ -946,12 +974,13 @@ class BookingFacade:
     BENEFIT: Reduces coupling between views layer and lower domain subsystems.
     """
     @staticmethod
-    def book_ticket(user_id, showtime_id, seat_ids, discount_code=None, method="credit_card", phone="", notes="", redeemed_points=0):
+    def book_ticket(user_id, showtime_id, seat_ids, combo_items=None, discount_code=None, method="credit_card", phone="", notes="", redeemed_points=0):
         from .services import BookingService
         return BookingService.make_booking(
             user_id=user_id,
             showtime_id=showtime_id,
             seat_ids=seat_ids,
+            combo_items=combo_items,
             discount_code=discount_code,
             method=method,
             phone=phone,
@@ -975,11 +1004,12 @@ class BookCommand(Command):
     WHY: Represents a request to book a ticket as an object. This allows us to track, queue,
     audit, and log booking invocations.
     """
-    def __init__(self, facade, user_id, showtime_id, seat_ids, discount_code=None, method="credit_card", phone="", notes="", redeemed_points=0):
+    def __init__(self, facade, user_id, showtime_id, seat_ids, combo_items=None, discount_code=None, method="credit_card", phone="", notes="", redeemed_points=0):
         self.facade = facade
         self.user_id = user_id
         self.showtime_id = showtime_id
         self.seat_ids = seat_ids
+        self.combo_items = combo_items
         self.discount_code = discount_code
         self.method = method
         self.phone = phone
@@ -992,6 +1022,7 @@ class BookCommand(Command):
             user_id=self.user_id,
             showtime_id=self.showtime_id,
             seat_ids=self.seat_ids,
+            combo_items=self.combo_items,
             discount_code=self.discount_code,
             method=self.method,
             phone=self.phone,
@@ -999,6 +1030,7 @@ class BookCommand(Command):
             redeemed_points=self.redeemed_points
         )
         return self.booking
+
 
 class CancelCommand(Command):
     """

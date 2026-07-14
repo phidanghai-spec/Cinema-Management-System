@@ -192,13 +192,29 @@ class Booking(models.Model):
     def __str__(self):
         return f"Booking #{self.id} - {self.user.email} - {self.status}"
 
+class Combo(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    price = models.IntegerField()
+    image_url = models.CharField(max_length=500, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
 class BookingItem(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='items')
-    seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
+    seat = models.ForeignKey(Seat, on_delete=models.CASCADE, null=True, blank=True)
+    combo = models.ForeignKey(Combo, on_delete=models.CASCADE, null=True, blank=True)
+    quantity = models.IntegerField(default=1)
     price = models.IntegerField()
 
     def __str__(self):
-        return f"Booking #{self.booking.id} - Seat {self.seat.seat_number}"
+        if self.seat:
+            return f"Booking #{self.booking.id} - Seat {self.seat.seat_number}"
+        elif self.combo:
+            return f"Booking #{self.booking.id} - Combo {self.combo.name} x{self.quantity}"
+        return f"Booking #{self.booking.id} - Item #{self.id}"
+
 
 class Payment(models.Model):
     PAYMENT_METHODS = [

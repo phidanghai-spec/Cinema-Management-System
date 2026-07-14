@@ -86,7 +86,7 @@ d:/Cinema Management System/
 │   │
 │   ├── exceptions.py              # Specialized Domain Exceptions
 │   ├── models.py                  # Django DB Models
-│   ├── patterns.py                # 12 Design Pattern Implementations
+│   ├── patterns.py                # 15 Design Pattern Implementations
 │   ├── repositories.py            # Data Access Layer
 │   ├── services.py                # Business Logic Layer
 │   ├── urls.py                    # App Routing Links
@@ -98,3 +98,40 @@ d:/Cinema Management System/
 ├── requirements.txt               # Application Dependencies
 └── README.md                      # General Information
 ```
+
+---
+
+## 📊 Database Schema ERD
+
+Below is the entity-relationship diagram (ERD) of CineVerse, showing how the database models (including the new `Combo` model and extended `BookingItem`) relate:
+
+```mermaid
+erDiagram
+    User ||--o{ Booking : places
+    User ||--o{ Favorite : likes
+    User ||--o{ Watchlist : saves
+    User ||--o{ Review : writes
+    User ||--o{ InAppNotification : receives
+    
+    Movie ||--o{ Showtime : scheduled-for
+    Movie ||--o{ Favorite : favorited-by
+    Movie ||--o{ Watchlist : watchlisted-by
+    Movie ||--o{ Review : reviewed-by
+    
+    Theater ||--o{ Screen : contains
+    Screen ||--o{ Seat : contains
+    Screen ||--o{ Showtime : hosts
+    
+    Showtime ||--o{ Booking : booked-in
+    
+    Booking ||--o{ BookingItem : contains
+    Booking ||--o{ Payment : paid-via
+    Booking }|--o| Discount : applies
+    
+    BookingItem ||--o| Seat : reserves
+    BookingItem ||--o| Combo : purchases
+    
+    Review ||--o{ ReviewHelpfulVote : gathers
+    Review ||--o| ReviewReply : answered-by
+```
+

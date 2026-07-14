@@ -429,6 +429,55 @@ class BuilderPatternTests(BaseTestCase):
         with self.assertRaises(Exception):
             BookingBuilder().set_showtime(self.showtime).build()
 
+    def test_builder_calculates_combos_separately(self):
+        """BookingBuilder must apply discount code ONLY to ticket subtotal and add combo price in full."""
+        from .models import Combo
+        combo = Combo.objects.create(name="Popcorn Medium", price=50000)
+        
+        booking = (BookingBuilder()
+            .set_user(self.user)
+            .set_showtime(self.showtime)
+            .add_seat(self.seat_normal)
+            .add_combo(combo, 2)
+            .set_discount(self.discount)
+            .build()
+        )
+        
+        # Ticket base subtotal = 80000 * 1.2 (multiplier) * 1.2 (weekend strategy) = 115200
+        # Discount = 20% of 115200 = 23040
+        # Ticket total = 115200 - 23040 = 92160
+        # Combo subtotal = 50000 * 2 = 100000
+        # Expected booking total = 92160 + 100000 = 192160
+        self.assertEqual(booking.total_price, 192160)
+
+    def test_builder_saves_combo_booking_items(self):
+        """BookingBuilder must create and save BookingItem objects for combos correctly."""
+        from .models import Combo, BookingItem
+        combo1 = Combo.objects.create(name="Popcorn", price=50000)
+        combo2 = Combo.objects.create(name="Drink", price=30000)
+        
+        booking = (BookingBuilder()
+            .set_user(self.user)
+            .set_showtime(self.showtime)
+            .add_seat(self.seat_normal)
+            .add_combo(combo1, 1)
+            .add_combo(combo2, 3)
+            .build()
+        )
+        
+        items = BookingItem.objects.filter(booking=booking)
+        # 1 seat item + 2 combo items = 3 items in total
+        self.assertEqual(items.count(), 3)
+        
+        combo1_item = items.get(combo=combo1)
+        self.assertEqual(combo1_item.quantity, 1)
+        self.assertEqual(combo1_item.price, 50000)
+        
+        combo2_item = items.get(combo=combo2)
+        self.assertEqual(combo2_item.quantity, 3)
+        self.assertEqual(combo2_item.price, 30000)
+
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PATTERN 9: TEMPLATE METHOD
@@ -1074,8 +1123,42 @@ class CineVerseExpansionTests(TestCase):
         booking = Booking.objects.get(id=order_id)
         self.assertEqual(booking.status, 'confirmed')
         self.assertEqual(booking.payments.first().status, 'completed')
+
+    def test_create_booking_api_with_combos(self):
+        """POST api_create_booking with combos must succeed and link combos to BookingItems."""
+        from .models import Combo, Booking, BookingItem
+        combo = Combo.objects.create(name="Hotdog Combo", price=60000)
         
+        self._login()
+        resp = self.client.post(reverse('api_create_booking'), json.dumps({
+            'showtime_id': self.showtime.id,
+            'seat_ids': [self.seat.id],
+            'combo_items': [{'combo_id': combo.id, 'quantity': 2}],
+            'payment_method': 'credit_card',
+            'redeemed_points': 0
+        }), content_type='application/json')
+        
+        data = json.loads(resp.content)
+        self.assertTrue(data['success'])
+        
+        booking = Booking.objects.get(id=data['booking_id'])
+        # Seat price: 100000 * 1.0 multiplier * 1.2 (weekend) = 120000
+        # Combo price: 60000 * 2 = 120000
+        # Expected total: 120000 + 120000 = 240000
+        self.assertEqual(booking.total_price, 240000)
+        
+        items = BookingItem.objects.filter(booking=booking)
+        self.assertEqual(items.count(), 2)
+        
+        seat_item = items.get(seat=self.seat)
+        self.assertEqual(seat_item.price, 120000)
+        
+        combo_item = items.get(combo=combo)
+        self.assertEqual(combo_item.quantity, 2)
+        self.assertEqual(combo_item.price, 60000)
+
     def test_discount_validation_chain_rules(self):
+
         from .models import Discount
         gold_discount = Discount.objects.create(
             code="GOLDONLY",

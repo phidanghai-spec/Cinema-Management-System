@@ -262,6 +262,7 @@ class BookingService:
         user_id: int,
         showtime_id: int,
         seat_ids: List[int],
+        combo_items: Optional[List[dict]] = None,
         discount_code: Optional[str] = None,
         method: str = "credit_card",
         phone: str = "",
@@ -280,6 +281,7 @@ class BookingService:
             user_id:       ID of the authenticated user making the booking.
             showtime_id:   ID of the selected showtime.
             seat_ids:      List of seat IDs the user has chosen.
+            combo_items:   Optional list of food and drink combos.
             discount_code: Optional coupon code string (e.g. 'SUMMER2026').
             method:        Payment method slug: 'credit_card' or 'momo'.
             phone:         Phone number for MoMo payments.
@@ -323,6 +325,7 @@ class BookingService:
             user=user,
             showtime=showtime,
             seats=seats,
+            combo_items=combo_items,
             discount_code=discount_code,
             notes=notes,
             payment_method=method,
@@ -332,6 +335,7 @@ class BookingService:
 
         logger.info(f"Booking id={booking.id} completed successfully — total={booking.total_price}")
         return booking
+
 
     @staticmethod
     @transaction.atomic

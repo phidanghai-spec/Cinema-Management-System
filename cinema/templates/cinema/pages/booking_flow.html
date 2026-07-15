@@ -56,6 +56,11 @@
                              data-seat-id="{{ seat.id }}"
                              data-number="{{ seat.seat_number }}"
                              data-price="{{ seat.price }}"
+                             role="checkbox"
+                             aria-checked="false"
+                             tabindex="{% if seat.id in booked_seat_ids or seat.status == 'maintenance' %}-1{% else %}0{% endif %}"
+                             aria-label="Ghế {{ seat.seat_number }} - {{ seat.type|title }} - {{ seat.price|floatformat:"0" }} VNĐ"
+                             {% if seat.id in booked_seat_ids %}aria-disabled="true"{% endif %}
                              title="{{ seat.seat_number }} · {{ seat.type|title }} · {{ seat.price|floatformat:"0" }} VNĐ">
                             {% if seat.type == 'couple' %}👥{% else %}{{ seat.column }}{% endif %}
                         </div>

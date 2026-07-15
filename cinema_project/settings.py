@@ -19,13 +19,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
+from decouple import config
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v6z)cil36u$t)7_$%_uzl^quy)web9v^sl0dvfj_e==8_^1g7k'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-v6z)cil36u$t)7_$%_uzl^quy)web9v^sl0dvfj_e==8_^1g7k')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
 
 
 # Application definition
@@ -74,19 +76,39 @@ WSGI_APPLICATION = 'cinema_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cineverse_db',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+import os
+env_path = BASE_DIR / '.env'
+default_engine = 'django.db.backends.mysql' if os.path.exists(env_path) else 'django.db.backends.sqlite3'
+default_db_name = 'cineverse_db' if os.path.exists(env_path) else 'db.sqlite3'
+
+DB_ENGINE = config('DB_ENGINE', default=default_engine)
+DB_NAME = config('DB_NAME', default=default_db_name)
+DB_USER = config('DB_USER', default='root')
+DB_PASSWORD = config('DB_PASSWORD', default='')
+DB_HOST = config('DB_HOST', default='127.0.0.1')
+DB_PORT = config('DB_PORT', default='3306')
+
+if DB_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': BASE_DIR / DB_NAME,
         }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            }
+        }
+    }
 
 
 # Password validation
@@ -170,4 +192,10 @@ LOGGING = {
 # Media Files (User uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# MoMo Payment Sandbox Settings
+MOMO_PARTNER_CODE = config('MOMO_PARTNER_CODE', default='MOMOBKUN20180810')
+MOMO_ACCESS_KEY = config('MOMO_ACCESS_KEY', default='klm05TvNBHJg7xgo')
+MOMO_SECRET_KEY = config('MOMO_SECRET_KEY', default='at170ccm1Uv1gJtGLYgo12qqg6tEHg3I')
+
 

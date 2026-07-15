@@ -22,7 +22,7 @@ def dashboard_view(request, admin):
     # Dynamic Occupancy Rate
     total_seats_available = sum(s.screen.capacity for s in Showtime.objects.all())
     total_booked_seats = BookingItem.objects.filter(booking__status__in=['confirmed', 'completed']).count()
-    occupancy_rate = round((total_booked_seats / total_seats_available) * 100, 1) if total_seats_available > 0 else 78.4
+    occupancy_rate = round((total_booked_seats / total_seats_available) * 100, 1) if total_seats_available > 0 else 0.0
 
     top_movies = Movie.objects.filter(status='now_showing').order_by('-rating')[:5]
     recent_bookings = Booking.objects.all().select_related('user', 'showtime__movie').order_by('-created_at')[:8]

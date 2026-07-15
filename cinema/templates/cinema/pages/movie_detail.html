@@ -4,7 +4,7 @@
 
 <!-- Cinematic Backdrop -->
 <div class="movie-backdrop">
-    <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1200' }}" alt="">
+    <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1200' }}" alt="{{ movie.title }} backdrop">
 </div>
 
 <!-- Movie Detail Header -->
@@ -70,7 +70,7 @@
 
 <!-- Trailer Modal -->
 {% if movie.trailer_url %}
-<div id="trailer-modal" class="trailer-modal">
+<div id="trailer-modal" class="trailer-modal" role="dialog" aria-modal="true" aria-label="Trailer phim {{ movie.title }}">
     <div class="glass-panel" style="width: 90%; max-width: 860px; padding: 12px; border-radius: 16px; position: relative;">
         <button id="close-trailer-btn" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 28px; cursor: pointer; line-height: 1;">✕</button>
         <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
@@ -324,10 +324,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                     replyBlock.innerHTML = `
                         <div style="font-size: 13px; font-weight: 700; color: var(--color-primary); margin-bottom: 5px;">
-                            💬 Phản hồi từ Quản trị viên (${data.admin_name})
-                            <span style="font-weight: 400; color: var(--color-text-muted); float: right;">${data.created_at}</span>
+                            💬 Phản hồi từ Quản trị viên (${escapeHtml(data.admin_name)})
+                            <span style="font-weight: 400; color: var(--color-text-muted); float: right;">${escapeHtml(data.created_at)}</span>
                         </div>
-                        <p style="margin: 0; font-size: 14px; color: var(--color-text-secondary); line-height: 1.6;">${data.reply_text}</p>
+                        <p style="margin: 0; font-size: 14px; color: var(--color-text-secondary); line-height: 1.6;">${escapeHtml(data.reply_text)}</p>
                     `;
                     form.querySelector('textarea').value = '';
                     window.showToast('Thành công', 'Đã gửi phản hồi đánh giá.', 'success');

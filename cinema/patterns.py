@@ -5,6 +5,7 @@ import uuid
 import urllib.request
 import urllib.parse
 import json
+from django.conf import settings
 from abc import ABC, abstractmethod
 from .exceptions import (
     CineVerseException,
@@ -71,9 +72,9 @@ class StripeAPI:
 
 class MomoAPI:
     def __init__(self):
-        self.partner_code = "MOMOBKUN20180810"
-        self.access_key = "klm05TvNBHJg7xgo"
-        self.secret_key = "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I"
+        self.partner_code = getattr(settings, 'MOMO_PARTNER_CODE', "MOMOBKUN20180810")
+        self.access_key = getattr(settings, 'MOMO_ACCESS_KEY', "klm05TvNBHJg7xgo")
+        self.secret_key = getattr(settings, 'MOMO_SECRET_KEY', "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I")
         self.endpoint = "https://test-payment.momo.vn/v2/gateway/api/create"
         self.refund_endpoint = "https://test-payment.momo.vn/v2/gateway/api/refund"
 

@@ -4,6 +4,17 @@
 
 'use strict';
 
+// ── 0. Global HTML Escaping Utility ────────────────────────────
+window.escapeHtml = function(string) {
+    if (!string) return '';
+    return String(string)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+};
+
 // ── 1. Toast Notification System ──────────────────────────────
 window.showToast = function(title, message, type = 'info', duration = 4000) {
     const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
@@ -15,8 +26,8 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
     toast.innerHTML = `
         <span class="toast-icon">${icons[type]}</span>
         <div class="toast-body">
-            <div class="toast-title">${title}</div>
-            ${message ? `<div class="toast-msg">${message}</div>` : ''}
+            <div class="toast-title">${window.escapeHtml(title)}</div>
+            ${message ? `<div class="toast-msg">${window.escapeHtml(message)}</div>` : ''}
         </div>
         <button onclick="this.closest('.toast').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 0 0 10px;line-height:1;align-self:flex-start;">×</button>
     `;
@@ -130,7 +141,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             if (selectedCombos.length > 0) {
                 summaryCombosList.innerHTML = selectedCombos.map(c => 
                     `<div style="display:flex; justify-content:space-between; color:white;">
-                        <span>${c.name} x${c.quantity}</span>
+                        <span>${window.escapeHtml(c.name)} x${c.quantity}</span>
                         <span>${formatVND(c.price * c.quantity)} VNĐ</span>
                      </div>`
                 ).join('');
@@ -220,12 +231,24 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
         if (existingIdx >= 0) {
             selectedSeats.splice(existingIdx, 1);
             cell.classList.remove('selected');
+            cell.setAttribute('aria-checked', 'false');
         } else {
             selectedSeats.push({ id: seatId, number: seatNumber, price });
             cell.classList.add('selected');
+            cell.setAttribute('aria-checked', 'true');
         }
         updateSummary();
         checkSuggestedDiscount();
+    });
+
+    seatsContainer.addEventListener('keydown', e => {
+        if (e.key === ' ' || e.key === 'Enter') {
+            const cell = e.target.closest('.seat-cell');
+            if (cell) {
+                e.preventDefault();
+                cell.click();
+            }
+        }
     });
 
     // Select combo quantities
@@ -729,10 +752,10 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                     result.innerHTML = `
                         <div style="color:var(--success);font-weight:700;margin-bottom:8px;">✅ Vé Hợp Lệ!</div>
                         <div style="color:var(--text-secondary);font-size:13px;line-height:1.8;">
-                            👤 ${data.details.user}<br>
-                            🎬 ${data.details.movie}<br>
-                            🎫 Ghế: ${data.details.seats}<br>
-                            💰 ${parseInt(data.details.price).toLocaleString('vi-VN')} VNĐ
+                            👤 ${window.escapeHtml(data.details.user)}<br>
+                            🎬 ${window.escapeHtml(data.details.movie)}<br>
+                            🎫 Ghế: ${window.escapeHtml(data.details.seats)}<br>
+                            💰 ${window.escapeHtml(parseInt(data.details.price).toLocaleString('vi-VN'))} VNĐ
                         </div>
                     `;
                     showToast('Xác Thực Vé Thành Công!', `Khách: ${data.details.user}`, 'success');
@@ -741,7 +764,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                     result.style.borderLeft = '3px solid var(--danger)';
                     result.style.padding    = '12px';
                     result.style.borderRadius = '8px';
-                    result.innerHTML = `<div style="color:var(--danger);font-weight:600;">❌ ${data.error}</div>`;
+                    result.innerHTML = `<div style="color:var(--danger);font-weight:600;">❌ ${window.escapeHtml(data.error)}</div>`;
                     showToast('Vé Không Hợp Lệ', data.error, 'error');
                 }
             }

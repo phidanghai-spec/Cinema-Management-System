@@ -4,6 +4,7 @@ import hmac
 import hashlib
 import uuid
 import datetime
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from datetime import date, timedelta
@@ -413,9 +414,13 @@ def mock_momo_submit_view(request):
         message = "Thành công" if status == 'success' else "Giao dịch bị từ chối"
         response_time = str(int(datetime.datetime.now().timestamp() * 1000))
         
-        raw_sig = f"accessKey=klm05TvNBHJg7xgo&amount={amount}&extraData=&message={message}&orderId={order_id}&orderInfo=CineVerse Booking #{order_id}&orderType=momo_wallet&partnerCode=MOMOBKUN20180810&requestId={request_id}&responseTime={response_time}&resultCode={result_code}&payType=qr&transId={trans_id}"
+        partner_code = getattr(settings, 'MOMO_PARTNER_CODE', "MOMOBKUN20180810")
+        access_key = getattr(settings, 'MOMO_ACCESS_KEY', "klm05TvNBHJg7xgo")
+        secret_key = getattr(settings, 'MOMO_SECRET_KEY', "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I")
+        
+        raw_sig = f"accessKey={access_key}&amount={amount}&extraData=&message={message}&orderId={order_id}&orderInfo=CineVerse Booking #{order_id}&orderType=momo_wallet&partnerCode={partner_code}&requestId={request_id}&responseTime={response_time}&resultCode={result_code}&payType=qr&transId={trans_id}"
         signature = hmac.new(
-            "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I".encode('utf-8'),
+            secret_key.encode('utf-8'),
             raw_sig.encode('utf-8'),
             hashlib.sha256
         ).hexdigest()
@@ -423,7 +428,7 @@ def mock_momo_submit_view(request):
         # Build callback redirect URL
         import urllib.parse
         params = {
-            'partnerCode': 'MOMOBKUN20180810',
+            'partnerCode': partner_code,
             'orderId': order_id,
             'requestId': request_id,
             'amount': amount,
@@ -490,8 +495,8 @@ def handle_momo_payment_update(params):
 @login_required_view
 def momo_callback_view(request, user):
     params = request.GET.dict()
-    secret_key = "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I"
-    access_key = "klm05TvNBHJg7xgo"
+    secret_key = getattr(settings, 'MOMO_SECRET_KEY', "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I")
+    access_key = getattr(settings, 'MOMO_ACCESS_KEY', "klm05TvNBHJg7xgo")
     raw_sig = f"accessKey={access_key}&amount={params.get('amount')}&extraData={params.get('extraData', '')}&message={params.get('message', '')}&orderId={params.get('orderId')}&orderInfo={params.get('orderInfo', '')}&orderType={params.get('orderType', '')}&partnerCode={params.get('partnerCode')}&requestId={params.get('requestId')}&responseTime={params.get('responseTime', '')}&resultCode={params.get('resultCode')}&payType={params.get('payType', '')}&transId={params.get('transId', '')}"
     
     computed_sig = hmac.new(
@@ -527,8 +532,8 @@ def momo_ipn_view(request):
         except Exception:
             params = request.POST.dict()
             
-        secret_key = "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I"
-        access_key = "klm05TvNBHJg7xgo"
+        secret_key = getattr(settings, 'MOMO_SECRET_KEY', "at170ccm1Uv1gJtGLYgo12qqg6tEHg3I")
+        access_key = getattr(settings, 'MOMO_ACCESS_KEY', "klm05TvNBHJg7xgo")
         raw_sig = f"accessKey={access_key}&amount={params.get('amount')}&extraData={params.get('extraData', '')}&message={params.get('message', '')}&orderId={params.get('orderId')}&orderInfo={params.get('orderInfo', '')}&orderType={params.get('orderType', '')}&partnerCode={params.get('partnerCode')}&requestId={params.get('requestId')}&responseTime={params.get('responseTime', '')}&resultCode={params.get('resultCode')}&payType={params.get('payType', '')}&transId={params.get('transId', '')}"
         
         computed_sig = hmac.new(

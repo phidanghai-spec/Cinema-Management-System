@@ -1,13 +1,13 @@
 {% extends 'cinema/base.html' %}
-{% block title %}Our Theaters | CineVerse{% endblock %}
+{% block title %}Hệ Thống Rạp | CineVerse{% endblock %}
 {% block content %}
 
 <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;" class="animate-in">
     <!-- Header -->
     <div style="text-align: center; margin-bottom: 50px;">
-        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">🏢 CineVerse Cinema Locations</h1>
+        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">🏢 Hệ Thống Rạp Chiếu CineVerse</h1>
         <p style="color: var(--color-text-secondary); font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
-            Find your nearest CineVerse theater, check amenities, and explore premium showtimes.
+            Tìm rạp CineVerse gần nhất, xem dịch vụ tiện ích và khám phá các suất chiếu đặc sắc.
         </p>
     </div>
 
@@ -20,12 +20,12 @@
                 <div style="position: absolute; top: 20px; right: 20px;">
                     <span class="badge badge-cyan" style="font-size: 11px; text-transform: uppercase;">📍 {{ theater.city }}</span>
                 </div>
-
+ 
                 <!-- Theater Title -->
                 <h3 style="font-size: 22px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 14px; padding-right: 80px;">
                     CineVerse {{ theater.name }}
                 </h3>
-
+ 
                 <!-- Info Block -->
                 <div style="font-size: 14px; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px;">
                     <div style="display: flex; gap: 8px; align-items: flex-start;">
@@ -45,11 +45,11 @@
                         <span>{{ theater.operating_hours }}</span>
                     </div>
                 </div>
-
+ 
                 <!-- Amenities Block -->
                 {% if theater.amenity_list %}
                     <div style="margin-bottom: 24px;">
-                        <div style="font-size: 12px; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 8px; font-weight: 700; letter-spacing: 0.05em;">Amenities & Facilities</div>
+                        <div style="font-size: 12px; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 8px; font-weight: 700; letter-spacing: 0.05em;">Tiện Ích Tại Rạp</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             {% for amenity in theater.amenity_list %}
                                 <span class="badge badge-muted" style="font-size: 11px; padding: 4px 10px; background: rgba(255,255,255,0.05);">✓ {{ amenity }}</span>
@@ -57,18 +57,18 @@
                         </div>
                     </div>
                 {% endif %}
-
+ 
                 <!-- Action Button -->
                 <div style="margin-top: auto; display: flex; gap: 12px;">
-                    <a href="{% url 'index' %}" class="btn btn-primary btn-sm" style="flex: 1; padding: 10px;">🎟️ Book Tickets</a>
-                    <a href="mailto:{{ theater.email|default:'contact@cineverse.com' }}" class="btn btn-secondary btn-sm" style="padding: 10px 16px;">Contact</a>
+                    <a href="{% url 'index' %}" class="btn btn-primary btn-sm" style="flex: 1; padding: 10px;">🎟️ Đặt Vé Ngay</a>
+                    <a href="mailto:{{ theater.email|default:'contact@cineverse.com' }}" class="btn btn-secondary btn-sm" style="padding: 10px 16px;">Liên Hệ</a>
                 </div>
             </div>
         {% empty %}
             <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;">
                 <div style="font-size: 60px; margin-bottom: 20px;">🏢</div>
-                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">No Theater Locations</h3>
-                <p style="color: var(--color-text-muted);">We are currently expanding! Check back later for new branch openings.</p>
+                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">Chưa Có Thông Tin Rạp</h3>
+                <p style="color: var(--color-text-muted);">Chúng tôi đang trong quá trình mở rộng hệ thống! Vui lòng quay lại sau để cập nhật chi nhánh mới.</p>
             </div>
         {% endfor %}
     </div>

@@ -1,13 +1,13 @@
 {% extends 'cinema/base.html' %}
-{% block title %}My Watchlist | CineVerse{% endblock %}
+{% block title %}Danh Sách Xem Sau | CineVerse{% endblock %}
 {% block content %}
 
 <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;" class="animate-in">
     <!-- Header -->
     <div style="text-align: center; margin-bottom: 50px;">
-        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">🔔 My Watchlist</h1>
+        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">🔔 Danh Sách Xem Sau</h1>
         <p style="color: var(--color-text-secondary); font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
-            Keep track of the movies you are excited to watch. Book tickets instantly as showtimes become available!
+            Theo dõi những bộ phim bạn hào hứng muốn xem. Đặt vé ngay khi có suất chiếu!
         </p>
     </div>
 
@@ -22,15 +22,15 @@
                          loading="lazy"
                          onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop';">
                     <div class="card-overlay">
-                        <a href="{% url 'movie_detail' item.movie.id %}" class="btn btn-primary">Book Tickets 🎟️</a>
+                        <a href="{% url 'movie_detail' item.movie.id %}" class="btn btn-primary">Đặt Vé 🎟️</a>
                     </div>
                     <div class="age-badge-overlay {{ item.movie.age_rating|lower }}" title="{{ item.movie.get_age_rating_display }}">
                         {{ item.movie.age_rating }}
                     </div>
                     {% if item.movie.status == 'now_showing' %}
-                        <div class="movie-ribbon">NOW SHOWING</div>
+                        <div class="movie-ribbon">ĐANG CHIẾU</div>
                     {% elif item.movie.status == 'coming_soon' %}
-                        <div class="coming-soon-badge">COMING SOON</div>
+                        <div class="coming-soon-badge">SẮP CHIẾU</div>
                     {% endif %}
                 </div>
                 
@@ -40,17 +40,17 @@
                     <div style="color: var(--color-text-muted); font-size: 13px; margin-bottom: 12px;">{{ item.movie.genre|truncatechars:20 }}</div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
-                        <a href="{% url 'movie_detail' item.movie.id %}" class="btn btn-secondary btn-sm">Details</a>
-                        <button onclick="removeFromWatchlist('{{ item.movie.id }}')" class="btn btn-tertiary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.15); background: rgba(239,68,68,0.02);">✕ Remove</button>
+                        <a href="{% url 'movie_detail' item.movie.id %}" class="btn btn-secondary btn-sm">Chi Tiết</a>
+                        <button onclick="removeFromWatchlist('{{ item.movie.id }}')" class="btn btn-tertiary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.15); background: rgba(239,68,68,0.02);">✕ Xóa</button>
                     </div>
                 </div>
             </div>
         {% empty %}
             <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;" id="watchlist-empty-state">
                 <div style="font-size: 60px; margin-bottom: 20px;">🔔</div>
-                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">Your Watchlist is Empty</h3>
-                <p style="color: var(--color-text-muted); margin-bottom: 24px;">Browse movies and tap "Watchlist" on any movie details page to save them here.</p>
-                <a href="{% url 'index' %}" class="btn btn-primary">Browse Movies</a>
+                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">Danh Sách Xem Sau Trống</h3>
+                <p style="color: var(--color-text-muted); margin-bottom: 24px;">Duyệt qua danh sách phim và nhấn "Xem sau" ở bất kỳ trang chi tiết phim nào để lưu lại tại đây.</p>
+                <a href="{% url 'index' %}" class="btn btn-primary">Tìm Phim Ngay</a>
             </div>
         {% endfor %}
     </div>
@@ -82,22 +82,22 @@ function removeFromWatchlist(movieId) {
                         grid.innerHTML = `
                             <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;" id="watchlist-empty-state">
                                 <div style="font-size: 60px; margin-bottom: 20px;">🔔</div>
-                                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">Your Watchlist is Empty</h3>
-                                <p style="color: var(--color-text-muted); margin-bottom: 24px;">Browse movies and tap "Watchlist" on any movie details page to save them here.</p>
-                                <a href="{% url 'index' %}" class="btn btn-primary">Browse Movies</a>
+                                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">Danh Sách Xem Sau Trống</h3>
+                                <p style="color: var(--color-text-muted); margin-bottom: 24px;">Duyệt qua danh sách phim và nhấn "Xem sau" ở bất kỳ trang chi tiết phim nào để lưu lại tại đây.</p>
+                                <a href="{% url 'index' %}" class="btn btn-primary">Tìm Phim Ngay</a>
                             </div>
                         `;
                     }
                 }, 300);
             }
-            showToast("Movie removed from your watchlist.", "success");
+            showToast("Đã xóa phim khỏi danh sách xem sau.", "success");
         } else {
-            showToast("Failed to remove movie.", "error");
+            showToast("Không thể xóa phim khỏi danh sách.", "error");
         }
     })
     .catch(err => {
         console.error("Error toggling watchlist:", err);
-        showToast("Error updating watchlist.", "error");
+        showToast("Lỗi khi cập nhật danh sách xem sau.", "error");
     });
 }
 

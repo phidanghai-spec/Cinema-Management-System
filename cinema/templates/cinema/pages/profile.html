@@ -1,5 +1,5 @@
 {% extends 'cinema/base.html' %}
-{% block title %}My Profile | CineVerse{% endblock %}
+{% block title %}Hồ Sơ Của Tôi | CineVerse{% endblock %}
 {% block content %}
 
 <!-- Profile Header -->
@@ -9,8 +9,8 @@
         <h1 style="font-size: 30px; margin-bottom: 4px;">{{ user.name }}</h1>
         <p style="color: var(--color-text-muted); font-size: 15px;">{{ user.email }}</p>
         <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-            <span class="badge badge-primary">⭐ {{ user.tier }} Member</span>
-            <span class="badge badge-gold">{{ user.points }} XP Points</span>
+            <span class="badge badge-primary">⭐ Thành viên {{ user.tier }}</span>
+            <span class="badge badge-gold">{{ user.points }} Điểm Tích Lũy</span>
             {% if user.phone %}<span class="badge badge-muted">📱 {{ user.phone }}</span>{% endif %}
         </div>
     </div>
@@ -19,36 +19,36 @@
 <!-- Loyalty Progress -->
 <div class="glass-panel" style="margin: 24px 8%; padding: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h4 style="font-size: 16px;">🏆 Loyalty Journey</h4>
+        <h4 style="font-size: 16px;">🏆 Hành Trình Thành Viên</h4>
         <span style="color: var(--color-text-muted); font-size: 14px;">
-            {% if points_to_next > 0 %}{{ points_to_next }} XP to {{ next_tier }}{% else %}Max Tier Reached!{% endif %}
+            {% if points_to_next > 0 %}Cần thêm {{ points_to_next }} điểm để lên hạng {{ next_tier }}{% else %}Đã Đạt Hạng Tối Đa!{% endif %}
         </span>
     </div>
     <div class="loyalty-progress-track">
         <div class="loyalty-progress-fill" data-target="{{ tier_progress }}" style="width: 0%;"></div>
     </div>
     <div class="tier-labels">
-        <span>🥉 Bronze</span><span>🥈 Silver <em style="font-size:10px;">(100pt)</em></span><span>🥇 Gold <em style="font-size:10px;">(300pt)</em></span><span>💎 Platinum <em style="font-size:10px;">(1000pt)</em></span>
+        <span>🥉 Đồng</span><span>🥈 Bạc <em style="font-size:10px;">(100pt)</em></span><span>🥇 Vàng <em style="font-size:10px;">(300pt)</em></span><span>💎 Bạch Kim <em style="font-size:10px;">(1000pt)</em></span>
     </div>
 </div>
 
 <!-- Tabs Navigation -->
 <div class="profile-tabs">
     <button class="profile-tab" data-tab="bookings">
-        🎫 My Bookings <span class="tab-count">{{ bookings|length }}</span>
+        🎫 Lịch Sử Đặt Vé <span class="tab-count">{{ bookings|length }}</span>
     </button>
     <button class="profile-tab" data-tab="favorites">
-        ❤️ Favorites <span class="tab-count">{{ favorites|length }}</span>
+        ❤️ Phim Yêu Thích <span class="tab-count">{{ favorites|length }}</span>
     </button>
     <button class="profile-tab" data-tab="watchlist">
-        🔔 Watchlist <span class="tab-count">{{ watchlist|length }}</span>
+        🔔 Xem Sau <span class="tab-count">{{ watchlist|length }}</span>
     </button>
     <button class="profile-tab" data-tab="notifications">
-        📬 Inbox
+        📬 Hộp Thư
         {% if unread_count > 0 %}<span class="tab-count" style="background:rgba(239,68,68,0.2);color:var(--color-error);">{{ unread_count }}</span>{% endif %}
     </button>
     <button class="profile-tab" data-tab="settings">
-        ⚙️ Settings
+        ⚙️ Cài Đặt
     </button>
 </div>
 
@@ -112,7 +112,7 @@
             <a href="{% url 'movie_detail' fav.movie.id %}" class="movie-card" style="text-decoration: none;">
                 <div class="poster-wrapper" style="height: 280px;">
                     <img src="{{ fav.movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600' }}" alt="{{ fav.movie.title }}" loading="lazy">
-                    <div class="card-overlay"><span class="btn btn-primary" style="padding: 8px 18px;">View Details</span></div>
+                    <div class="card-overlay"><span class="btn btn-primary" style="padding: 8px 18px;">Xem Chi Tiết</span></div>
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title">{{ fav.movie.title }}</h3>
@@ -125,7 +125,7 @@
         {% empty %}
             <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--color-text-muted);">
                 <div style="font-size: 45px; margin-bottom: 15px;">❤️</div>
-                <p>No favorites yet. Like movies you enjoy!</p>
+                <p>Chưa có phim yêu thích nào. Hãy nhấn Thích các bộ phim bạn yêu mến!</p>
             </div>
         {% endfor %}
     </div>
@@ -138,14 +138,14 @@
             <a href="{% url 'movie_detail' wl.movie.id %}" class="movie-card" style="text-decoration: none;">
                 <div class="poster-wrapper" style="height: 280px;">
                     <img src="{{ wl.movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600' }}" alt="{{ wl.movie.title }}" loading="lazy">
-                    <div class="card-overlay"><span class="btn btn-primary" style="padding: 8px 18px;">View Details</span></div>
+                    <div class="card-overlay"><span class="btn btn-primary" style="padding: 8px 18px;">Xem Chi Tiết</span></div>
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title">{{ wl.movie.title }}</h3>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
                         <span style="font-size: 12px; color: var(--color-text-muted);">{{ wl.movie.genre|truncatechars:15 }}</span>
                         {% if wl.movie.status == 'coming_soon' %}
-                            <span class="badge badge-gold" style="font-size: 10px;">Coming Soon</span>
+                            <span class="badge badge-gold" style="font-size: 10px;">Sắp Chiếu</span>
                         {% endif %}
                     </div>
                 </div>
@@ -153,7 +153,7 @@
         {% empty %}
             <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--color-text-muted);">
                 <div style="font-size: 45px; margin-bottom: 15px;">🔔</div>
-                <p>Your watchlist is empty. Save movies to watch later!</p>
+                <p>Danh sách xem sau đang trống. Hãy lưu lại phim để xem sau nhé!</p>
             </div>
         {% endfor %}
     </div>
@@ -168,14 +168,14 @@
                     <strong style="font-size: 14px; {% if notif.status == 'unread' %}color: var(--color-text-primary);{% else %}color: var(--color-text-muted);{% endif %}">
                         {% if notif.status == 'unread' %}🔵 {% endif %}{{ notif.title }}
                     </strong>
-                    <span style="font-size: 11px; color: var(--color-text-muted); white-space: nowrap;">{{ notif.created_at|date:"M d, H:i" }}</span>
+                    <span style="font-size: 11px; color: var(--color-text-muted); white-space: nowrap;">{{ notif.created_at|date:"d/m, H:i" }}</span>
                 </div>
                 <p style="color: var(--color-text-muted); font-size: 13px; line-height: 1.5;">{{ notif.message }}</p>
             </div>
         {% empty %}
             <div class="glass-panel" style="text-align: center; padding: 50px;">
                 <div style="font-size: 45px; margin-bottom: 15px;">📭</div>
-                <p style="color: var(--color-text-muted);">No notifications yet. Your inbox is clean!</p>
+                <p style="color: var(--color-text-muted);">Chưa có thông báo nào. Hộp thư của bạn đang trống!</p>
             </div>
         {% endfor %}
     </div>
@@ -187,45 +187,45 @@
 
         <!-- Profile Update -->
         <div class="glass-panel" style="padding: 28px;">
-            <h3 style="margin-bottom: 22px;" class="grad-text">👤 Update Profile</h3>
+            <h3 style="margin-bottom: 22px;" class="grad-text">👤 Cập Nhật Hồ Sơ</h3>
             <form method="POST" action="{% url 'profile' %}" style="display: flex; flex-direction: column; gap: 16px;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_profile">
                 <div>
-                    <label class="form-label">Full Name</label>
+                    <label class="form-label">Họ Và Tên</label>
                     <input type="text" name="name" class="form-input" value="{{ user.name }}" required>
                 </div>
                 <div>
-                    <label class="form-label">Email Address</label>
+                    <label class="form-label">Địa Chỉ Email</label>
                     <input type="email" class="form-input" value="{{ user.email }}" disabled style="opacity: 0.5; cursor: not-allowed;">
                 </div>
                 <div>
-                    <label class="form-label">Phone Number</label>
+                    <label class="form-label">Số Điện Thoại</label>
                     <input type="text" name="phone" class="form-input" value="{{ user.phone|default:'' }}" placeholder="0912 345 678">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Lưu Thay Đổi</button>
             </form>
         </div>
 
         <!-- Addresses -->
         <div class="glass-panel" style="padding: 28px;">
-            <h3 style="margin-bottom: 18px;" class="grad-text">🏠 Saved Addresses</h3>
+            <h3 style="margin-bottom: 18px;" class="grad-text">🏠 Địa Chỉ Đã Lưu</h3>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
                 {% for addr in user.addresses.all %}
                     <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px; color: var(--color-text-secondary);">
                         📍 {{ addr.address }}, {{ addr.district }}, {{ addr.city }}
                     </div>
                 {% empty %}
-                    <p style="color: var(--color-text-muted); font-size: 14px;">No saved addresses yet.</p>
+                    <p style="color: var(--color-text-muted); font-size: 14px;">Chưa lưu địa chỉ nào.</p>
                 {% endfor %}
             </div>
             <form method="POST" action="{% url 'profile' %}" style="display: flex; flex-direction: column; gap: 10px;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="add_address">
-                <input type="text" name="city" class="form-input" placeholder="City (e.g. Ha Noi)" required style="padding: 9px 14px; font-size: 14px;">
-                <input type="text" name="district" class="form-input" placeholder="District" required style="padding: 9px 14px; font-size: 14px;">
-                <input type="text" name="address" class="form-input" placeholder="Street Address" required style="padding: 9px 14px; font-size: 14px;">
-                <button type="submit" class="btn btn-secondary" style="padding: 10px;">+ Add Address</button>
+                <input type="text" name="city" class="form-input" placeholder="Tỉnh / Thành Phố (Ví dụ: Hà Nội)" required style="padding: 9px 14px; font-size: 14px;">
+                <input type="text" name="district" class="form-input" placeholder="Quận / Huyện" required style="padding: 9px 14px; font-size: 14px;">
+                <input type="text" name="address" class="form-input" placeholder="Địa Chỉ Chi Tiết" required style="padding: 9px 14px; font-size: 14px;">
+                <button type="submit" class="btn btn-secondary" style="padding: 10px;">+ Thêm Địa Chỉ</button>
             </form>
         </div>
     </div>

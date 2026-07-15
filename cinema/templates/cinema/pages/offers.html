@@ -1,13 +1,13 @@
 {% extends 'cinema/base.html' %}
-{% block title %}Exclusive Offers & Vouchers | CineVerse{% endblock %}
+{% block title %}Khuyến Mãi & Ưu Đãi | CineVerse{% endblock %}
 {% block content %}
 
 <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;" class="animate-in">
     <!-- Header -->
     <div style="text-align: center; margin-bottom: 50px;">
-        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">🎁 Special Offers & Promotions</h1>
+        <h1 class="grad-text" style="font-size: 38px; margin-bottom: 12px; font-weight: 900;">🎁 Ưu Đãi Đặc Biệt & Khuyến Mãi</h1>
         <p style="color: var(--color-text-secondary); font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
-            Unlock exclusive discounts and promo codes. Copy the voucher codes below and apply them during checkout for instant savings.
+            Nhận mã giảm giá và ưu đãi độc quyền. Sao chép mã bên dưới và áp dụng khi thanh toán để được giảm giá trực tiếp.
         </p>
     </div>
 
@@ -25,26 +25,26 @@
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                         <div>
                             {% if disc.type == 'percentage' %}
-                                <div style="font-size: 36px; font-weight: 900; color: var(--color-primary); line-height: 1;">{{ disc.value }}% <span style="font-size: 16px; font-weight: 600; color: var(--color-text-primary);">OFF</span></div>
+                                <div style="font-size: 36px; font-weight: 900; color: var(--color-primary); line-height: 1;">{{ disc.value }}% <span style="font-size: 16px; font-weight: 600; color: var(--color-text-primary);">GIẢM</span></div>
                             {% else %}
-                                <div style="font-size: 28px; font-weight: 900; color: var(--color-primary); line-height: 1;">{{ disc.value|floatformat:"0" }} <span style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">VND OFF</span></div>
+                                <div style="font-size: 28px; font-weight: 900; color: var(--color-primary); line-height: 1;">{{ disc.value|floatformat:"0" }} <span style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">VNĐ GIẢM</span></div>
                             {% endif %}
-                            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Voucher Code</div>
+                            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Mã Giảm Giá</div>
                         </div>
-                        <span class="badge badge-cyan" style="font-size: 11px;">Active</span>
+                        <span class="badge badge-cyan" style="font-size: 11px;">Đang Hoạt Động</span>
                     </div>
 
                     <!-- Code Box -->
                     <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px dashed var(--border-glass); padding: 12px 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
                         <span style="font-family: monospace; font-size: 18px; font-weight: 800; color: var(--color-warning); letter-spacing: 0.05em;">{{ disc.code }}</span>
-                        <button onclick="copyPromoCode('{{ disc.code }}', this)" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; border-color: rgba(255,255,255,0.15);">📋 Copy</button>
+                        <button onclick="copyPromoCode('{{ disc.code }}', this)" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; border-color: rgba(255,255,255,0.15);">📋 Sao chép</button>
                     </div>
 
                     <!-- Conditions -->
                     <div style="font-size: 13px; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 8px; flex-grow: 1; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 18px; margin-bottom: 10px;">
-                        <div>🛒 Minimum Purchase: <strong style="color: var(--color-text-secondary);">{{ disc.min_amount|floatformat:"0" }} VND</strong></div>
-                        <div>📅 Valid Until: <strong style="color: var(--color-text-secondary);">{{ disc.valid_to|date:"M d, Y" }}</strong></div>
-                        <div>👤 Limit: <strong style="color: var(--color-text-secondary);">{{ disc.per_user_limit }} per user</strong></div>
+                        <div>🛒 Đơn Tối Thiểu: <strong style="color: var(--color-text-secondary);">{{ disc.min_amount|floatformat:"0" }} VNĐ</strong></div>
+                        <div>📅 Hạn Sử Dụng: <strong style="color: var(--color-text-secondary);">{{ disc.valid_to|date:"d/m/Y" }}</strong></div>
+                        <div>👤 Giới Hạn: <strong style="color: var(--color-text-secondary);">{{ disc.per_user_limit }} lượt/thành viên</strong></div>
                     </div>
                 </div>
 
@@ -55,8 +55,8 @@
         {% empty %}
             <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;">
                 <div style="font-size: 60px; margin-bottom: 20px;">🎟️</div>
-                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">No Active Offers</h3>
-                <p style="color: var(--color-text-muted);">Check back soon for upcoming holiday promotions and deals!</p>
+                <h3 style="color: var(--color-text-secondary); margin-bottom: 8px;">Không Có Khuyến Mãi Nào Khả Dụng</h3>
+                <p style="color: var(--color-text-muted);">Vui lòng quay lại sau để cập nhật các chương trình khuyến mãi mới nhất!</p>
             </div>
         {% endfor %}
     </div>
@@ -66,12 +66,12 @@
 function copyPromoCode(code, buttonElement) {
     navigator.clipboard.writeText(code).then(() => {
         const originalText = buttonElement.innerText;
-        buttonElement.innerText = "✓ Copied";
+        buttonElement.innerText = "✓ Đã sao chép";
         buttonElement.style.borderColor = "var(--color-success)";
         buttonElement.style.color = "var(--color-success)";
         
         // Show a custom floating toast if toast-container exists
-        showToast("Voucher code copied to clipboard!", "success");
+        showToast("Đã sao chép mã giảm giá vào bộ nhớ tạm!", "success");
 
         setTimeout(() => {
             buttonElement.innerText = originalText;

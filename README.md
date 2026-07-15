@@ -1,6 +1,6 @@
 # 🎬 CineVerse — Hệ Thống Quản Lý Rạp Chiếu Phim Chuyên Nghiệp
 
-> **Một ứng dụng quản lý đặt vé rạp chiếu phim chuyên nghiệp được xây dựng bằng Django (Python), tích hợp 12 mẫu thiết kế phần mềm (Design Patterns) chuẩn mực cùng giao diện Glassmorphism Dark UI hiện đại.**
+> **Một ứng dụng quản lý đặt vé rạp chiếu phim chuyên nghiệp được xây dựng bằng Django (Python), tích hợp 15 mẫu thiết kế phần mềm (Design Patterns) chuẩn mực cùng giao diện Glassmorphism Dark UI hiện đại.**
 
 ---
 

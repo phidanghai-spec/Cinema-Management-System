@@ -1,5 +1,5 @@
 {% extends 'cinema/base.html' %}
-{% block title %}Your Ticket | CineVerse{% endblock %}
+{% block title %}Vé Của Bạn | CineVerse{% endblock %}
 {% block content %}
 
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 40px 20px;">
@@ -7,8 +7,8 @@
     <!-- Success Header -->
     <div style="text-align: center; margin-bottom: 32px;" class="animate-in">
         <div style="font-size: 60px; line-height: 1; margin-bottom: 15px; animation: bounce 1s ease 0.3s both;">🎉</div>
-        <h1 class="grad-text" style="font-size: 32px; margin-bottom: 8px;">Booking Confirmed!</h1>
-        <p style="color: var(--color-text-muted); font-size: 16px;">Your premium cinema experience awaits</p>
+        <h1 class="grad-text" style="font-size: 32px; margin-bottom: 8px;">Đặt Vé Thành Công!</h1>
+        <p style="color: var(--color-text-muted); font-size: 16px;">Trải nghiệm điện ảnh đỉnh cao đang chờ bạn</p>
     </div>
 
     <!-- Cinema Ticket Card -->
@@ -17,12 +17,18 @@
 
             <!-- Ticket Top Header -->
             <div class="ticket-top">
-                <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.15em; color: var(--color-text-muted); margin-bottom: 8px;">🎬 CINEVERSE PREMIUM TICKET</div>
+                <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.15em; color: var(--color-text-muted); margin-bottom: 8px;">🎬 VÉ XEM PHIM CINEVERSE PREMIUM</div>
                 <h2 style="font-size: 22px; margin-bottom: 6px; line-height: 1.2;">{{ booking.showtime.movie.title }}</h2>
                 <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
                     <span class="badge badge-primary">{{ booking.showtime.screen.format }}</span>
                     <span class="badge badge-muted">{{ booking.showtime.language }}</span>
-                    <span class="badge badge-cyan">{{ booking.status|upper }}</span>
+                    <span class="badge badge-cyan">
+                        {% if booking.status == 'confirmed' %}ĐÃ XÁC NHẬN
+                        {% elif booking.status == 'pending' %}CHỜ THANH TOÁN
+                        {% elif booking.status == 'cancelled' %}ĐÃ HỦY
+                        {% else %}{{ booking.status|upper }}
+                        {% endif %}
+                    </span>
                 </div>
             </div>
 
@@ -31,26 +37,26 @@
                 <!-- Info Grid -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px;">
                     <div>
-                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Theater</div>
+                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Rạp Chiếu</div>
                         <div style="font-weight: 600; font-size: 15px;">{{ booking.showtime.screen.theater.name }}</div>
                     </div>
                     <div>
-                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Auditorium</div>
+                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Phòng Chiếu</div>
                         <div style="font-weight: 600; font-size: 15px;">{{ booking.showtime.screen.name }}</div>
                     </div>
                     <div>
-                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Date</div>
-                        <div style="font-weight: 600; font-size: 15px; color: var(--color-secondary);">{{ booking.showtime.start_time|date:"M d, Y" }}</div>
+                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Ngày Chiếu</div>
+                        <div style="font-weight: 600; font-size: 15px; color: var(--color-secondary);">{{ booking.showtime.start_time|date:"d/m/Y" }}</div>
                     </div>
                     <div>
-                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Time</div>
+                        <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Giờ Chiếu</div>
                         <div style="font-weight: 700; font-size: 20px; color: var(--color-warning);">{{ booking.showtime.start_time|date:"H:i" }}</div>
                     </div>
                 </div>
 
                 <!-- Seats -->
                 <div style="margin-bottom: 20px;">
-                    <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;">Seats</div>
+                    <div style="font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;">Ghế Đã Đặt</div>
                     <div class="ticket-seat-badges">
                         {% for item in booking.items.all %}
                             <span class="seat-badge {{ item.seat.type }}">{{ item.seat.seat_number }}</span>
@@ -61,21 +67,21 @@
                 <!-- Booking Code & Total -->
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: rgba(229,9,20,0.08); border-radius: var(--radius-md); border: 1px solid rgba(229,9,20,0.25);">
                     <div>
-                        <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Booking Code</div>
+                        <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Mã Đặt Vé</div>
                         <div style="font-family: monospace; font-size: 16px; font-weight: 700; color: var(--color-primary); cursor: pointer;"
-                             data-copy="CINE-{{ booking.id }}" title="Click to copy">
+                             data-copy="CINE-{{ booking.id }}" title="Nhấn để sao chép">
                             CINE-{{ booking.id }} 📋
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Total Paid</div>
-                        <div style="font-size: 22px; font-weight: 900; color: var(--color-success);">{{ booking.total_price|floatformat:"0" }} VND</div>
+                        <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Tổng Đã Thanh Toán</div>
+                        <div style="font-size: 22px; font-weight: 900; color: var(--color-success);">{{ booking.total_price|floatformat:"0" }} VNĐ</div>
                     </div>
                 </div>
 
                 <!-- QR Code Section -->
                 <div class="ticket-qr-section">
-                    <div style="font-size: 13px; color: var(--color-text-muted); font-weight: 500; margin-bottom: 14px; text-align: center;">📷 Scan QR at cinema entrance</div>
+                    <div style="font-size: 13px; color: var(--color-text-muted); font-weight: 500; margin-bottom: 14px; text-align: center;">📷 Quét mã QR tại lối vào phòng chiếu</div>
                     <div class="qr-frame">
                         <div id="qr-render-target" style="line-height: 0;"></div>
                     </div>
@@ -88,11 +94,12 @@
 
     <!-- Action Buttons -->
     <div style="display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; justify-content: center;">
-        <button id="print-ticket-btn" class="btn btn-secondary">🖨️ Print Ticket</button>
-        <a href="{% url 'profile' %}#bookings" class="btn btn-primary">📋 My Bookings</a>
-        <a href="{% url 'index' %}" class="btn btn-secondary">🎬 Browse More Films</a>
+        <button id="print-ticket-btn" class="btn btn-secondary">🖨️ In Vé</button>
+        <a href="{% url 'profile' %}#bookings" class="btn btn-primary">📋 Vé Của Tôi</a>
+        <a href="{% url 'index' %}" class="btn btn-secondary">🎬 Khám Phá Thêm Phim</a>
     </div>
 </div>
+
 
 <style>
 @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }

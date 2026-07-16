@@ -2,6 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.db.models import Sum, Count
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
@@ -32,7 +33,7 @@ def dashboard_view(request, admin):
     # Monthly revenue data for chart (last 6 months)
     monthly_revenue_data = []
     monthly_labels = []
-    now = datetime.now()
+    now = timezone.now()
     for i in range(5, -1, -1):
         month_start = (now.replace(day=1) - timedelta(days=30 * i)).replace(day=1)
         if i == 0:

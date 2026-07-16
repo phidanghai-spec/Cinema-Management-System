@@ -148,17 +148,7 @@ main {
   color: var(--color-text-primary) !important;
 }
 
-/* Hiển thị khi hover trên Desktop */
-@media (min-width: 769px) {
-  .nav-dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* Hiển thị khi có class active/open qua click di động */
+/* Hiển thị khi có class active/open qua click (bấm vào mới thấy) */
 .nav-dropdown.open .dropdown-menu {
   opacity: 1;
   visibility: visible;

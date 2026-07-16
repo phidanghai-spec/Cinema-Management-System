@@ -2,11 +2,11 @@
    CineVerse — Modern Modular CSS Architecture
    ============================================================ */
 
-@import url('variables.css');
-@import url('reset.css');
-@import url('typography.css');
-@import url('components.css');
-@import url('layout.css');
-@import url('pages.css');
-@import url('responsive.css');
-@import url('animations.css');
+@import url('variables.css?v=1.3');
+@import url('reset.css?v=1.3');
+@import url('typography.css?v=1.3');
+@import url('components.css?v=1.3');
+@import url('layout.css?v=1.3');
+@import url('pages.css?v=1.3');
+@import url('responsive.css?v=1.3');
+@import url('animations.css?v=1.3');

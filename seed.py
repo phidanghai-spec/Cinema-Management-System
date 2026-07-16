@@ -52,6 +52,28 @@ def seed_database():
     customer.save()
     print("Created Customer Account: customer@cinema.com / customer123")
 
+    review_users = []
+    user_data = [
+        ("Nguyễn Văn Nam", "nam@cinema.com", "Gold"),
+        ("Trần Thị Mai", "mai@cinema.com", "Standard"),
+        ("Lê Hoàng Long", "long@cinema.com", "Platinum"),
+        ("Phạm Minh Đức", "duc@cinema.com", "Gold"),
+        ("Hoàng Thanh Hương", "huong@cinema.com", "Standard"),
+    ]
+    for name, email, tier in user_data:
+        u = User.objects.create(
+            email=email,
+            name=name,
+            tier=tier,
+            points=random.randint(50, 500),
+            status="active",
+            role="customer"
+        )
+        u.set_password("customer123")
+        u.save()
+        review_users.append(u)
+        print(f"Created Review User Account: {email} / customer123")
+
     Address.objects.create(
         user=customer,
         city="Hanoi",
@@ -263,13 +285,124 @@ def seed_database():
         created_movies.append(movie)
         print(f"Added Movie: {movie.title} ({movie.status})")
 
-    # Write a default review for Interstellar
-    Review.objects.create(
-        user=customer,
-        movie=created_movies[2], # Interstellar
-        rating=5,
-        comment="Absolutely mind-blowing cinematic masterpiece! The soundtrack by Hans Zimmer is legendary."
-    )
+    # Write realistic reviews for now_showing movies
+    reviews_pool = {
+        "Dune: Part Two": [
+            (5, "Trải nghiệm rạp chiếu tuyệt đỉnh! Âm thanh Hans Zimmer dồn dập, kỹ xảo hoành tráng, coi IMAX xứng đáng từng đồng."),
+            (4, "Phim rất hay và sâu sắc. Tuy nhiên đoạn giữa nhịp hơi chậm, những ai chưa coi phần 1 có thể thấy hơi khó hiểu."),
+            (5, "Đỉnh cao của dòng phim khoa học viễn tưởng! Diễn xuất của Timothée và Zendaya quá tốt.")
+        ],
+        "Interstellar": [
+            (5, "Absolutely mind-blowing cinematic masterpiece! The soundtrack by Hans Zimmer is legendary."),
+            (5, "Phim làm tôi khóc ở rạp. Đề tài khoa học nhưng lồng ghép tình cha con cực kỳ cảm động. Phải xem lại lần 2!"),
+            (4, "Một bộ phim hack não đỉnh cao của Christopher Nolan. Hình ảnh lỗ đen vũ trụ siêu thực và đẹp mắt.")
+        ],
+        "Inside Out 2": [
+            (5, "Một bộ phim hoạt hình xuất sắc cho cả trẻ em lẫn người lớn. Nhân vật Anxiety (Lo Âu) xây dựng quá thực tế."),
+            (4, "Phim mang nhiều thông điệp giáo dục ý nghĩa. Mình đi xem cùng gia đình ai cũng thích."),
+            (5, "Quá dễ thương và ý nghĩa! Pixar chưa bao giờ làm tôi thất vọng về khoản tâm lý nhân vật.")
+        ],
+        "Deadpool & Wolverine": [
+            (5, "Cười bể bụng từ đầu đến cuối! Chemistry của Ryan và Hugh quá đỉnh, các màn cameo cực kỳ bùng nổ."),
+            (4, "Một phim Marvel bạo lực, hài hước và chiều fan hết nấc. Nhạc phim thập niên 90/2000 nghe siêu thích."),
+            (4, "Hơi nhiều trò đùa nội bộ nếu ai không theo dõi kỹ MCU thì khó cười, nhưng hành động và giải trí vẫn đỉnh.")
+        ],
+        "Despicable Me 4": [
+            (4, "Mấy chú Minions quậy phá siêu hài hước, bé nhà mình cười suốt cả buổi chiếu."),
+            (4, "Phim xem giải trí nhẹ nhàng, nội dung đơn giản dễ hiểu. Rất phù hợp cho gia đình có con nhỏ dịp cuối tuần."),
+            (3, "Công thức phim bắt đầu hơi cũ, nhưng sự xuất hiện của các siêu Minions (Mega Minions) vẫn cứu lại độ hài hước.")
+        ],
+        "Past Lives": [
+            (5, "Nhẹ nhàng, sâu lắng và đầy hoài niệm. Phim không có drama nhưng lời thoại và ánh mắt nhân vật chạm đến trái tim."),
+            (4, "Một câu chuyện tình cảm thực tế về nhân duyên. Xem xong thấy lòng nhẹ nhàng nhưng cũng có chút tiếc nuối."),
+            (5, "Quá tinh tế! Nhạc phim và những khoảng lặng trong phim được xử lý hoàn hảo.")
+        ],
+        "Godzilla x Kong: The New Empire": [
+            (4, "Phim thuần giải trí, đánh nhau đã mắt, âm thanh cháy nổ hoành tráng. Đừng quá kỳ vọng vào kịch bản là được."),
+            (4, "Quái thú đập nhau sướng tai đã mắt. Coi 3D cực kỳ đã luôn mọi người ơi!"),
+            (3, "Kịch bản hơi yếu và phi thực tế, bù lại kỹ xảo và tạo hình các quái thú rất ấn tượng.")
+        ],
+        "Exhuma": [
+            (5, "Phim kinh dị huyền bí Hàn Quốc quá xuất sắc! Không lạm dụng jumpscare mà xây dựng không khí u ám rợn tóc gáy."),
+            (4, "Nửa đầu phim cực kỳ cuốn, nửa sau chuyển hướng hơi nhanh nhưng vẫn rất chất lượng. Diễn xuất của Lee Do Hyun quá đỉnh."),
+            (5, "Đề tài tâm linh, phong thủy được khai thác rất sâu. Xem ở rạp mà nổi hết da gà.")
+        ],
+        "The Dark Knight": [
+            (5, "Joker của Heath Ledger là một tượng đài không thể lật đổ. Bộ phim siêu anh hùng xuất sắc nhất mọi thời đại."),
+            (5, "Kịch bản hoàn hảo, các triết lý nhân sinh sâu sắc. Xem đi xem lại hàng chục lần vẫn không chán."),
+            (5, "Nolan đã tạo ra một kiệt tác điện ảnh thực thụ. Nhạc phim của Hans Zimmer bổ trợ quá xuất sắc.")
+        ],
+        "Inception": [
+            (5, "Ý tưởng về các tầng giấc mơ quá độc đáo. Kỹ xảo quay vô cực thực sự là một cuộc cách mạng."),
+            (5, "Một bộ phim hack não kinh điển. Kết phim mở làm người xem phải suy ngẫm rất nhiều."),
+            (4, "Xem lần đầu sẽ hơi khó hiểu, nhưng khi đã hiểu thì thấy kịch bản quá logic và chặt chẽ.")
+        ],
+        "The Matrix": [
+            (5, "Một bộ phim đi trước thời đại cả chục năm. Hiệu ứng Bullet time huyền thoại xem vẫn nổi da gà."),
+            (4, "Triết lý về thế giới ảo và thế giới thật rất sâu sắc. Keanu Reeves thời trẻ đẹp trai xuất thần."),
+            (5, "Tác phẩm khoa học viễn tưởng kinh điển đặt nền móng cho rất nhiều phim sau này.")
+        ],
+        "The Lord of the Rings: The Fellowship of the Ring": [
+            (5, "Tác phẩm giả tưởng vĩ đại nhất! Thế giới Trung Địa được tái hiện vô cùng sống động và hùng vĩ."),
+            (5, "Nhạc phim, bối cảnh, diễn xuất đều đạt điểm 10 hoàn hảo. Một thiên sử thi không thể bỏ lỡ."),
+            (5, "Bắt đầu cho một hành trình huyền thoại. Xem bản IMAX thực sự rất mãn nhãn.")
+        ],
+        "Gladiator": [
+            (5, "Tinh thần võ sĩ giác đấu hào hùng và bi tráng. Nhạc phim Now We Are Free vang lên là nổi da gà."),
+            (5, "Russell Crowe diễn xuất quá đỉnh cô độc và kiêu hãnh. Joaquin Phoenix đóng vai phản diện đạt đến mức đáng ghét."),
+            (4, "Những trận chiến đấu tại đấu trường La Mã cực kỳ chân thực và mãn nhãn.")
+        ],
+        "Titanic": [
+            (5, "Bản tình ca bất hủ. Mối tình của Jack và Rose lấy đi nước mắt của bao nhiêu thế hệ người xem."),
+            (5, "Kỹ xảo tái hiện cảnh đắm tàu thời đó quá đỉnh cao. Một kiệt tác trường tồn với thời gian."),
+            (5, "Nhạc phim My Heart Will Go On vang lên là mọi cảm xúc vỡ òa. Phim quá xuất sắc!")
+        ],
+        "Avengers: Endgame": [
+            (5, "Cái kết trọn vẹn cho hành trình 10 năm của MCU. Cảnh cổng dịch chuyển mở ra và câu nói 'Assemble' thực sự bùng nổ."),
+            (4, "Có những hạt sạn logic về du hành thời gian nhưng cảm xúc mang lại là quá đủ để bù đắp."),
+            (5, "I love you 3000! Xem ở rạp mà cả phòng chiếu cùng vỗ tay và khóc.")
+        ],
+        "Spider-Man: No Way Home": [
+            (5, "Màn hội ngộ lịch sử của cả 3 thế hệ Người Nhện! Xem ở rạp cảm xúc vỡ òa thực sự."),
+            (4, "Phim chiều lòng fan cực tốt. Kịch bản có chút vội vã nhưng sự xuất hiện của các phản diện cũ làm lu mờ mọi khuyết điểm."),
+            (5, "Trải nghiệm xem rạp bùng nổ nhất năm. Cảm ơn Marvel vì đã hiện thực hóa giấc mơ của người hâm mộ.")
+        ],
+        "Oppenheimer": [
+            (5, "Một bộ phim tiểu sử chính luận đỉnh cao. Cảnh thử nghiệm bom nguyên tử Trinity nghẹt thở đến lặng người."),
+            (5, "Diễn xuất của Cillian Murphy xứng đáng tượng vàng Oscar. Nhạc nền dồn dập tạo áp lực tâm lý cực tốt."),
+            (4, "Phim thoại rất nhiều và nhịp nhanh, đòi hỏi người xem phải tập trung cao độ và có kiến thức lịch sử nhất định.")
+        ],
+        "Barbie": [
+            (4, "Một bộ phim hài hước nhưng châm biếm rất sâu sắc về xã hội và bình đẳng giới. Thiết kế bối cảnh màu hồng cực ấn tượng."),
+            (4, "Ryan Gosling vai Ken chiếm trọn spotlight! Bài hát 'I'm Just Ken' siêu hài và bắt tai."),
+            (5, "Ý nghĩa và thông điệp nữ quyền được truyền tải rất thông minh, không hề bị giáo điều.")
+        ],
+        "Spider-Man: Into the Spider-Verse": [
+            (5, "Đỉnh cao của phim hoạt hình! Phong cách đồ họa truyện tranh kết hợp 3D quá độc đáo và sáng tạo."),
+            (5, "Nhạc phim cực kỳ chất lượng, nhịp phim nhanh cuốn hút từ đầu đến cuối. Spider-Man hay nhất từng được làm!"),
+            (5, "Mọi khung hình đều là một tác phẩm nghệ thuật. Kịch bản phát triển nhân vật Miles Morales rất xuất sắc.")
+        ],
+        "Parasite": [
+            (5, "Kiệt tác điện ảnh phản ánh sâu sắc khoảng cách giàu nghèo. Kịch bản giật gân, châm biếm, kịch tính đến phút chót."),
+            (5, "Không có nhân vật nào hoàn toàn tốt hay hoàn toàn xấu. Kết phim ám ảnh người xem thời gian dài."),
+            (5, "Xứng đáng với giải Oscar lịch sử. Đạo diễn Bong Joon Ho đã làm nên một bộ phim quá hoàn hảo.")
+        ]
+    }
+
+    for movie in created_movies:
+        if movie.title in reviews_pool:
+            selected_reviews = reviews_pool[movie.title]
+            available_users = [customer] + review_users
+            random.Random(42).shuffle(available_users)
+            for i, (rating, comment) in enumerate(selected_reviews):
+                if i < len(available_users):
+                    Review.objects.create(
+                        user=available_users[i],
+                        movie=movie,
+                        rating=rating,
+                        comment=comment
+                    )
+            print(f"Added {len(selected_reviews)} realistic reviews for Movie: {movie.title}")
 
     # 5. Create Theaters & Screens using TheaterService to auto-generate seat maps
     t1 = Theater.objects.create(

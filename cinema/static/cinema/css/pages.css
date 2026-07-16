@@ -798,7 +798,7 @@
 .auth-left {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #0e111d 0%, #17122b 100%);
+  background: #050505;
   display: flex;
   flex-direction: column;
 }
@@ -808,15 +808,15 @@
   inset: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.15;
-  filter: blur(1px);
-  transform: scale(1.02);
+  opacity: 0.55;
+  filter: none;
+  transform: scale(1);
 }
 
 .auth-left-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.75) 100%);
 }
 
 .auth-left-content {

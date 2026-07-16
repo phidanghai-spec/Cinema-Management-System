@@ -47,6 +47,23 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
     }, { passive: true });
 })();
 
+// ── 2.5. Navbar Dropdown Toggle ───────────────────────────────
+(function() {
+    const toggleBtn = document.getElementById('customer-view-toggle');
+    const dropdown = document.querySelector('.nav-dropdown');
+    if (!toggleBtn || !dropdown) return;
+    
+    toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+    });
+    
+    document.addEventListener('click', () => {
+        dropdown.classList.remove('open');
+    });
+})();
+
 // ── 3. Hero Carousel ──────────────────────────────────────────
 (function() {
     const track = document.getElementById('hero-track');

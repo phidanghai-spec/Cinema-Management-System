@@ -431,7 +431,7 @@ def seed_database():
     TIME_SLOTS = [datetime.time(9, 0), datetime.time(11, 30), datetime.time(14, 0),
                   datetime.time(16, 30), datetime.time(19, 0), datetime.time(21, 30)]
 
-    now_showing_extra = [m for m in created_movies[8:] if m.status == 'now_showing']
+    now_showing_extra = [m for m in created_movies if m.status == 'now_showing']
 
     screen_slot_pairs = [(s, t) for s in all_screens for t in TIME_SLOTS]
     random.Random(42).shuffle(screen_slot_pairs)

@@ -9,14 +9,25 @@
         <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Khám Phá</a></li>
         <li><a href="{% url 'index' %}?status=now_showing" class="{% if current_status == 'now_showing' %}active{% endif %}">Phim Đang Chiếu</a></li>
         <li><a href="{% url 'index' %}?status=coming_soon" class="{% if current_status == 'coming_soon' %}active{% endif %}">Phim Sắp Chiếu</a></li>
-        <li><a href="{% url 'offers' %}" class="{% if request.resolver_match.url_name == 'offers' %}active{% endif %}">🎟️ Khuyến Mãi</a></li>
+        {% if not request.session.is_admin %}
+            <li><a href="{% url 'offers' %}" class="{% if request.resolver_match.url_name == 'offers' %}active{% endif %}">🎟️ Khuyến Mãi</a></li>
+        {% endif %}
         <li><a href="{% url 'theaters' %}" class="{% if request.resolver_match.url_name == 'theaters' %}active{% endif %}">🏢 Hệ Thống Rạp</a></li>
         <li><a href="{% url 'faq' %}" class="{% if request.resolver_match.url_name == 'faq' %}active{% endif %}">❓ Hỏi Đáp</a></li>
         {% if user %}
-            <li><a href="{% url 'watchlist' %}" class="{% if request.resolver_match.url_name == 'watchlist' %}active{% endif %}">🔔 Phim Đã Lưu</a></li>
-            <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Lịch Sử Đặt Vé</a></li>
             {% if request.session.is_admin %}
+                <li class="nav-dropdown">
+                    <a href="javascript:void(0)" class="dropdown-toggle" id="customer-view-toggle">👤 Xem Như Khách ▾</a>
+                    <ul class="dropdown-menu" id="customer-view-menu">
+                        <li><a href="{% url 'offers' %}">🎟️ Khuyến Mãi</a></li>
+                        <li><a href="{% url 'watchlist' %}">🔔 Phim Đã Lưu</a></li>
+                        <li><a href="{% url 'profile' %}#bookings">Lịch Sử Đặt Vé</a></li>
+                    </ul>
+                </li>
                 <li><a href="{% url 'admin_dashboard' %}" class="{% if 'admin' in request.resolver_match.url_name %}active{% endif %} text-cyan" style="color: var(--color-secondary);">⚡ Admin</a></li>
+            {% else %}
+                <li><a href="{% url 'watchlist' %}" class="{% if request.resolver_match.url_name == 'watchlist' %}active{% endif %}">🔔 Phim Đã Lưu</a></li>
+                <li><a href="{% url 'profile' %}#bookings" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Lịch Sử Đặt Vé</a></li>
             {% endif %}
         {% endif %}
     </ul>

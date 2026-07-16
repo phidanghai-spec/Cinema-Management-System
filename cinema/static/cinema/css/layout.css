@@ -91,6 +91,81 @@ main {
   width: 100%;
 }
 
+/* Navbar Dropdown styling */
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(20, 20, 20, 0.96);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  list-style: none;
+  padding: var(--spacing-2) 0;
+  min-width: 180px;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+  z-index: 1000;
+}
+
+.dropdown-menu li {
+  width: 100%;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: var(--spacing-2) var(--spacing-4) !important;
+  color: var(--color-text-secondary) !important;
+  font-size: 14px !important;
+  font-weight: var(--font-weight-medium) !important;
+  transition: background var(--transition-fast), color var(--transition-fast) !important;
+  border-bottom: none !important;
+}
+
+.dropdown-menu a::after {
+  display: none !important; /* Bỏ gạch chân hiệu ứng trong menu con */
+}
+
+.dropdown-menu a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-primary) !important;
+}
+
+/* Hiển thị khi hover trên Desktop */
+@media (min-width: 769px) {
+  .nav-dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Hiển thị khi có class active/open qua click di động */
+.nav-dropdown.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
 .nav-user {
   display: flex;
   align-items: center;

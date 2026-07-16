@@ -1,5 +1,6 @@
 import os
 import datetime
+import random
 import django
 
 # Setup Django environment
@@ -220,6 +221,48 @@ def seed_database():
         created_movies.append(movie)
         print(f"Added Movie: {movie.title} ({movie.status})")
 
+    extra_movie_specs = [
+        # (title, genre, duration, rating, formats, age_rating, status,
+        #  release_offset_days, end_offset_days, director, cast, description)
+        ("The Dark Knight", "Action, Crime, Drama", 152, 4.9, "2D, IMAX", "C16", "now_showing", -10, 45, "Christopher Nolan", "Christian Bale, Heath Ledger, Aaron Eckhart", "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice."),
+        ("Inception", "Action, Sci-Fi, Adventure", 148, 4.8, "2D, IMAX", "C13", "now_showing", -8, 40, "Christopher Nolan", "Leonardo DiCaprio, Joseph Gordon-Levitt, Elliot Page", "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O."),
+        ("The Matrix", "Action, Sci-Fi", 136, 4.7, "2D", "C16", "now_showing", -6, 35, "Lana Wachowski, Lilly Wachowski", "Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss", "When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth--the life he knows is the elaborate deception of an evil cyber-intelligence."),
+        ("The Lord of the Rings: The Fellowship of the Ring", "Action, Adventure, Drama", 178, 4.9, "2D, IMAX", "C13", "now_showing", -12, 50, "Peter Jackson", "Elijah Wood, Ian McKellen, Orlando Bloom", "A meek Hobbit from the Shire and eight companions set out on a journey to destroy the powerful One Ring and save Middle-earth from the Dark Lord Sauron."),
+        ("Gladiator", "Action, Adventure, Drama", 155, 4.8, "2D", "C16", "now_showing", -15, 30, "Ridley Scott", "Russell Crowe, Joaquin Phoenix, Connie Nielsen", "A former Roman General sets out to exact vengeance against the corrupt emperor who murdered his family and sent him into slavery."),
+        ("Titanic", "Drama, Romance", 194, 4.7, "2D, 3D", "C13", "now_showing", -20, 25, "James Cameron", "Leonardo DiCaprio, Kate Winslet, Billy Zane", "A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the luxurious, ill-fated R.M.S. Titanic."),
+        ("Avengers: Endgame", "Action, Adventure, Sci-Fi", 181, 4.8, "2D, 3D, IMAX", "C13", "now_showing", -5, 60, "Anthony Russo, Joe Russo", "Robert Downey Jr., Chris Evans, Mark Ruffalo", "After the devastating events of Avengers: Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more."),
+        ("Spider-Man: No Way Home", "Action, Adventure, Sci-Fi", 148, 4.6, "2D, 3D", "C13", "now_showing", -3, 30, "Jon Watts", "Tom Holland, Zendaya, Benedict Cumberbatch", "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear."),
+        ("Oppenheimer", "Biography, Drama, History", 180, 4.9, "2D, IMAX", "C16", "now_showing", -7, 45, "Christopher Nolan", "Cillian Murphy, Emily Blunt, Matt Damon", "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb."),
+        ("Barbie", "Adventure, Comedy, Fantasy", 114, 4.4, "2D", "C13", "now_showing", -9, 35, "Greta Gerwig", "Margot Robbie, Ryan Gosling, Issa Rae", "Stereotypical Barbie experiences a full-on existential crisis and must travel to the real world in order to understand herself and discover her true purpose."),
+        ("Spider-Man: Into the Spider-Verse", "Animation, Action, Adventure", 117, 4.8, "2D, 3D", "P", "now_showing", -14, 20, "Bob Persichetti, Peter Ramsey", "Shameik Moore, Jake Johnson, Hailee Steinfeld", "Teen Miles Morales becomes the Spider-Man of his universe, and must join with five spider-powered individuals from other dimensions to stop a threat for all realities."),
+        ("Parasite", "Drama, Thriller", 132, 4.8, "2D", "C18", "now_showing", -11, 30, "Bong Joon Ho", "Song Kang-ho, Lee Sun-kyun, Cho Yeo-jeong", "Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan."),
+        ("Joker: Folie à Deux", "Drama, Crime, Musical", 138, 0.0, "2D, IMAX", "C18", "coming_soon", 15, 60, "Todd Phillips", "Joaquin Phoenix, Lady Gaga, Brendan Gleeson", "Secuel of Joker (2019), detailing the shared madness between Arthur Fleck and Harley Quinn."),
+        ("Gladiator II", "Action, Adventure, Drama", 150, 0.0, "2D, IMAX", "C16", "coming_soon", 30, 90, "Ridley Scott", "Paul Mescal, Pedro Pascal, Denzel Washington", "Years after witnessing the death of Maximus at the hands of his uncle, Lucius is forced to enter the Colosseum after his home is conquered by the tyrannical Emperors."),
+        ("Moana 2", "Animation, Adventure, Comedy", 100, 0.0, "2D, 3D", "P", "coming_soon", 45, 100, "David G. Derrick Jr.", "Auli'i Cravalho, Dwayne Johnson, Alan Tudyk", "After receiving an unexpected call from her wayfinding ancestors, Moana must journey to the far seas of Oceania and into dangerous, long-lost waters for an adventure unlike anything she's ever faced."),
+        ("The Batman Part II", "Action, Crime, Drama", 160, 0.0, "2D, IMAX", "C16", "coming_soon", 60, 120, "Matt Reeves", "Robert Pattinson, Andy Serkis, Jeffrey Wright", "The sequel to Matt Reeves' gritty detective take on the Caped Crusader.")
+    ]
+
+    for idx, (title, genre, duration, rating, formats, age_rating, status,
+              rel_off, end_off, director, cast, description) in enumerate(extra_movie_specs):
+        movie = Movie.objects.create(
+            title=title,
+            description=description,
+            genre=genre,
+            duration=duration,
+            rating=rating,
+            formats=formats,
+            poster_url=f"https://picsum.photos/seed/cineverse-movie-{idx + 9}/600/900",
+            trailer_url=None,
+            release_date=datetime.date.today() + datetime.timedelta(days=rel_off),
+            end_date=datetime.date.today() + datetime.timedelta(days=end_off),
+            status=status,
+            age_rating=age_rating,
+            director=director,
+            cast=cast
+        )
+        created_movies.append(movie)
+        print(f"Added Movie: {movie.title} ({movie.status})")
+
     # Write a default review for Interstellar
     Review.objects.create(
         user=customer,
@@ -363,6 +406,62 @@ def seed_database():
 
         
     print("Created Active Showtimes for the next 7 days.")
+
+    t3 = Theater.objects.create(name="CineVerse Times City", city="Hanoi",
+        address="458 Minh Khai, Hai Ba Trung District", amenities="Parking, Food Court, 4DX Hall")
+    t4 = Theater.objects.create(name="CineVerse Vincom Đồng Khởi", city="Ho Chi Minh City",
+        address="72 Le Thanh Ton, District 1", amenities="Parking, Rooftop Lounge, Valet")
+    t5 = Theater.objects.create(name="CineVerse Crescent Mall", city="Ho Chi Minh City",
+        address="101 Ton Dat Tien, District 7", amenities="Parking, Food Court, Wheelchair Access")
+    t6 = Theater.objects.create(name="CineVerse Vincom Đà Nẵng", city="Da Nang",
+        address="910 Ngo Quyen, Son Tra District", amenities="Parking, Ocean View Lounge")
+
+    s1_t3 = TheaterService.create_screen(t3.id, "4DX Hall", "IMAX", 8, 10)
+    s2_t3 = TheaterService.create_screen(t3.id, "Standard Room 1", "2D", 6, 10)
+    s1_t4 = TheaterService.create_screen(t4.id, "Premium Hall", "3D", 6, 8)
+    s2_t4 = TheaterService.create_screen(t4.id, "IMAX Hall", "IMAX", 8, 12)
+    s1_t5 = TheaterService.create_screen(t5.id, "Cinema Room A", "2D", 7, 10)
+    s2_t5 = TheaterService.create_screen(t5.id, "Cinema Room B", "3D", 6, 9)
+    s1_t6 = TheaterService.create_screen(t6.id, "IMAX Đà Nẵng", "IMAX", 8, 10)
+    s2_t6 = TheaterService.create_screen(t6.id, "Standard Hall", "2D", 6, 10)
+
+    all_screens = [s1_t1, s2_t1, s1_t2, s2_t2, s1_t3, s2_t3,
+                   s1_t4, s2_t4, s1_t5, s2_t5, s1_t6, s2_t6]
+    FORMAT_MULTIPLIER = {'2D': 1.0, '3D': 1.2, 'IMAX': 1.5}
+    TIME_SLOTS = [datetime.time(9, 0), datetime.time(11, 30), datetime.time(14, 0),
+                  datetime.time(16, 30), datetime.time(19, 0), datetime.time(21, 30)]
+
+    now_showing_extra = [m for m in created_movies[8:] if m.status == 'now_showing']
+
+    screen_slot_pairs = [(s, t) for s in all_screens for t in TIME_SLOTS]
+    random.Random(42).shuffle(screen_slot_pairs)
+
+    SHOWTIMES_PER_MOVIE_PER_DAY = 3
+    # Đọc TOÀN BỘ lịch đã có sẵn trong DB (kể cả lịch cứng cũ) vào 1 set để tra cứu nhanh
+    existing_used = set(Showtime.objects.values_list('screen_id', 'start_time'))
+
+    for day_offset in range(10):
+        current_date = today + datetime.timedelta(days=day_offset)
+        for idx, movie in enumerate(now_showing_extra):
+            base = idx * SHOWTIMES_PER_MOVIE_PER_DAY
+            assigned = 0
+            attempt = 0
+            while assigned < SHOWTIMES_PER_MOVIE_PER_DAY and attempt < len(screen_slot_pairs):
+                screen, slot = screen_slot_pairs[(base + attempt) % len(screen_slot_pairs)]
+                attempt += 1
+                start_dt = make_dt(current_date, slot)
+                key = (screen.id, start_dt)
+                if key in existing_used:   # đã có phim khác chiếu giờ này rồi -> bỏ qua
+                    continue
+                end_dt = start_dt + datetime.timedelta(minutes=movie.duration)
+                Showtime.objects.create(
+                    movie=movie, screen=screen, start_time=start_dt, end_time=end_dt,
+                    language="Vietnamese" if idx % 3 == 0 else "English",
+                    subtitle="English" if idx % 3 == 0 else "Vietnamese",
+                    price_multiplier=FORMAT_MULTIPLIER.get(screen.format, 1.0)
+                )
+                existing_used.add(key)   # đánh dấu đã dùng, để lần lặp sau biết
+                assigned += 1
     
     # 8. Create Combos
     Combo.objects.create(

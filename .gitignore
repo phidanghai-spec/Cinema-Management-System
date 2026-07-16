@@ -15,6 +15,8 @@ venv.bak/
 # Django files
 db.sqlite3
 db.sqlite3-journal
+cineverse_db
+cineverse_db-journal
 media/
 staticfiles/
 

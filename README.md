@@ -77,7 +77,7 @@ Dưới đây là danh sách các mẫu thiết kế phần mềm được tích
 
 1. **Model-View-Template (MVT):** Cấu trúc chuẩn của Django phân tách rõ ràng giao diện, cơ sở dữ liệu và logic điều hướng.
 2. **Singleton (`SystemSettings`):** Quản lý cấu hình toàn hệ thống (phí hủy vé, thuế suất, tỷ lệ quy đổi điểm) đảm bảo duy nhất một thực thể cấu hình tồn tại.
-3. **Factory (`PaymentProcessorFactory`):** Khởi tạo bộ xử lý thanh toán tương ứng dựa trên phương thức người dùng chọn (`momo` hoặc `credit_card`).
+3. **Simple Factory (`PaymentProcessorFactory`):** Khởi tạo bộ xử lý thanh toán tương ứng dựa trên phương thức người dùng chọn (`momo` hoặc `credit_card`).
 4. **Strategy (Pricing Strategy):** Tính toán giá vé linh hoạt dựa trên thời gian chiếu (`WeekdayPricing` - giảm 10%, `WeekendPricing` - tăng 20%, `HolidayPricing` - tăng 30`).
 5. **Observer (Booking Notifications):** Tự động gửi Email mô phỏng và cập nhật thông báo In-App (`InAppNotification`) khi trạng thái đơn hàng thay đổi.
 6. **Decorator (Seat Price Decorators):** Tính toán phụ thu động dựa trên loại ghế ngồi (`VIPSeatPriceDecorator` tăng 1.5 lần, `CoupleSeatPriceDecorator` tăng 2.0 lần trên giá gốc).

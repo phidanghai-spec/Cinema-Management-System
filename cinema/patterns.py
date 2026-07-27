@@ -48,7 +48,7 @@ class SystemSettings:
 
 
 # ==========================================
-# 3. FACTORY & 12. ADAPTER PATTERNS - Payments
+# 3. SIMPLE FACTORY & 12. ADAPTER PATTERNS - Payments
 # ==========================================
 
 # Target interface for payment processing
@@ -229,10 +229,12 @@ class MomoAdapter(PaymentGateway):
         res = self.api.refund_momo(order_id, transaction_id, amount)
         return res["status"] == "refund_success"
 
-# Payment Processor Factory
+# Payment Processor Simple Factory
 class PaymentProcessorFactory:
     """
-    FACTORY PATTERN: PaymentProcessorFactory.
+    SIMPLE FACTORY PATTERN: PaymentProcessorFactory.
+    
+    Phân biệt với Factory Method: Không có lớp Creator trừu tượng hay polymorphism qua kế thừa, chỉ là điều kiện rẽ nhánh (if/elif) tập trung tại một nơi để chọn lớp khởi tạo đối tượng.
     
     WHY: The client code (booking workflow) should not know which adapter class to instantiate.
     This factory encapsulates gateway instantiation based on payment method strings.

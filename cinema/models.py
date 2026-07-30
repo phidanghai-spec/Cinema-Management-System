@@ -204,7 +204,7 @@ class Combo(models.Model):
 class BookingItem(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='items')
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE, null=True, blank=True)
-    combo = models.ForeignKey(Combo, on_delete=models.CASCADE, null=True, blank=True)
+    combo = models.ForeignKey(Combo, on_delete=models.SET_NULL, null=True, blank=True)
     quantity = models.IntegerField(default=1)
     price = models.IntegerField()
 

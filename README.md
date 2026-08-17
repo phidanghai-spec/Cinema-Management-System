@@ -1,105 +1,303 @@
-# 🎬 CineVerse — Hệ Thống Quản Lý Rạp Chiếu Phim Chuyên Nghiệp
+# **CineVerse — Cinema Management System**
 
-> **Một ứng dụng quản lý đặt vé rạp chiếu phim chuyên nghiệp được xây dựng bằng Django (Python), tích hợp 15 mẫu thiết kế phần mềm (Design Patterns) chuẩn mực cùng giao diện Glassmorphism Dark UI hiện đại.**
-
----
-
-## 🔑 Tài Khoản Thử Nghiệm (Test Credentials)
-
-| Vai trò | Email | Mật khẩu | Mô tả |
-|---------|-------|----------|-------|
-| 👤 **Khách hàng (Customer)** | `customer@cinema.com` | `customer123` | Tài khoản đặt vé, xem lịch sử đặt vé, quản lý watchlist |
-| ⚡ **Quản trị viên (Admin)** | `admin@cinema.com` | `admin123` | Truy cập trang Dashboard, xác thực vé QR, quản lý phim/suất chiếu |
-
-🎟️ **Mã giảm giá thử nghiệm:** `SUMMER2026` (Giảm 20% đơn hàng)  
-📍 **Địa chỉ chạy local:** http://127.0.0.1:8000/
+> A full-featured cinema ticketing and management platform built with Django, implementing 13 GoF design patterns across a layered service architecture.
 
 ---
 
-## 🚀 Hướng Dẫn Khởi Chạy Dự Án Nhanh (Quick Start)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-4.2-092E20?style=flat-square&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-Compatible-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Tests](https://img.shields.io/badge/Tests-92%20passed-brightgreen?style=flat-square&logo=pytest&logoColor=white)](./cinema/tests.py)
+[![Design Patterns](https://img.shields.io/badge/Design%20Patterns-13%20GoF-blueviolet?style=flat-square)](./cinema/patterns.py)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
 
-### 1. Tạo và Kích hoạt Môi trường ảo (Virtual Environment)
-Mở terminal/Command Prompt tại thư mục dự án và chạy:
+---
 
-**Trên Windows (PowerShell):**
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
+<!-- SCREENSHOT SECTION -->
+<!-- ══════════════════════════════════════════════════════════════════
+     ACTION REQUIRED — Add screenshots to: docs/screenshots/
+     Recommended screenshots to capture:
+       1. demo.png       — Homepage showing Now Showing / Coming Soon movie grid
+       2. booking.png    — Seat selection screen during the booking flow
+       3. payment.png    — MoMo mock payment gateway or booking confirmation page
+       4. dashboard.png  — Admin dashboard with revenue chart and top movies
+       5. profile.png    — User profile page showing loyalty tier + booking history
+     ══════════════════════════════════════════════════════════════════ -->
+
+![Demo](./docs/screenshots/demo.png)
+> *Screenshot: CineVerse Movie Catalog homepage showcase.*
+
+---
+
+## ✨ Features
+
+### Customer-Facing
+- **Movie Catalog** — Browse Now Showing and Coming Soon films; filter by genre, format (2D / 3D / IMAX), and keyword search.
+- **Movie Detail & Showtimes** — Displays synopsis, trailer embed, cast/director, age ratings, and upcoming showtime schedules.
+- **Interactive Seat Map** — Real-time seat selection supporting Normal, VIP (+50% price), and Couple (2x price) seat types.
+- **Dynamic Pricing Engine** — Automatic ticket pricing adjustments for Weekday (−10%), Weekend (+20%), Holiday (+30%), and Happy Hour (−20%) showtimes.
+- **Loyalty Points & Tiers** — Earn 1 point per 10,000 VND spent; automatically progress through Bronze → Silver (100 pts) → Gold (300 pts) → Platinum (1,000 pts) tiers; redeem points for up to 50% discount.
+- **Voucher Validation Pipeline** — Multi-rule discount validation chain (expiry date, minimum spend, usage caps, per-user limits, tier eligibility, movie restrictions).
+- **Food & Beverage Combos** — Add combo add-ons during checkout.
+- **Payment Gateway Integration** — MoMo e-wallet sandbox (HMAC-SHA256 signatures with local mock fallback) and Stripe API integration.
+- **Self-Service Ticket Cancellation** — Configurable cancellation fee; automatically reverses awarded loyalty points and updates membership tier.
+- **Reviews & Ratings** — User star ratings and text comments with "helpful" voting and admin responses.
+- **Favorites & Watchlist** — Save movies to personal favorites or a watchlist with optional reminder flags.
+- **In-App Notifications** — Persistent notification feed updated on booking confirmation and cancellation.
+- **User Profile & History** — View active tickets, past booking history, and current loyalty tier status.
+
+### Admin Dashboard
+- **Analytics Overview** — Total revenue, total bookings, active users, occupancy rates, 6-month monthly revenue charts, and top 5 movies.
+- **Movie Management** — Full CRUD operations for movies (add, edit, update status).
+- **Showtime Management** — Schedule showtimes per screen, bulk CSV upload, and clone existing showtimes across dates.
+- **User & Staff Control** — User account ban/unban management and staff ticket verification by booking ID.
+
+---
+
+## 🎨 Design Patterns Implemented
+
+This project serves as the capstone implementation for the **Software Design Patterns** course. **13 GoF patterns** are implemented in [`cinema/patterns.py`](file:///d:/Cinema%20Management%20System/cinema/patterns.py), alongside 2 architectural patterns.
+
+| # | Pattern | Category | Implementation Location & Description |
+|---|---|---|---|
+| 1 | **Singleton** | Creational | `SystemSettings` — Ensures a single global configuration registry for cancellation fees, seat-lock timeouts, tax rates, and point conversion rules. |
+| 2 | **Builder** | Creational | `BookingBuilder` — Construct complex `Booking` instances step-by-step (user → showtime → seats → combos → discount → totals) avoiding telescoping constructors. |
+| 3 | **Simple Factory** | Creational | `PaymentProcessorFactory.create_processor()` — Instantiates the appropriate payment gateway adapter (`StripeAdapter` or `MomoAdapter`) based on a lookup string. |
+| 4 | **Prototype** | Creational | `MoviePrototype.clone()` / `ShowtimePrototype.clone()` — Enables admins to duplicate existing movie entries or replicate showtime schedules across multiple dates. |
+| 5 | **Adapter** | Structural | `StripeAdapter` & `MomoAdapter` — Wrap third-party APIs (Stripe cents vs. MoMo redirect URLs + HMAC signatures) behind a unified `PaymentGateway` interface. |
+| 6 | **Decorator** | Structural | `VIPSeatPriceDecorator` (+50%) & `CoupleSeatPriceDecorator` (×2) — Dynamically wrap seat price calculations at runtime without subclassing model trees. |
+| 7 | **Facade** | Structural | `BookingFacade.book_ticket()` — Provides a single unified entry point hiding seat decoration, pricing strategy resolution, discount chains, payment, state transitions, and observer notifications. |
+| 8 | **Strategy** | Behavioral | `PricingStrategy` hierarchy (`WeekdayPricing`, `WeekendPricing`, `HolidayPricing`, `HappyHourPricing`) — Dynamically selected by `get_pricing_strategy(showtime_datetime)`. |
+| 9 | **Observer** | Behavioral | `BookingSubject` notifies registered `EmailObserver` (simulated log) and `InAppObserver` (database notification feed) on booking status changes. |
+| 10 | **Chain of Responsibility** | Behavioral | `DiscountValidator` chain — 8 chained validator nodes (Expiry → MinAmount → UsageLimit → PerUserLimit → Tier → MovieSpecific → PointsCombo → GoldenHour). |
+| 11 | **State** | Behavioral | `BookingState` hierarchy (`PendingState`, `ConfirmedState`, `CompletedState`, `CancelledState`) — Manages lifecycle transitions and side-effects (points award/reversal, tier recalculation). |
+| 12 | **Template Method** | Behavioral | `BookingWorkflow.execute()` — Defines the invariant booking transaction pipeline (validate user → validate seats → resolve discount → build → pay → state change → notify). |
+| 13 | **Command** | Behavioral | `BookCommand` & `CancelCommand` — Encapsulate booking and cancellation actions as command objects for decoupled execution and transactional logging. |
+| 14 | **Repository** *(Architectural)* | — | `UserRepository`, `MovieRepository`, `BookingRepository`, `ShowtimeRepository`, `DiscountRepository` in [`cinema/repositories.py`](file:///d:/Cinema%20Management%20System/cinema/repositories.py) — Abstract database access from business logic. |
+| 15 | **MVT** *(Architectural)* | — | Standard Django Model-View-Template separation separating models, service controllers, and HTML render templates. |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend Framework** | Django 4.2 (Python 3.10+) |
+| **Database** | SQLite 3 (default development) / MySQL (production-compatible via PyMySQL) |
+| **Security & Auth** | Django Authentication, bcrypt password hashing, `@role_required` decorator |
+| **Payment Gateways** | MoMo E-Wallet Sandbox API (HMAC-SHA256 signed) · Stripe API (sandbox) |
+| **Configuration** | `python-decouple` (`.env` support) |
+| **Frontend** | Vanilla HTML5 / CSS3 / JavaScript (no SPA framework requirement) |
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    Browser["Client Browser"]
+
+    subgraph Django_App ["Django Application Layer"]
+        URLs["urls.py — Router"]
+        Views["views.py + views_admin.py"]
+        
+        subgraph Patterns_Layer ["cinema/patterns.py (13 GoF Patterns)"]
+            Facade["BookingFacade (Facade)"]
+            Workflow["StandardBookingWorkflow (Template Method)"]
+            Builder["BookingBuilder (Builder)"]
+            Strategy["PricingStrategy (Strategy)"]
+            Chain["DiscountValidator Chain (Chain of Responsibility)"]
+            State["BookingState (State)"]
+            Observer["BookingSubject + Observers (Observer)"]
+            Factory["PaymentProcessorFactory (Factory)"]
+        end
+
+        Services["services.py — Service Layer"]
+        Repos["repositories.py — Repository Layer"]
+    end
+
+    subgraph External ["External Payment Gateways"]
+        Momo["MoMo Wallet API (Sandbox)"]
+        Stripe["Stripe API (Sandbox)"]
+    end
+
+    DB[("Database (SQLite / MySQL)")]
+
+    Browser -->|HTTP GET/POST| URLs
+    URLs --> Views
+    Views --> Facade
+    Facade --> Workflow
+    Workflow --> Builder
+    Workflow --> Strategy
+    Workflow --> Chain
+    Workflow --> State
+    Workflow --> Observer
+    Workflow --> Factory
+    Factory -->|Adapter| Momo
+    Factory -->|Adapter| Stripe
+    Views --> Services
+    Services --> Repos
+    Repos --> DB
 ```
 
-**Trên macOS/Linux:**
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [Python 3.10+](https://www.python.org/downloads/)
+- `pip` package manager
+- Git
+
+### 1. Clone the Repository
+
 ```bash
-python3 -m venv .venv
+git clone https://github.com/phidanghai-spec/Cinema-Management-System.git
+cd Cinema-Management-System
+```
+
+### 2. Create and Activate Virtual Environment
+
+```bash
+# Windows (PowerShell)
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# macOS / Linux
+python -m venv .venv
 source .venv/bin/activate
 ```
 
-### 2. Cài đặt các thư viện phụ thuộc (Dependencies)
+### 3. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Thực thi di cư Cơ sở dữ liệu (Migrations)
+### 4. Configure Environment Variables
+
 ```bash
+cp .env.example .env
+```
+
+### 5. Apply Database Migrations
+
+```bash
+# Using SQLite backend
+$env:DB_ENGINE='django.db.backends.sqlite3'
 python manage.py migrate
 ```
 
-### 4. Tạo dữ liệu mẫu (Seeding Database)
-Chạy script seed dữ liệu mẫu để tạo tài khoản, phim, phòng chiếu, suất chiếu và ghế ngồi tự động:
+### 6. Seed Demo Data
+
 ```bash
 python seed.py
 ```
 
-### 5. Chạy máy chủ phát triển (Run Server)
+### 7. Run Development Server
+
 ```bash
 python manage.py runserver
 ```
-Sau khi chạy thành công, truy cập trình duyệt tại địa chỉ [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
+
+**Default Seeded Credentials:**
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@cinema.com` | `admin123` |
+| Customer | `customer@cinema.com` | `customer123` |
+
+**Demo Promo Code:** `SUMMER2026` (20% discount)
 
 ---
 
-## 🧪 Hệ Thống Kiểm Thử (Unit Tests)
+## 📋 Environment Variables
 
-Dự án sở hữu bộ unit test bao phủ toàn bộ chức năng từ Design Patterns, Repositories, Services đến API Endpoints với **92 ca kiểm thử** hoàn chỉnh.
+Table of required environment variables defined in `.env.example`:
 
-Chạy toàn bộ unit tests bằng lệnh:
+| Variable | Description | Default / Example Placeholder |
+|---|---|---|
+| `SECRET_KEY` | Django application secret key | `django-insecure-...` |
+| `DEBUG` | Enable Django debug mode | `True` |
+| `ALLOWED_HOSTS` | Allowed hostnames for the server | `127.0.0.1,localhost` |
+| `DB_ENGINE` | Database backend engine | `django.db.backends.sqlite3` |
+| `DB_NAME` | Database name or SQLite file path | `db.sqlite3` |
+| `DB_USER` | MySQL database username | `root` |
+| `DB_PASSWORD` | MySQL database password | `[YOUR_DB_PASSWORD]` |
+| `DB_HOST` | MySQL database host | `127.0.0.1` |
+| `DB_PORT` | MySQL database port | `3306` |
+| `MOMO_PARTNER_CODE` | MoMo Sandbox partner code | `MOMOBKUN20180810` |
+| `MOMO_ACCESS_KEY` | MoMo Sandbox access key | `[YOUR_MOMO_ACCESS_KEY]` |
+| `MOMO_SECRET_KEY` | MoMo Sandbox secret key | `[YOUR_MOMO_SECRET_KEY]` |
+
+---
+
+## 🧪 Testing
+
+The automated test suite in [`cinema/tests.py`](file:///d:/Cinema%20Management%20System/cinema/tests.py) covers all 13 design patterns, services, repositories, and API endpoints.
+
+**Total Verified Unit Tests: 92 tests (100% passing)**
+
+To execute the test suite:
+
 ```bash
+# Run all tests using SQLite engine
+$env:DB_ENGINE='django.db.backends.sqlite3'
 python manage.py test cinema -v 2
 ```
 
 ---
 
-## 🏗️ Thiết Kế Kiến Trúc & 15 Design Patterns Áp Dụng
+## 📂 Folder Structure
 
-Hệ thống được thiết kế theo mô hình phân lớp chuẩn:
-`Template / Frontend (MVT)` ➔ `View (Controller)` ➔ `Service (Business Logic)` ➔ `Repository (Data Access)` ➔ `Database (MySQL)`
-
-Dưới đây là danh sách các mẫu thiết kế phần mềm được tích hợp trực tiếp trong mã nguồn:
-
-1. **Model-View-Template (MVT):** Cấu trúc chuẩn của Django phân tách rõ ràng giao diện, cơ sở dữ liệu và logic điều hướng.
-2. **Singleton (`SystemSettings`):** Quản lý cấu hình toàn hệ thống (phí hủy vé, thuế suất, tỷ lệ quy đổi điểm) đảm bảo duy nhất một thực thể cấu hình tồn tại.
-3. **Simple Factory (`PaymentProcessorFactory`):** Khởi tạo bộ xử lý thanh toán tương ứng dựa trên phương thức người dùng chọn (`momo` hoặc `credit_card`).
-4. **Strategy (Pricing Strategy):** Tính toán giá vé linh hoạt dựa trên thời gian chiếu (`WeekdayPricing` - giảm 10%, `WeekendPricing` - tăng 20%, `HolidayPricing` - tăng 30`).
-5. **Observer (Booking Notifications):** Tự động gửi Email mô phỏng và cập nhật thông báo In-App (`InAppNotification`) khi trạng thái đơn hàng thay đổi.
-6. **Decorator (Seat Price Decorators):** Tính toán phụ thu động dựa trên loại ghế ngồi (`VIPSeatPriceDecorator` tăng 1.5 lần, `CoupleSeatPriceDecorator` tăng 2.0 lần trên giá gốc).
-7. **Repository (Data Access Layer):** Phân tách các câu truy vấn phức tạp ra khỏi tầng xử lý logic nghiệp vụ qua lớp [`repositories.py`](cinema/repositories.py).
-8. **Template Method (`StandardBookingWorkflow`):** Định nghĩa khung quy trình đặt vé chuẩn (Tạo nháp ➔ Áp mã ➔ Thanh toán ➔ Xác nhận ➔ Gửi thông báo).
-9. **Chain of Responsibility (Discount Validation):** Chuỗi kiểm tra điều kiện áp dụng Voucher (Hạn sử dụng ➔ Giá trị tối thiểu ➔ Lượt dùng toàn hệ thống ➔ Lượt dùng của User).
-10. **State (Booking Lifecycle):** Quản lý vòng đời đơn đặt vé (`PendingState` ➔ `ConfirmedState` ➔ `CompletedState` hoặc `CancelledState`) đi kèm điều kiện chuyển trạng thái nghiêm ngặt.
-11. **Builder (`BookingBuilder`):** Hỗ trợ lắp ráp các thành phần phức tạp của đối tượng đặt vé (User, Showtime, Seats, Combo items, Discount, Notes) một cách tuần tự.
-12. **Adapter (Payment Adapters):** Bọc các API không tương thích của bên thứ ba (`MomoAPI`, `StripeAPI`) về một giao diện chung duy nhất (`PaymentGateway`).
-13. **Facade (`BookingFacade`):** Cung cấp giao diện cấp cao đơn giản điều phối đặt vé giữa builder, strategies, và workflow.
-14. **Command (`BookCommand`, `CancelCommand`):** Đóng gói yêu cầu đặt vé/hủy vé thành các đối tượng riêng biệt để ghi log kiểm toán và quản lý giao dịch.
-15. **Prototype (`MoviePrototype`, `ShowtimePrototype`):** Cho phép nhân bản đối tượng Phim/Suất chiếu nhanh chóng để hỗ trợ thiết lập lịch chiếu quy mô lớn.
-
+```
+Cinema-Management-System/
+├── docs/
+│   └── screenshots/                 # Demo screenshots
+├── cinema/                          # Main Django Application
+│   ├── models.py                    # Data Models (User, Movie, Seat, Showtime, Booking...)
+│   ├── patterns.py                  # 13 GoF Design Patterns Implementation
+│   ├── services.py                  # Business Logic Layer
+│   ├── repositories.py              # Repository / Data Access Object Layer
+│   ├── views.py                     # Customer Views & API Handlers
+│   ├── views_admin.py               # Admin Dashboard Views
+│   ├── urls.py                      # Application URL Routing
+│   ├── exceptions.py                # Custom Exception Classes
+│   ├── tests.py                     # 92 Unit Test Methods
+│   ├── templates/
+│   │   └── cinema/
+│   │       ├── base.html            # Layout Base Template
+│   │       ├── base_admin.html      # Admin Layout Base
+│   │       └── pages/               # Movie catalog, seat map, checkout templates
+│   └── static/                      # CSS, JavaScript & Assets
+├── cinema_project/                  # Django Project Settings & Root Router
+├── manage.py                        # Django Management CLI
+├── seed.py                          # Demo Data Seeder Script
+├── requirements.txt                 # Python Dependencies
+├── .env.example                     # Environment Configuration Template
+├── PATTERNS.md                      # Detailed Pattern Mapping Rationale
+├── ARCHITECTURE.md                  # Comprehensive Architectural Specification
+└── README.md                        # Primary Project Repository README
+```
 
 ---
 
-## 🎨 Giao Diện Người Dùng (Glassmorphism Dark Theme)
+## 👤 Author
 
-* **Trang chủ (`pages/movie_list.html`):** Hero Carousel tự động trượt hiển thị 3 phim nổi bật, các thẻ phim ứng dụng hiệu ứng Hover Scale & Stagger Fade-in mượt mà.
-* **Chi tiết phim (`pages/movie_detail.html`):** Ảnh nền mờ điện ảnh (Cinematic backdrop blur), widget chấm điểm sao tương tác trực quan.
-* **Luồng đặt vé (`pages/booking_flow.html`):** Thanh tiến trình 3 bước trực quan, sơ đồ chọn ghế có armrest mô phỏng thực tế kèm hiệu ứng nảy (bounce) sinh động khi chọn.
-* **Vé điện tử (`pages/booking_ticket.html`):** Render mã QR thực bằng `qrcode.js` từ CDN, hỗ trợ nút in vé nhanh và sao chép mã đặt vé kèm Toast thông báo.
-* **Profile cá nhân (`pages/profile.html`):** Phân chia 5 tab nội dung (Lịch sử đặt vé, Phim yêu thích, Phim xem sau, Hộp thư thông báo, Cài đặt tài khoản) kèm thanh cấp độ thành viên (Loyalty progress bar) chuyển động mượt mà.
-* **Trang Dashboard Admin (`pages/admin/dashboard.html`):** Biểu đồ doanh thu dạng đường cong Bezier vẽ bằng Canvas thuần, bảng xếp hạng phim bán chạy tích hợp thanh tỷ lệ phần trưng trực quan, ô quét QR xác thực vé trực tiếp tại quầy và lịch sử thực thi các design pattern.
+**Đặng Hải Phi** — `phidanghai-spec`  
+**Role**: Full-Stack Developer & Software Architect  
+**Project**: Capstone Project for *Mẫu Thiết Kế Phần Mềm* (Software Design Patterns)  
+**GitHub Profile**: [phidanghai-spec](https://github.com/phidanghai-spec)
 
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](./LICENSE).
+
+---
+
+<p align="center">CineVerse © 2026 — Demonstrating 13 GoF Design Patterns in Python & Django</p>

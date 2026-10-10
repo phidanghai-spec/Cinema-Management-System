@@ -7,7 +7,7 @@ from django.db.models import Sum, Count
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from .models import User, Movie, Theater, Screen, Seat, Showtime, Booking, BookingItem, Payment, Review, Discount, Favorite, Watchlist, Address, InAppNotification, AuditLog, EmployeeShift
-from .services import BookingService, TheaterService
+from .services import BookingService, TheaterService, MovieSyncService
 from .repositories import UserRepository, MovieRepository, BookingRepository, ShowtimeRepository
 from .views import get_session_user
 
@@ -158,8 +158,50 @@ def admin_movies_view(request, admin):
             )
             AuditLog.objects.create(user=admin, action='CLONE_MOVIE', details=f"Cloned movie ID={movie.id} -> '{new_movie.title}' (ID={new_movie.id})")
             return redirect('admin_movies')
+        elif action in ['sync_tmdb', 'sync_movies']:
+            source = request.POST.get('source', 'auto')
+            limit = int(request.POST.get('limit', 10))
+            result = MovieSyncService.sync_now_playing_movies(limit=limit, source=source)
+            AuditLog.objects.create(
+                user=admin,
+                action='SYNC_MOVIES',
+                details=f"Synchronized {result['count']} movies from {result['source']}"
+            )
+            return redirect('admin_movies')
             
     return render(request, 'cinema/pages/admin/movies.html', {'admin': admin, 'user': admin, 'movies': movies})
+
+@role_required('admin')
+def admin_sync_movies_api(request, admin):
+    """API endpoint to trigger movie synchronization asynchronously from admin UI."""
+    if request.method == 'POST':
+        try:
+            data = {}
+            if request.body:
+                try:
+                    data = json.loads(request.body)
+                except Exception:
+                    data = {}
+            source = data.get('source') or request.POST.get('source', 'auto')
+            limit = int(data.get('limit') or request.POST.get('limit', 10))
+            result = MovieSyncService.sync_now_playing_movies(limit=limit, source=source)
+            AuditLog.objects.create(
+                user=admin,
+                action='SYNC_MOVIES',
+                details=f"Synchronized {result['count']} movies ({result['source']})"
+            )
+            return JsonResponse({
+                'success': True,
+                'message': f"Đồng bộ thành công {result['count']} phim từ {result['source']}!",
+                'count': result['count'],
+                'created': result.get('created_count', 0),
+                'updated': result.get('updated_count', 0),
+                'source': result['source'],
+                'movies': result.get('movies', [])
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 @role_required('admin')
 def csv_bulk_upload_api(request, admin):

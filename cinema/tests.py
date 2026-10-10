@@ -1306,3 +1306,199 @@ class AuditLogAndShiftTests(BaseTestCase):
         self.assertEqual(shift.employee, self.admin)
         self.assertEqual(shift.role_on_shift, "Supervisor")
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NEW FEATURE TESTS: PAYMENT STRATEGY PATTERN & MOVIE CATALOG SYNC
+# ─────────────────────────────────────────────────────────────────────────────
+
+class PaymentStrategyPatternTests(BaseTestCase):
+    """Unit tests for Strategy Pattern payment implementations."""
+
+    def test_vietqr_strategy_generates_dynamic_url(self):
+        from .patterns import VietQRBankStrategy
+        from .models import Booking
+        booking = Booking.objects.create(
+            user=self.user,
+            showtime=self.showtime,
+            total_price=150000,
+            status='pending'
+        )
+        strategy = VietQRBankStrategy(bank_id='MB', account_no='0988888888', account_name='CINEVERSE VIETNAM')
+        res = strategy.process_payment(booking, 150000)
+
+        self.assertEqual(res['status'], 'pending')
+        self.assertIn('img.vietqr.io/image/MB-0988888888-compact2.png', res['payment_url'])
+        self.assertIn('amount=150000', res['payment_url'])
+        self.assertIn(f"addInfo=CINEVERSE%20{booking.id}", res['payment_url'])
+        self.assertIn('VQR_', res['transaction_id'])
+        self.assertEqual(res['extra_data']['bank_id'], 'MB')
+        self.assertEqual(res['extra_data']['account_no'], '0988888888')
+
+    def test_momo_strategy_generates_url(self):
+        from .patterns import MoMoStrategy
+        from .models import Booking
+        booking = Booking.objects.create(
+            user=self.user,
+            showtime=self.showtime,
+            total_price=100000,
+            status='pending'
+        )
+        strategy = MoMoStrategy()
+        res = strategy.process_payment(booking, 100000, phone="0912345678")
+
+        self.assertEqual(res['status'], 'pending')
+        self.assertIsNotNone(res['payment_url'])
+        self.assertIsNotNone(res['transaction_id'])
+
+    def test_vnpay_strategy_generates_url(self):
+        from .patterns import VNPayStrategy
+        from .models import Booking
+        booking = Booking.objects.create(
+            user=self.user,
+            showtime=self.showtime,
+            total_price=200000,
+            status='pending'
+        )
+        strategy = VNPayStrategy()
+        res = strategy.process_payment(booking, 200000)
+
+        self.assertEqual(res['status'], 'pending')
+        self.assertIn('mock-vnpay-gateway', res['payment_url'])
+        self.assertIn(f'orderId={booking.id}', res['payment_url'])
+        self.assertIn('amount=200000', res['payment_url'])
+
+    def test_cash_at_counter_strategy(self):
+        from .patterns import CashAtCounterStrategy
+        from .models import Booking
+        booking = Booking.objects.create(
+            user=self.user,
+            showtime=self.showtime,
+            total_price=90000,
+            status='pending'
+        )
+        strategy = CashAtCounterStrategy()
+        res = strategy.process_payment(booking, 90000)
+
+        self.assertEqual(res['status'], 'pending')
+        self.assertIsNone(res['payment_url'])
+        self.assertIn('cash_', res['transaction_id'])
+
+    def test_payment_strategy_factory_resolves_all(self):
+        from .patterns import (
+            PaymentStrategyFactory, VietQRBankStrategy, MoMoStrategy,
+            VNPayStrategy, CashAtCounterStrategy, CreditCardPaymentStrategy
+        )
+        self.assertIsInstance(PaymentStrategyFactory.get_strategy('bank_transfer'), VietQRBankStrategy)
+        self.assertIsInstance(PaymentStrategyFactory.get_strategy('momo'), MoMoStrategy)
+        self.assertIsInstance(PaymentStrategyFactory.get_strategy('vnpay'), VNPayStrategy)
+        self.assertIsInstance(PaymentStrategyFactory.get_strategy('cash'), CashAtCounterStrategy)
+        self.assertIsInstance(PaymentStrategyFactory.get_strategy('credit_card'), CreditCardPaymentStrategy)
+
+        with self.assertRaises(ValueError):
+            PaymentStrategyFactory.get_strategy('crypto_bitcoin')
+
+    def test_payment_strategy_context_runtime_swapping(self):
+        from .patterns import PaymentStrategyContext, VietQRBankStrategy, CashAtCounterStrategy
+        from .models import Booking
+        booking = Booking.objects.create(
+            user=self.user,
+            showtime=self.showtime,
+            total_price=100000,
+            status='pending'
+        )
+        context = PaymentStrategyContext(VietQRBankStrategy())
+        res1 = context.execute_payment(booking, 100000)
+        self.assertIsNotNone(res1['payment_url'])
+
+        # Swap to cash strategy at runtime
+        context.strategy = CashAtCounterStrategy()
+        res2 = context.execute_payment(booking, 100000)
+        self.assertIsNone(res2['payment_url'])
+        self.assertIn('cash_', res2['transaction_id'])
+
+
+class MovieSyncServiceTests(BaseTestCase):
+    """Unit tests for Movie Catalog Sync from public APIs and fallback."""
+
+    def test_movie_sync_curated_and_deduplication(self):
+        from .services import MovieSyncService
+        from .models import Movie
+
+        initial_count = Movie.objects.count()
+
+        # Run first sync
+        result1 = MovieSyncService.sync_now_playing_movies(limit=4, source='curated')
+        self.assertTrue(result1['success'])
+        self.assertEqual(result1['count'], 4)
+        self.assertEqual(Movie.objects.count(), initial_count + result1['created_count'])
+
+        # Re-run sync to test update_or_create deduplication
+        result2 = MovieSyncService.sync_now_playing_movies(limit=4, source='curated')
+        self.assertTrue(result2['success'])
+        self.assertEqual(result2['created_count'], 0)  # No new movies created, only updated
+        self.assertEqual(result2['updated_count'], 4)
+
+    def test_sync_movies_management_command(self):
+        from django.core.management import call_command
+        from io import StringIO
+
+        out = StringIO()
+        call_command('sync_movies', limit=3, source='curated', stdout=out)
+        output = out.getvalue()
+        self.assertIn('[SUCCESS]', output)
+
+
+class MultiGatewayBookingTests(BaseTestCase):
+    """Integration tests for booking with multi-gateway payment strategies."""
+
+    def test_booking_via_vietqr_bank_transfer(self):
+        from .services import BookingService
+        booking = BookingService.make_booking(
+            user_id=self.user.id,
+            showtime_id=self.showtime.id,
+            seat_ids=[self.seat_normal.id],
+            method='bank_transfer'
+        )
+        self.assertEqual(booking.status, 'pending')
+        payment = booking.payments.first()
+        self.assertIsNotNone(payment)
+        self.assertEqual(payment.method, 'bank_transfer')
+        self.assertEqual(payment.status, 'pending')
+        self.assertIn('vietqr.io', payment.payment_url)
+
+        # Confirm bank transfer
+        confirmed_booking = BookingService.confirm_bank_transfer(booking.id, self.user.id)
+        self.assertEqual(confirmed_booking.status, 'confirmed')
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'completed')
+
+    def test_confirm_bank_transfer_unauthorized_user(self):
+        from .services import BookingService
+        from .exceptions import UnauthorizedActionException
+        booking = BookingService.make_booking(
+            user_id=self.user.id,
+            showtime_id=self.showtime.id,
+            seat_ids=[self.seat_normal.id],
+            method='bank_transfer'
+        )
+
+        other_user = User.objects.create(
+            email="other_customer@cinema.com", name="Other", status="active"
+        )
+        with self.assertRaises(UnauthorizedActionException):
+            BookingService.confirm_bank_transfer(booking.id, other_user.id)
+
+    def test_booking_via_cash_at_counter(self):
+        from .services import BookingService
+        booking = BookingService.make_booking(
+            user_id=self.user.id,
+            showtime_id=self.showtime.id,
+            seat_ids=[self.seat_normal.id],
+            method='cash'
+        )
+        self.assertEqual(booking.status, 'pending')
+        payment = booking.payments.first()
+        self.assertEqual(payment.method, 'cash')
+        self.assertEqual(payment.status, 'pending')
+
+

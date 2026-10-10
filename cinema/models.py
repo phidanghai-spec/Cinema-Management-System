@@ -218,8 +218,11 @@ class BookingItem(models.Model):
 
 class Payment(models.Model):
     PAYMENT_METHODS = [
+        ('bank_transfer', 'Chuyển khoản VietQR'),
+        ('momo', 'Ví MoMo'),
+        ('vnpay', 'Cổng VNPAY'),
+        ('cash', 'Tiền mặt tại quầy'),
         ('credit_card', 'Credit Card'),
-        ('momo', 'Momo'),
         ('zalopay', 'ZaloPay'),
     ]
     STATUS_CHOICES = [

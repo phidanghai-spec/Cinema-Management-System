@@ -23,10 +23,14 @@ urlpatterns = [
     path('payment/mock-momo-submit/', views.mock_momo_submit_view, name='mock_momo_submit'),
     path('payment/momo-callback/', views.momo_callback_view, name='momo_callback'),
     path('payment/momo-ipn/', views.momo_ipn_view, name='momo_ipn'),
+    path('payment/mock-vnpay-gateway/', views.mock_vnpay_gateway_view, name='mock_vnpay_gateway'),
+    path('payment/mock-vnpay-submit/', views.mock_vnpay_submit_view, name='mock_vnpay_submit'),
 
     # Async APIs
     path('api/booking/create/', views.create_booking_api, name='api_create_booking'),
+    path('api/booking/status/<int:booking_id>/', views.booking_status_api, name='api_booking_status'),
     path('api/booking/cancel/<int:booking_id>/', views.cancel_booking_api, name='api_cancel_booking'),
+    path('api/payment/confirm-bank-transfer/', views.confirm_bank_transfer_api, name='api_confirm_bank_transfer'),
     path('api/discount/validate/', views.validate_discount_api, name='api_validate_discount'),
     path('api/discount/suggest/', views.suggest_discount_api, name='api_suggest_discount'),
     path('api/favorite/toggle/', views.toggle_favorite_api, name='api_toggle_favorite'),
@@ -43,5 +47,6 @@ urlpatterns = [
 
     # Admin APIs
     path('api/admin/bulk-upload/', views_admin.csv_bulk_upload_api, name='api_admin_bulk_upload'),
+    path('api/admin/sync-movies/', views_admin.admin_sync_movies_api, name='api_admin_sync_movies'),
     path('api/admin/verify-ticket/', views_admin.admin_verify_ticket_api, name='api_admin_verify_ticket'),
 ]

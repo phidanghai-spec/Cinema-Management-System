@@ -4,12 +4,86 @@
 
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 40px 20px;">
 
-    <!-- Success Header -->
+    <!-- Success / Pending Header -->
     <div style="text-align: center; margin-bottom: 32px;" class="animate-in">
-        <div style="font-size: 60px; line-height: 1; margin-bottom: 15px; animation: bounce 1s ease 0.3s both;">🎉</div>
-        <h1 class="grad-text" style="font-size: 32px; margin-bottom: 8px;">Đặt Vé Thành Công!</h1>
-        <p style="color: var(--color-text-muted); font-size: 16px;">Trải nghiệm điện ảnh đỉnh cao đang chờ bạn</p>
+        {% if booking.status == 'confirmed' or booking.status == 'completed' %}
+            <div style="font-size: 60px; line-height: 1; margin-bottom: 15px; animation: bounce 1s ease 0.3s both;">🎉</div>
+            <h1 class="grad-text" style="font-size: 32px; margin-bottom: 8px;">Đặt Vé Thành Công!</h1>
+            <p style="color: var(--color-text-muted); font-size: 16px;">Trải nghiệm điện ảnh đỉnh cao đang chờ bạn</p>
+        {% elif booking.status == 'pending' %}
+            <div style="font-size: 60px; line-height: 1; margin-bottom: 15px;">⏳</div>
+            <h1 class="grad-text" style="font-size: 32px; margin-bottom: 8px;">Chờ Xác Nhận Thanh Toán</h1>
+            <p style="color: var(--color-text-muted); font-size: 16px;">Vui lòng hoàn tất thanh toán để kích hoạt vé xem phim của bạn</p>
+        {% else %}
+            <div style="font-size: 60px; line-height: 1; margin-bottom: 15px;">❌</div>
+            <h1 style="color: var(--color-primary); font-size: 32px; margin-bottom: 8px;">Vé Đã Bị Hủy</h1>
+            <p style="color: var(--color-text-muted); font-size: 16px;">Đơn đặt vé này hiện không còn hiệu lực</p>
+        {% endif %}
     </div>
+
+    <!-- VietQR Payment Box for Pending Bank Transfer -->
+    {% if booking.status == 'pending' and payment.method == 'bank_transfer' %}
+    <div class="glass-panel animate-in" style="width: 100%; max-width: 520px; padding: 26px; border-radius: 20px; margin-bottom: 28px; border: 1px solid rgba(14, 165, 233, 0.4); box-shadow: 0 12px 30px rgba(0,0,0,0.35); text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px;">
+            <span style="font-size: 24px;">🏦</span>
+            <h3 style="font-size: 18px; font-weight: 700; color: white;">Thanh Toán Chuyển Khoản VietQR 24/7</h3>
+        </div>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 20px;">
+            Mở ứng dụng Ngân hàng bất kỳ, chọn <strong>Quét mã QR</strong> để chuyển tiền tự động đúng số tiền và cú pháp.
+        </p>
+
+        <!-- Dynamic VietQR Image -->
+        <div style="background: white; padding: 14px; border-radius: 16px; display: inline-block; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);">
+            <img src="{{ vietqr_url }}" alt="Mã VietQR Thanh Toán" style="width: 220px; height: 220px; object-fit: contain; display: block; border-radius: 8px;">
+            <span style="display: block; margin-top: 6px; font-size: 11px; color: #475569; font-weight: 600;">Napas 24/7 Quick Response</span>
+        </div>
+
+        <!-- Bank Details Table -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 14px; padding: 16px; text-align: left; margin-bottom: 20px; font-size: 14px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: var(--color-text-muted);">Ngân hàng:</span>
+                <strong style="color: white;">{{ bank_id }} (Quân Đội / MBBank)</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                <span style="color: var(--color-text-muted);">Số tài khoản:</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <strong style="color: var(--color-secondary); font-family: monospace; font-size: 15px;">{{ account_no }}</strong>
+                    <button type="button" onclick="copyText('{{ account_no }}', 'Đã chép số tài khoản!')" class="btn" style="padding: 2px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: none; border-radius: 6px; color: white; cursor: pointer;">Copy</button>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: var(--color-text-muted);">Chủ tài khoản:</span>
+                <strong style="color: white;">{{ account_name }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: var(--color-text-muted);">Số tiền:</span>
+                <strong style="color: var(--color-warning); font-size: 16px;">{{ booking.total_price|floatformat:"0" }} VNĐ</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--color-text-muted);">Nội dung CK:</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <strong style="color: var(--color-success); font-family: monospace; font-size: 15px;">CINEVERSE {{ booking.id }}</strong>
+                    <button type="button" onclick="copyText('CINEVERSE {{ booking.id }}', 'Đã chép nội dung chuyển khoản!')" class="btn" style="padding: 2px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: none; border-radius: 6px; color: white; cursor: pointer;">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" id="confirm-transfer-btn" onclick="confirmBankTransfer({{ booking.id }})" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 700; border-radius: 12px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4); cursor: pointer;">
+            ✅ Xác Nhận Tôi Đã Chuyển Khoản
+        </button>
+        <span style="display: block; margin-top: 10px; font-size: 12px; color: var(--color-text-muted);">
+            🔄 Hệ thống tự động kiểm tra trạng thái vé sau mỗi 5 giây...
+        </span>
+    </div>
+    {% elif booking.status == 'pending' and payment.method == 'cash' %}
+    <div class="glass-panel animate-in" style="width: 100%; max-width: 520px; padding: 22px; border-radius: 20px; margin-bottom: 28px; border: 1px solid rgba(234, 179, 8, 0.4); text-align: center;">
+        <span style="font-size: 32px; display: block; margin-bottom: 10px;">💵</span>
+        <h3 style="font-size: 17px; font-weight: 700; color: white; margin-bottom: 8px;">Thanh Toán Tiền Mặt Tại Quầy Vé</h3>
+        <p style="font-size: 14px; color: var(--color-text-muted); line-height: 1.6;">
+            Ghế của bạn đã được giữ tạm thời. Vui lòng cung cấp mã đơn <strong>#CINE-{{ booking.id }}</strong> tại quầy vé CineVerse ít nhất <strong>15 phút trước giờ chiếu</strong> để thanh toán và nhận vé vào rạp.
+        </p>
+    </div>
+    {% endif %}
 
     <!-- Cinema Ticket Card -->
     <div class="ticket-outer" style="width: 100%; max-width: 520px;">
@@ -74,12 +148,16 @@
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Tổng Đã Thanh Toán</div>
+                        <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 3px; letter-spacing: 0.08em; text-transform: uppercase;">Phương Thức & Tổng Tiền</div>
+                        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 2px;">
+                            {% if payment %}{{ payment.get_method_display|default:payment.method }}{% else %}Chờ xác nhận{% endif %}
+                        </div>
                         <div style="font-size: 22px; font-weight: 900; color: var(--color-success);">{{ booking.total_price|floatformat:"0" }} VNĐ</div>
                     </div>
                 </div>
 
                 <!-- QR Code Section -->
+                {% if booking.status == 'confirmed' or booking.status == 'completed' %}
                 <div class="ticket-qr-section">
                     <div style="font-size: 13px; color: var(--color-text-muted); font-weight: 500; margin-bottom: 14px; text-align: center;">📷 Quét mã QR tại lối vào phòng chiếu</div>
                     <div class="qr-frame">
@@ -88,6 +166,13 @@
                     <input type="hidden" id="qr-content-value" value="{{ qr_content }}">
                     <span style="font-size: 12px; color: var(--color-text-muted); font-family: monospace;">{{ qr_content }}</span>
                 </div>
+                {% else %}
+                <div class="ticket-qr-section" style="padding: 24px; text-align: center;">
+                    <span style="font-size: 13px; color: var(--color-text-muted);">
+                        🔒 Mã QR soát vé sẽ hiển thị sau khi thanh toán được xác nhận.
+                    </span>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -99,6 +184,72 @@
         <a href="{% url 'index' %}" class="btn btn-secondary">🎬 Khám Phá Thêm Phim</a>
     </div>
 </div>
+
+<script>
+    function copyText(val, msg) {
+        navigator.clipboard.writeText(val).then(() => {
+            if (typeof showToast === 'function') {
+                showToast('Đã sao chép!', msg, 'success', 2000);
+            } else {
+                alert(msg);
+            }
+        });
+    }
+
+    async function confirmBankTransfer(bookingId) {
+        const btn = document.getElementById('confirm-transfer-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '⏳ Đang kiểm tra & kích hoạt vé...';
+        }
+
+        try {
+            const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            const res = await fetch('/api/payment/confirm-bank-transfer/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ booking_id: bookingId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Thành công! 🎉', data.message, 'success', 2000);
+                } else {
+                    alert(data.message);
+                }
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                alert('Lỗi xác nhận: ' + (data.error || 'Vui lòng thử lại'));
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '✅ Xác Nhận Tôi Đã Chuyển Khoản';
+                }
+            }
+        } catch (err) {
+            alert('Lỗi mạng khi xác nhận thanh toán.');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '✅ Xác Nhận Tôi Đã Chuyển Khoản';
+            }
+        }
+    }
+
+    // Auto-poll booking status if pending
+    {% if booking.status == 'pending' %}
+    setInterval(async () => {
+        try {
+            const res = await fetch('/api/booking/status/{{ booking.id }}/');
+            const data = await res.json();
+            if (data.success && (data.status === 'confirmed' || data.status === 'completed')) {
+                window.location.reload();
+            }
+        } catch (e) {}
+    }, 5000);
+    {% endif %}
+</script>
 
 
 <style>

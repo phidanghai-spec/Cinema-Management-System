@@ -7,9 +7,17 @@
 
 {% block admin_content %}
 <div>
-    <div class="section-header" style="margin-bottom: 24px;">
-        <h2 class="grad-text" style="font-size: 26px;">📊 Dashboard Tổng Quan</h2>
-        <span style="color: var(--color-text-muted); font-size: 14px;">Báo cáo số liệu và nhật ký hoạt động hệ thống rạp</span>
+    <div class="section-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 class="grad-text" style="font-size: 26px;">📊 Dashboard Tổng Quan</h2>
+            <span style="color: var(--color-text-muted); font-size: 14px;">Báo cáo số liệu và nhật ký hoạt động hệ thống rạp</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button id="sync-tmdb-btn" onclick="syncMoviesFromTMDB(this)" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; font-weight: 600; border-radius: 10px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+                <span class="sync-icon">🔄</span>
+                <span>Đồng bộ phim từ TMDB</span>
+            </button>
+        </div>
     </div>
 
     <!-- Switcher Tabs -->
@@ -184,5 +192,40 @@
             activeBtn.style.background = 'rgba(229, 9, 20, 0.2)';
         }
     });
+
+    async function syncMoviesFromTMDB(btn) {
+        if (!confirm('Bạn có chắc muốn đồng bộ danh sách phim từ TMDB / API công khai?')) return;
+        
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '⏳ <span style="margin-left: 6px;">Đang đồng bộ phim...</span>';
+        
+        try {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                              document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                              
+            const res = await fetch('/api/admin/sync-movies/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ limit: 10, source: 'auto' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`🎉 ${data.message}\n- Đã tạo mới: ${data.created} phim\n- Đã cập nhật: ${data.updated} phim`);
+                window.location.reload();
+            } else {
+                alert('❌ Lỗi khi đồng bộ: ' + (data.error || 'Vui lòng thử lại sau.'));
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        } catch (err) {
+            alert('❌ Lỗi kết nối máy chủ khi đồng bộ phim.');
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    }
 </script>
 {% endblock %}

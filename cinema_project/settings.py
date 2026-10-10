@@ -198,4 +198,13 @@ MOMO_PARTNER_CODE = config('MOMO_PARTNER_CODE', default='MOMOBKUN20180810')
 MOMO_ACCESS_KEY = config('MOMO_ACCESS_KEY', default='klm05TvNBHJg7xgo')
 MOMO_SECRET_KEY = config('MOMO_SECRET_KEY', default='at170ccm1Uv1gJtGLYgo12qqg6tEHg3I')
 
+# VietQR Payment Configuration (Standard Napas 24/7)
+VIETQR_BANK_ID = config('VIETQR_BANK_ID', default='MB')
+VIETQR_ACCOUNT_NO = config('VIETQR_ACCOUNT_NO', default='0988888888')
+VIETQR_ACCOUNT_NAME = config('VIETQR_ACCOUNT_NAME', default='CINEVERSE VIETNAM')
+
+# TMDB Movie API Configuration
+TMDB_API_KEY = config('TMDB_API_KEY', default='')
+
+
 

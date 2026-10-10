@@ -146,43 +146,257 @@
 
             <!-- Payment Methods -->
             <div>
-                <label class="form-label">Phương Thức Thanh Toán</label>
-                <div class="payment-methods">
-                    <label class="payment-card selected" data-method="credit_card">
-                        <input type="radio" name="payment_method" value="credit_card" checked style="display: none;">
-                        <span class="payment-icon">💳</span>
-                        <span class="payment-label">Thẻ Stripe</span>
+                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Chọn Phương Thức Thanh Toán</span>
+                    <span style="font-size: 12px; color: var(--color-success); font-weight: 600;">🔒 Bảo Mật SSL 256-bit</span>
+                </label>
+                <div class="payment-methods" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 10px;">
+                    <label class="payment-card selected" data-method="bank_transfer" style="display: flex; flex-direction: column; align-items: center; padding: 14px 10px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid rgba(14, 165, 233, 0.4); background: rgba(14, 165, 233, 0.08); transition: all 0.2s;">
+                        <input type="radio" name="payment_method" value="bank_transfer" checked style="display: none;">
+                        <span class="payment-icon" style="font-size: 26px; margin-bottom: 4px;">🏦</span>
+                        <span class="payment-label" style="font-size: 13px; font-weight: 700; color: white;">VietQR Napas</span>
+                        <span style="font-size: 10px; color: var(--color-success); margin-top: 2px; font-weight: 600;">Khuyên Dùng</span>
                     </label>
-                    <label class="payment-card" data-method="momo">
+
+                    <label class="payment-card" data-method="momo" style="display: flex; flex-direction: column; align-items: center; padding: 14px 10px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.02); transition: all 0.2s;">
                         <input type="radio" name="payment_method" value="momo" style="display: none;">
-                        <span class="payment-icon">💜</span>
-                        <span class="payment-label">Ví MoMo</span>
+                        <span class="payment-icon" style="font-size: 26px; margin-bottom: 4px;">💜</span>
+                        <span class="payment-label" style="font-size: 13px; font-weight: 700; color: white;">Ví MoMo</span>
+                        <span style="font-size: 10px; color: var(--color-text-muted); margin-top: 2px;">Quét mã / App</span>
+                    </label>
+
+                    <label class="payment-card" data-method="vnpay" style="display: flex; flex-direction: column; align-items: center; padding: 14px 10px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.02); transition: all 0.2s;">
+                        <input type="radio" name="payment_method" value="vnpay" style="display: none;">
+                        <span class="payment-icon" style="font-size: 26px; margin-bottom: 4px;">🔴</span>
+                        <span class="payment-label" style="font-size: 13px; font-weight: 700; color: white;">Cổng VNPAY</span>
+                        <span style="font-size: 10px; color: var(--color-text-muted); margin-top: 2px;">ATM / QR Pay</span>
+                    </label>
+
+                    <label class="payment-card" data-method="cash" style="display: flex; flex-direction: column; align-items: center; padding: 14px 10px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.02); transition: all 0.2s;">
+                        <input type="radio" name="payment_method" value="cash" style="display: none;">
+                        <span class="payment-icon" style="font-size: 26px; margin-bottom: 4px;">💵</span>
+                        <span class="payment-label" style="font-size: 13px; font-weight: 700; color: white;">Tiền Mặt</span>
+                        <span style="font-size: 10px; color: var(--color-text-muted); margin-top: 2px;">Tại quầy vé</span>
+                    </label>
+
+                    <label class="payment-card" data-method="credit_card" style="display: flex; flex-direction: column; align-items: center; padding: 14px 10px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.02); transition: all 0.2s;">
+                        <input type="radio" name="payment_method" value="credit_card" style="display: none;">
+                        <span class="payment-icon" style="font-size: 26px; margin-bottom: 4px;">💳</span>
+                        <span class="payment-label" style="font-size: 13px; font-weight: 700; color: white;">Thẻ Quốc Tế</span>
+                        <span style="font-size: 10px; color: var(--color-text-muted); margin-top: 2px;">Visa / Master</span>
                     </label>
                 </div>
             </div>
 
-            <!-- Credit Card Fields -->
-            <div id="credit-card-fields">
-                <div style="margin-bottom: 10px;">
-                    <label class="form-label">Số Thẻ</label>
-                    <input type="text" class="form-input" placeholder="4242 •••• •••• 4242" style="padding: 9px 14px; font-size: 14px;">
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <!-- VietQR Dynamic Fields / Instructions -->
+            <div id="bank-transfer-fields" style="padding: 18px; background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.35); border-radius: var(--radius-md);">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 14px;">
+                    <span style="font-size: 22px;">⚡</span>
                     <div>
-                        <label class="form-label">Ngày Hết Hạn</label>
-                        <input type="text" class="form-input" placeholder="12/28" style="padding: 9px 14px; font-size: 14px;">
+                        <strong style="color: white; font-size: 15px;">Chuyển khoản VietQR Napas 24/7 tự động</strong>
+                        <div style="font-size: 12px; color: var(--color-text-muted);">Quét mã trên bất kỳ App Ngân hàng nào (Vietcombank, Techcombank, MB, BIDV, TPBank...)</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 10px; border: 1px dashed rgba(14, 165, 233, 0.4); margin-bottom: 14px;">
+                    <div style="background: white; padding: 6px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+                        <img id="vietqr-live-preview-img" src="https://img.vietqr.io/image/MB-0988888888-compact2.png?amount=100000&addInfo=CINEVERSE%20BOOKING&accountName=CINEVERSE%20VIETNAM" alt="VietQR Napas" style="width: 140px; height: 140px; object-fit: contain; border-radius: 6px;">
+                        <span style="font-size: 10px; font-weight: 800; color: #1e3a8a; margin-top: 4px; letter-spacing: 0.5px;">VIETQR NAPAS 24/7</span>
+                    </div>
+
+                    <div style="flex: 1; min-width: 220px; font-size: 13px; line-height: 1.8;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
+                            <span style="color: var(--color-text-muted);">Ngân hàng thụ hưởng:</span>
+                            <strong id="vietqr-display-bank" style="color: white;">MB Bank (Quân Đội)</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 0;">
+                            <span style="color: var(--color-text-muted);">Số tài khoản nhận:</span>
+                            <strong id="vietqr-display-account" style="color: #38bdf8; font-family: monospace; font-size: 15px;">0988888888</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 0;">
+                            <span style="color: var(--color-text-muted);">Chủ tài khoản:</span>
+                            <strong id="vietqr-display-name" style="color: white;">CINEVERSE VIETNAM</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 0;">
+                            <span style="color: var(--color-text-muted);">Số tiền tạm tính:</span>
+                            <strong id="vietqr-preview-amount" style="color: #4ade80; font-size: 15px;">0 VNĐ</strong>
+                        </div>
+                        <div style="font-size: 12px; color: #fef08a; background: rgba(234, 179, 8, 0.12); border-left: 3px solid #eab308; padding: 6px 10px; border-radius: 4px; margin-top: 8px; line-height: 1.5;">
+                            ⚠️ <strong>Môi trường thử nghiệm:</strong> Tài khoản MB 0988888888 là số demo rạp nên khi dùng App Ngân Hàng thật quét sẽ báo tài khoản không hợp lệ. Quý khách có thể tự nhập STK của mình ở dưới để tạo mã quét thật, hoặc bấm <strong>"Hoàn Tất Thanh Toán"</strong> để test tự động!
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                    <div>
+                        <label class="form-label">Chọn Ngân Hàng Thụ Hưởng</label>
+                        <select id="vietqr-bank-select" class="form-input" style="padding: 10px 14px; font-size: 14px; background: rgba(0,0,0,0.5); color: white;">
+                            <option value="MB" selected>MB Bank (Quân Đội)</option>
+                            <option value="VCB">Vietcombank</option>
+                            <option value="TCB">Techcombank</option>
+                            <option value="ACB">ACB (Á Châu)</option>
+                            <option value="VPB">VPBank</option>
+                            <option value="TPB">TPBank</option>
+                            <option value="BIDV">BIDV</option>
+                            <option value="ICB">VietinBank</option>
+                        </select>
                     </div>
                     <div>
-                        <label class="form-label">CVC</label>
-                        <input type="text" class="form-input" placeholder="123" style="padding: 9px 14px; font-size: 14px;">
+                        <label class="form-label">Số Tài Khoản Nhận Tiền (Tùy Chỉnh)</label>
+                        <input type="text" id="vietqr-account-input" class="form-input" value="0988888888" placeholder="Nhập số tài khoản ngân hàng" style="padding: 10px 14px; font-size: 14px; font-family: monospace;">
                     </div>
                 </div>
             </div>
 
             <!-- Momo Fields -->
-            <div id="momo-fields" style="display: none;">
-                <label class="form-label">Số Điện Thoại MoMo</label>
-                <input type="text" id="momo-phone-input" class="form-input" placeholder="0912 345 678" style="padding: 9px 14px; font-size: 14px;">
+            <div id="momo-fields" style="display: none; padding: 18px; background: rgba(165, 0, 100, 0.08); border: 1px solid rgba(165, 0, 100, 0.35); border-radius: var(--radius-md);">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 22px;">💜</span>
+                    <div>
+                        <strong style="color: white; font-size: 15px;">Thanh toán qua Ví MoMo (Quét Mã QR hoặc Nhập Số Điện Thoại)</strong>
+                        <div style="font-size: 12px; color: var(--color-text-muted);">Quét mã MoMo-QR hoặc chuyển hướng đến cổng thanh toán MoMo</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 10px; border: 1px dashed rgba(165, 0, 100, 0.4); margin-bottom: 14px;">
+                    <div style="background: white; padding: 6px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+                        <img id="momo-live-preview-img" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=2|99|0988888888|CineVerse|cinema@cineverse.vn|0|0|100000" alt="MoMo QR" style="width: 140px; height: 140px; object-fit: contain; border-radius: 6px;">
+                        <span style="font-size: 10px; font-weight: 800; color: #a50064; margin-top: 4px; letter-spacing: 0.5px;">MÃ QR VÍ MOMO</span>
+                    </div>
+
+                    <div style="flex: 1; min-width: 220px; font-size: 13px; line-height: 1.8;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
+                            <span style="color: var(--color-text-muted);">Ví nhận tiền:</span>
+                            <strong style="color: white;">CINEVERSE CINEMA OFFICIAL</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 0;">
+                            <span style="color: var(--color-text-muted);">Số MoMo thụ hưởng:</span>
+                            <strong id="momo-display-phone" style="color: #f472b6; font-family: monospace; font-size: 15px;">0988888888</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 0;">
+                            <span style="color: var(--color-text-muted);">Số tiền thanh toán:</span>
+                            <strong id="momo-preview-amount" style="color: #4ade80; font-size: 15px;">0 VNĐ</strong>
+                        </div>
+                        <div style="font-size: 12px; color: #fbcfe8; margin-top: 6px;">
+                            📱 <strong>Cách thanh toán:</strong> Bạn có thể nhập SĐT MoMo bên dưới để tạo mã QR riêng, hoặc bấm <strong>"Hoàn Tất Thanh Toán"</strong> để vào Cổng MoMo Sandbox với 1-click test!
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label class="form-label">Nhập Số Điện Thoại Ví MoMo (Tạo Mã QR)</label>
+                        <input type="text" id="momo-phone-input" class="form-input" value="0988888888" placeholder="Ví dụ: 0912 345 678" style="padding: 10px 14px; font-size: 14px; font-family: monospace;">
+                    </div>
+                    <div>
+                        <label class="form-label">Lời Nhắn Thanh Toán MoMo (Tùy Chọn)</label>
+                        <input type="text" id="momo-note-input" class="form-input" placeholder="CineVerse Vé Xem Phim" style="padding: 10px 14px; font-size: 14px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- VNPay Fields -->
+            <div id="vnpay-fields" style="display: none; padding: 18px; background: rgba(0, 102, 204, 0.08); border: 1px solid rgba(0, 102, 204, 0.35); border-radius: var(--radius-md);">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 22px;">🔴</span>
+                    <div>
+                        <strong style="color: white; font-size: 15px;">Cổng Thanh Toán Quốc Gia VNPAY (Quét VNPAY-QR / Thẻ ATM)</strong>
+                        <div style="font-size: 12px; color: var(--color-text-muted);">Hỗ trợ 40+ ứng dụng ngân hàng Việt Nam & Ví VNPAY</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 10px; border: 1px dashed rgba(0, 102, 204, 0.4); margin-bottom: 14px;">
+                    <div style="background: white; padding: 6px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+                        <img id="vnpay-live-preview-img" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=00020101021226380010A0000007750114CINEVERSEVNPAY52046011530370454061000005802VN62180814CINEVERSEVNPAY6304" alt="VNPAY QR" style="width: 140px; height: 140px; object-fit: contain; border-radius: 6px;">
+                        <span style="font-size: 10px; font-weight: 800; color: #0066cc; margin-top: 4px; letter-spacing: 0.5px;">MÃ VNPAY-QR</span>
+                    </div>
+
+                    <div style="flex: 1; min-width: 220px; font-size: 13px; line-height: 1.8;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
+                            <span style="color: var(--color-text-muted);">Đơn vị chấp nhận:</span>
+                            <strong style="color: white;">CINEVERSE CINEMA CORP</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 0;">
+                            <span style="color: var(--color-text-muted);">Cổng thanh toán:</span>
+                            <strong id="vnpay-display-method" style="color: #60a5fa;">VNPAY-QR (Napas 24/7)</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 0;">
+                            <span style="color: var(--color-text-muted);">Số tiền thanh toán:</span>
+                            <strong id="vnpay-preview-amount" style="color: #4ade80; font-size: 15px;">0 VNĐ</strong>
+                        </div>
+                        <div style="font-size: 12px; color: #bfdbfe; margin-top: 6px;">
+                            🔴 <strong>Hướng dẫn:</strong> Chọn ngân hàng hoặc ví VNPAY bên dưới để cập nhật mã QR, sau đó bấm <strong>"Hoàn Tất Thanh Toán"</strong> để qua cổng VNPAY Sandbox xác nhận!
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label class="form-label">Chọn Phương Thức VNPAY</label>
+                        <select id="vnpay-method-select" class="form-input" style="padding: 10px 14px; font-size: 14px; background: rgba(0,0,0,0.5); color: white;">
+                            <option value="VNPAYQR">Ứng dụng Mobile Banking (VNPAY-QR)</option>
+                            <option value="VNBANK">Thẻ ATM / Tài khoản ngân hàng nội địa</option>
+                            <option value="VNPAYWALLET">Ví điện tử VNPAY</option>
+                            <option value="INTCARD">Thẻ thanh toán quốc tế qua VNPAY</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Ngân Hàng Thanh Toán</label>
+                        <select id="vnpay-bank-select" class="form-input" style="padding: 10px 14px; font-size: 14px; background: rgba(0,0,0,0.5); color: white;">
+                            <option value="NCB">Ngân hàng NCB (Sandbox Test)</option>
+                            <option value="VCB">Vietcombank</option>
+                            <option value="TCB">Techcombank</option>
+                            <option value="MB">MB Bank</option>
+                            <option value="BIDV">BIDV</option>
+                            <option value="AGR">Agribank</option>
+                            <option value="ACB">ACB</option>
+                            <option value="VPB">VPBank</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cash Fields -->
+            <div id="cash-fields" style="display: none; padding: 18px; background: rgba(234, 179, 8, 0.08); border: 1px solid rgba(234, 179, 8, 0.35); border-radius: var(--radius-md);">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 22px;">💵</span>
+                    <div>
+                        <strong style="color: white; font-size: 15px;">Thanh toán tiền mặt tại quầy vé</strong>
+                        <div style="font-size: 12px; color: var(--color-text-muted);">Nhận vé và thanh toán trực tiếp tại rạp CineVerse</div>
+                    </div>
+                </div>
+                <p style="font-size: 13px; color: var(--color-text-muted); margin: 0; line-height: 1.6;">
+                    Ghế của quý khách sẽ được giữ tạm thời. Quý khách vui lòng đến quầy vé CineVerse đọc mã đặt chỗ hoặc số điện thoại để thanh toán và nhận vé trước giờ chiếu ít nhất 15 phút.
+                </p>
+            </div>
+
+            <!-- Credit Card Fields -->
+            <div id="credit-card-fields" style="display: none; padding: 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-md);">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 22px;">💳</span>
+                    <div>
+                        <strong style="color: white; font-size: 15px;">Thẻ Tín Dụng / Ghi Nợ Quốc Tế</strong>
+                        <div style="font-size: 12px; color: var(--color-text-muted);">Chấp nhận Visa, MasterCard, JCB, American Express</div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label class="form-label">Số Thẻ Quốc Tế</label>
+                    <input type="text" class="form-input" placeholder="4242 •••• •••• 4242" style="padding: 10px 14px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label class="form-label">Tên In Trên Thẻ</label>
+                    <input type="text" class="form-input" placeholder="NGUYEN VAN A" style="padding: 10px 14px; font-size: 14px; text-transform: uppercase;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label class="form-label">Ngày Hết Hạn</label>
+                        <input type="text" class="form-input" placeholder="MM/YY (Ví dụ: 12/28)" style="padding: 10px 14px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label class="form-label">Mã CVC / CVV</label>
+                        <input type="text" class="form-input" placeholder="123" maxlength="4" style="padding: 10px 14px; font-size: 14px;">
+                    </div>
+                </div>
             </div>
 
             <!-- Notes -->
@@ -289,6 +503,136 @@
         </div>
     </div>
 </div>
+
+<!-- VietQR Dynamic Interactive Modal -->
+<div id="vietqr-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px;">
+    <div class="glass-panel animate-in" style="width: 100%; max-width: 480px; padding: 28px; border-radius: 24px; text-align: center; border: 1px solid rgba(14, 165, 233, 0.4); box-shadow: 0 25px 50px rgba(0,0,0,0.6);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 24px;">🏦</span>
+                <h3 style="font-size: 18px; font-weight: 700; color: white;">Thanh Toán Chuyển Khoản VietQR</h3>
+            </div>
+            <button type="button" onclick="closeVietQRModal()" style="background: none; border: none; color: var(--color-text-muted); font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">
+            Mở app ngân hàng quét mã VietQR tự động điền đúng số tiền và nội dung:
+        </p>
+
+        <!-- Dynamic QR Code Container -->
+        <div style="background: white; padding: 12px; border-radius: 16px; display: inline-block; margin-bottom: 18px; box-shadow: 0 8px 25px rgba(0,0,0,0.25);">
+            <img id="modal-vietqr-img" src="" alt="Mã VietQR" style="width: 220px; height: 220px; object-fit: contain; display: block; border-radius: 8px;">
+            <span style="display: block; margin-top: 6px; font-size: 11px; color: #475569; font-weight: 600;">Napas 24/7 Quick Response</span>
+        </div>
+
+        <!-- Bank Details Table -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 14px; padding: 14px; text-align: left; margin-bottom: 20px; font-size: 13px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: var(--color-text-muted);">Ngân hàng:</span>
+                <strong id="modal-bank-id" style="color: white;">MB Bank</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center;">
+                <span style="color: var(--color-text-muted);">Số tài khoản:</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <strong id="modal-account-no" style="color: var(--color-secondary); font-family: monospace;">0988888888</strong>
+                    <button type="button" onclick="copyModalField('modal-account-no')" class="btn" style="padding: 2px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: none; border-radius: 6px; color: white; cursor: pointer;">Copy</button>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: var(--color-text-muted);">Chủ tài khoản:</span>
+                <strong id="modal-account-name" style="color: white;">CINEVERSE VIETNAM</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: var(--color-text-muted);">Số tiền:</span>
+                <strong id="modal-amount" style="color: var(--color-warning); font-size: 16px;">0 VNĐ</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--color-text-muted);">Nội dung CK:</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <strong id="modal-transfer-content" style="color: var(--color-success); font-family: monospace;">CINEVERSE</strong>
+                    <button type="button" onclick="copyModalField('modal-transfer-content')" class="btn" style="padding: 2px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: none; border-radius: 6px; color: white; cursor: pointer;">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" id="modal-booking-id" value="">
+        <button type="button" id="modal-confirm-btn" onclick="confirmModalPayment()" class="btn btn-primary" style="width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border-radius: 12px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4); cursor: pointer;">
+            ✅ Xác Nhận Tôi Đã Chuyển Khoản
+        </button>
+        <button type="button" onclick="confirmModalPayment()" class="btn" style="width: 100%; margin-top: 8px; padding: 10px; font-size: 13px; border-radius: 10px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-weight: 600; cursor: pointer;">
+            ⚡ Giả Lập Quét Mã & Hoàn Tất Vé (Sandbox Test)
+        </button>
+        <span style="display: block; margin-top: 10px; font-size: 12px; color: var(--color-text-muted);">
+            🔄 Sau khi chuyển tiền, bấm nút trên để kích hoạt vé ngay lập tức.
+        </span>
+    </div>
+</div>
+
+<script>
+    function copyModalField(elementId) {
+        const text = document.getElementById(elementId)?.innerText || '';
+        navigator.clipboard.writeText(text).then(() => {
+            if (typeof showToast === 'function') {
+                showToast('Đã sao chép!', text, 'success', 1500);
+            } else {
+                alert('Đã chép: ' + text);
+            }
+        });
+    }
+
+    function closeVietQRModal() {
+        const modal = document.getElementById('vietqr-modal');
+        if (modal) modal.style.display = 'none';
+        const bookingId = document.getElementById('modal-booking-id')?.value;
+        if (bookingId) {
+            window.location.href = `/booking/ticket/${bookingId}/`;
+        }
+    }
+
+    async function confirmModalPayment() {
+        const bookingId = document.getElementById('modal-booking-id')?.value;
+        if (!bookingId) return;
+        const btn = document.getElementById('modal-confirm-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '⏳ Đang kích hoạt vé...';
+        }
+
+        try {
+            const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            const res = await fetch('/api/payment/confirm-bank-transfer/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ booking_id: parseInt(bookingId) })
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Thành công! 🎉', data.message, 'success', 2000);
+                } else {
+                    alert(data.message);
+                }
+                setTimeout(() => {
+                    window.location.href = `/booking/ticket/${bookingId}/`;
+                }, 800);
+            } else {
+                alert('Lỗi: ' + (data.error || 'Vui lòng thử lại'));
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '✅ Xác Nhận Tôi Đã Chuyển Khoản';
+                }
+            }
+        } catch (e) {
+            alert('Lỗi kết nối khi xác nhận chuyển khoản.');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '✅ Xác Nhận Tôi Đã Chuyển Khoản';
+            }
+        }
+    }
+</script>
 
 {% endblock %}
 

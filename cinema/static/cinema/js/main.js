@@ -189,10 +189,67 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
         if (checkoutBtn) {
             checkoutBtn.disabled = selectedSeats.length === 0;
         }
+
+        // Live update VietQR amount & preview image
+        const vqBankSelect = document.getElementById('vietqr-bank-select');
+        const vqAccInput = document.getElementById('vietqr-account-input');
+        const vqBankId = vqBankSelect?.value || 'MB';
+        const vqAccNo = vqAccInput?.value.trim() || '0988888888';
+        const vqBankText = vqBankSelect?.options[vqBankSelect.selectedIndex]?.text || 'MB Bank';
+        
+        const vqDisplayBank = document.getElementById('vietqr-display-bank');
+        const vqDisplayAcc = document.getElementById('vietqr-display-account');
+        if (vqDisplayBank) vqDisplayBank.textContent = vqBankText;
+        if (vqDisplayAcc) vqDisplayAcc.textContent = vqAccNo;
+
+        const vqPreviewAmt = document.getElementById('vietqr-preview-amount');
+        const vqPreviewImg = document.getElementById('vietqr-live-preview-img');
+        if (vqPreviewAmt) vqPreviewAmt.textContent = formatVND(total) + ' VNĐ';
+        if (vqPreviewImg && total > 0) {
+            vqPreviewImg.src = `https://img.vietqr.io/image/${vqBankId}-${vqAccNo}-compact2.png?amount=${total}&addInfo=CINEVERSE%20BOOKING&accountName=CINEVERSE%20VIETNAM`;
+        }
+
+        // Live update MoMo amount & preview image
+        const momoPhoneInput = document.getElementById('momo-phone-input');
+        const momoPhone = momoPhoneInput?.value.trim() || '0988888888';
+        const momoDisplayPhone = document.getElementById('momo-display-phone');
+        if (momoDisplayPhone) momoDisplayPhone.textContent = momoPhone;
+
+        const momoPreviewAmt = document.getElementById('momo-preview-amount');
+        const momoPreviewImg = document.getElementById('momo-live-preview-img');
+        if (momoPreviewAmt) momoPreviewAmt.textContent = formatVND(total) + ' VNĐ';
+        if (momoPreviewImg && total > 0) {
+            momoPreviewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=2|99|${momoPhone}|CINEVERSE|cinema@cineverse.vn|0|0|${total}`;
+        }
+
+        // Live update VNPay amount & preview image
+        const vnpayBankSelect = document.getElementById('vnpay-bank-select');
+        const vnpayMethodSelect = document.getElementById('vnpay-method-select');
+        const vnpayBank = vnpayBankSelect?.value || 'NCB';
+        const vnpayMethodText = vnpayMethodSelect?.options[vnpayMethodSelect.selectedIndex]?.text || 'VNPAY-QR';
+        
+        const vnpayDisplayMethod = document.getElementById('vnpay-display-method');
+        if (vnpayDisplayMethod) vnpayDisplayMethod.textContent = `${vnpayMethodText} (${vnpayBank})`;
+
+        const vnpayPreviewAmt = document.getElementById('vnpay-preview-amount');
+        const vnpayPreviewImg = document.getElementById('vnpay-live-preview-img');
+        if (vnpayPreviewAmt) vnpayPreviewAmt.textContent = formatVND(total) + ' VNĐ';
+        if (vnpayPreviewImg && total > 0) {
+            vnpayPreviewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=00020101021226380010A0000007750114CINEVERSEVNPAY5204601153037045406${total}5802VN62180814${vnpayBank}`;
+        }
         
         const hiddenInput = document.getElementById('selected-seat-ids-input');
         if (hiddenInput) hiddenInput.value = JSON.stringify(selectedSeats.map(s => s.id));
     }
+
+    // Attach listeners to QR customization fields
+    ['vietqr-bank-select', 'vietqr-account-input', 'momo-phone-input', 'vnpay-method-select', 'vnpay-bank-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updateSummary);
+            el.addEventListener('change', updateSummary);
+        }
+    });
 
     async function checkSuggestedDiscount() {
         const box = document.getElementById('suggested-promo-box');
@@ -415,6 +472,7 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
     }
 
     // Payment Method Toggle
+    // Payment Method Toggle
     const paymentCards = document.querySelectorAll('.payment-card');
     paymentCards.forEach(card => {
         card.addEventListener('click', () => {
@@ -424,8 +482,18 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             if (radio) radio.checked = true;
             
             const method = card.dataset.method;
-            document.getElementById('credit-card-fields').style.display = method === 'credit_card' ? 'block' : 'none';
-            document.getElementById('momo-fields').style.display = method === 'momo' ? 'block' : 'none';
+            const panels = {
+                'bank_transfer': 'bank-transfer-fields',
+                'momo': 'momo-fields',
+                'vnpay': 'vnpay-fields',
+                'cash': 'cash-fields',
+                'credit_card': 'credit-card-fields'
+            };
+            
+            Object.keys(panels).forEach(m => {
+                const el = document.getElementById(panels[m]);
+                if (el) el.style.display = m === method ? 'block' : 'none';
+            });
         });
     });
 
@@ -466,9 +534,10 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
             btn.disabled = true;
             btn.textContent = '⏳ Processing Payment...';
             
-            const method = checkoutForm.querySelector('input[name="payment_method"]:checked')?.value || 'credit_card';
+            const method = checkoutForm.querySelector('input[name="payment_method"]:checked')?.value || 'bank_transfer';
             const notes  = document.getElementById('booking-notes')?.value || '';
             const discCode = discountCodeInput?.value || '';
+            const phone = document.getElementById('momo-phone-input')?.value || '';
             
             try {
                 const res  = await fetch('/api/booking/create/', {
@@ -480,28 +549,45 @@ window.showToast = function(title, message, type = 'info', duration = 4000) {
                         combo_items: selectedCombos.map(c => ({ combo_id: c.id, quantity: c.quantity })),
                         discount_code: discCode || null,
                         payment_method: method,
+                        phone: phone,
                         notes,
                         redeemed_points: redeemedPoints
                     })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    if (data.redirect_url) {
-                        showToast('Thanh toán qua MoMo... 🎉', 'Đang chuyển hướng sang cổng thanh toán...', 'success', 2000);
-                        setTimeout(() => { window.location.href = data.redirect_url; }, 1400);
+                    if (data.vietqr && document.getElementById('vietqr-modal')) {
+                        // Open Interactive VietQR Modal
+                        const modal = document.getElementById('vietqr-modal');
+                        const vq = data.vietqr;
+                        document.getElementById('modal-vietqr-img').src = vq.qr_image_url;
+                        document.getElementById('modal-bank-id').innerText = vq.bank_id + ' (Napas 24/7)';
+                        document.getElementById('modal-account-no').innerText = vq.account_no;
+                        document.getElementById('modal-account-name').innerText = vq.account_name;
+                        document.getElementById('modal-amount').innerText = formatVND(vq.amount) + ' VNĐ';
+                        document.getElementById('modal-transfer-content').innerText = vq.transfer_content;
+                        document.getElementById('modal-booking-id').value = data.booking_id;
+                        
+                        modal.style.display = 'flex';
+                        showToast('Mã VietQR đã sẵn sàng! 🏦', 'Quét mã để chuyển khoản tự động.', 'success', 2500);
+                        btn.disabled = false;
+                        btn.textContent = '🔒 Hoàn Tất Thanh Toán';
+                    } else if (data.redirect_url) {
+                        showToast('Chuyển hướng cổng thanh toán... 🎉', 'Đang chuyển sang cổng đối tác...', 'success', 2000);
+                        setTimeout(() => { window.location.href = data.redirect_url; }, 1200);
                     } else {
-                        showToast('Đặt vé thành công! 🎉', 'Đang tải vé của bạn...', 'success', 2000);
-                        setTimeout(() => { window.location.href = `/booking/ticket/${data.booking_id}/`; }, 1400);
+                        showToast('Đặt vé thành công! 🎉', 'Đang chuyển đến vé của bạn...', 'success', 2000);
+                        setTimeout(() => { window.location.href = `/booking/ticket/${data.booking_id}/`; }, 1200);
                     }
                 } else {
                     showToast('Đặt vé thất bại', data.error, 'error');
                     btn.disabled = false;
-                    btn.textContent = 'Complete Payment';
+                    btn.textContent = '🔒 Hoàn Tất Thanh Toán';
                 }
             } catch {
                 showToast('Lỗi mạng', 'Vui lòng kiểm tra kết nối mạng và thử lại.', 'error');
                 btn.disabled = false;
-                btn.textContent = 'Complete Payment';
+                btn.textContent = '🔒 Hoàn Tất Thanh Toán';
             }
         });
     }

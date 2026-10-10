@@ -5,8 +5,23 @@
     <span>Quản Lý Phim</span>
 {% endblock %}
 
-{% block admin_content %}
 <div style="display: flex; flex-direction: column; gap: 28px;">
+
+    <!-- Top Action Bar -->
+    <div class="glass-panel" style="padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <div>
+            <h3 class="grad-text" style="font-size: 18px; margin-bottom: 4px;">🎬 Danh Mục Phim Rạp</h3>
+            <span style="font-size: 13px; color: var(--color-text-muted);">Quản lý phim đang chiếu, sắp chiếu và đồng bộ từ TMDB API</span>
+        </div>
+        <form method="POST" action="{% url 'admin_movies' %}" style="display: flex; gap: 10px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="sync_tmdb">
+            <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; font-weight: 600; border-radius: 10px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+                <span>🔄</span>
+                <span>Đồng bộ phim từ TMDB</span>
+            </button>
+        </form>
+    </div>
 
     <!-- Add Movie Form -->
     <div class="glass-panel" style="padding: 26px;">

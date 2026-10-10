@@ -4,6 +4,8 @@ import hmac
 import hashlib
 import uuid
 import datetime
+import urllib
+import urllib.parse
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -358,11 +360,29 @@ def create_booking_api(request, user):
             
             payment = booking.payments.first()
             redirect_url = payment.payment_url if payment else None
-            
+
+            vietqr_info = None
+            if payment and payment.method == 'bank_transfer':
+                bank_id = getattr(settings, 'VIETQR_BANK_ID', 'MB')
+                account_no = getattr(settings, 'VIETQR_ACCOUNT_NO', '0988888888')
+                account_name = getattr(settings, 'VIETQR_ACCOUNT_NAME', 'CINEVERSE VIETNAM')
+                vietqr_info = {
+                    'bank_id': bank_id,
+                    'account_no': account_no,
+                    'account_name': account_name,
+                    'amount': booking.total_price,
+                    'transfer_content': f"CINEVERSE {booking.id}",
+                    'qr_image_url': payment.payment_url
+                }
+
             return JsonResponse({
                 'success': True,
                 'booking_id': booking.id,
-                'redirect_url': redirect_url
+                'payment_method': payment.method if payment else payment_method,
+                'payment_status': payment.status if payment else 'pending',
+                'booking_status': booking.status,
+                'redirect_url': redirect_url,
+                'vietqr': vietqr_info,
             })
         except Exception as e:
             import traceback
@@ -379,12 +399,109 @@ def booking_ticket_view(request, user, booking_id):
     if not booking or booking.user_id != user.id:
         return redirect('index')
 
+    payment = booking.payments.last()
+    bank_id = getattr(settings, 'VIETQR_BANK_ID', 'MB')
+    account_no = getattr(settings, 'VIETQR_ACCOUNT_NO', '0988888888')
+    account_name = getattr(settings, 'VIETQR_ACCOUNT_NAME', 'CINEVERSE VIETNAM')
+    vietqr_url = (
+        f"https://img.vietqr.io/image/{bank_id}-{account_no}-compact2.png"
+        f"?amount={booking.total_price}&addInfo=CINEVERSE%20{booking.id}&accountName={urllib.parse.quote(account_name)}"
+    )
+
     context = {
         'user': user,
         'booking': booking,
-        'qr_content': f"CINEMA-BOOKING-ID:{booking.id}"
+        'payment': payment,
+        'qr_content': f"CINEMA-BOOKING-ID:{booking.id}",
+        'bank_id': bank_id,
+        'account_no': account_no,
+        'account_name': account_name,
+        'vietqr_url': vietqr_url,
     }
     return render(request, 'cinema/pages/booking_ticket.html', context)
+
+@login_required_view
+def confirm_bank_transfer_api(request, user):
+    """API endpoint for confirming VietQR Napas 24/7 bank transfer payment."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body) if request.body else {}
+            booking_id = int(data.get('booking_id'))
+            booking = BookingService.confirm_bank_transfer(booking_id, user.id)
+            return JsonResponse({
+                'success': True,
+                'message': 'Xác nhận thanh toán thành công! Vé của bạn đã được kích hoạt.',
+                'booking_id': booking.id,
+                'status': booking.status
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required_view
+def booking_status_api(request, user, booking_id):
+    """API endpoint to poll/query booking and payment status."""
+    booking = BookingRepository.get_by_id(booking_id)
+    if not booking or (booking.user_id != user.id and user.role not in ['admin', 'staff']):
+        return JsonResponse({'success': False, 'error': 'Booking not found.'})
+    payment = booking.payments.last()
+    return JsonResponse({
+        'success': True,
+        'booking_id': booking.id,
+        'status': booking.status,
+        'payment_status': payment.status if payment else 'unknown',
+        'payment_method': payment.method if payment else None,
+        'total_price': booking.total_price
+    })
+
+@login_required_view
+def mock_vnpay_gateway_view(request, user):
+    order_id = request.GET.get('orderId')
+    amount = request.GET.get('amount')
+    txn_ref = request.GET.get('txnRef')
+    order_info = request.GET.get('orderInfo', f"Thanh toan ve CineVerse #{order_id}")
+    
+    context = {
+        'user': user,
+        'order_id': order_id,
+        'amount': amount,
+        'txn_ref': txn_ref,
+        'order_info': order_info,
+    }
+    return render(request, 'cinema/pages/mock_vnpay_gateway.html', context)
+
+@csrf_exempt
+def mock_vnpay_submit_view(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('orderId')
+        status = request.POST.get('status')
+        txn_ref = request.POST.get('txnRef') or f"vnpay_{order_id}"
+        
+        try:
+            booking = Booking.objects.get(id=int(order_id))
+            payment = booking.payments.filter(method='vnpay').last()
+            if status == 'success':
+                if payment:
+                    payment.status = 'completed'
+                    payment.transaction_id = txn_ref
+                    payment.save()
+                if booking.status == 'pending':
+                    from .patterns import get_booking_state_class, BookingSubject, EmailObserver, InAppObserver
+                    state_class = get_booking_state_class(booking.status)
+                    state_class.confirm(booking)
+                    subject = BookingSubject()
+                    subject.attach(EmailObserver())
+                    subject.attach(InAppObserver())
+                    subject.notify(booking, "booking_confirmed")
+                return redirect(f"/booking/ticket/{booking.id}/")
+            else:
+                if payment:
+                    payment.status = 'failed'
+                    payment.save()
+                return redirect(f"/booking/ticket/{booking.id}/")
+        except Exception:
+            return redirect('index')
+    return redirect('index')
 
 @login_required_view
 def mock_momo_gateway_view(request, user):
@@ -508,6 +625,21 @@ def momo_callback_view(request, user):
     is_valid = (computed_sig == params.get('signature'))
     order_id = params.get('orderId')
     
+    booking = None
+    if order_id and str(order_id).isdigit():
+        booking = BookingRepository.get_by_id(int(order_id))
+    payment = booking.payments.last() if booking else None
+    
+    bank_id = getattr(settings, 'VIETQR_BANK_ID', 'MB')
+    account_no = getattr(settings, 'VIETQR_ACCOUNT_NO', '0988888888')
+    account_name = getattr(settings, 'VIETQR_ACCOUNT_NAME', 'CINEVERSE VIETNAM')
+    vietqr_url = ""
+    if booking:
+        vietqr_url = (
+            f"https://img.vietqr.io/image/{bank_id}-{account_no}-compact2.png"
+            f"?amount={booking.total_price}&addInfo=CINEVERSE%20{booking.id}&accountName={urllib.parse.quote(account_name)}"
+        )
+
     if is_valid:
         handle_momo_payment_update(params)
         result_code = int(params.get('resultCode', 1))
@@ -516,11 +648,25 @@ def momo_callback_view(request, user):
         else:
             return render(request, 'cinema/pages/booking_ticket.html', {
                 'user': user,
-                'error': f"Thanh toán MoMo thất bại: {params.get('message')}"
+                'booking': booking,
+                'payment': payment,
+                'qr_content': f"CINEMA-BOOKING-ID:{booking.id}" if booking else "",
+                'bank_id': bank_id,
+                'account_no': account_no,
+                'account_name': account_name,
+                'vietqr_url': vietqr_url,
+                'error': f"Thanh toán MoMo không thành công: {params.get('message', 'Giao dịch bị từ chối hoặc người dùng hủy.')}"
             })
     else:
         return render(request, 'cinema/pages/booking_ticket.html', {
             'user': user,
+            'booking': booking,
+            'payment': payment,
+            'qr_content': f"CINEMA-BOOKING-ID:{booking.id}" if booking else "",
+            'bank_id': bank_id,
+            'account_no': account_no,
+            'account_name': account_name,
+            'vietqr_url': vietqr_url,
             'error': "Xác minh chữ ký số MoMo thất bại."
         })
 

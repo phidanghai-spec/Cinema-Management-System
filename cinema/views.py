@@ -181,19 +181,25 @@ def index_view(request):
 
     movies = MovieService.get_movies(status, genre, format_type, search, sort)
     
-    # Spotlight films for the hero carousel (top 3 now showing by rating)
-    spotlight_movies = list(Movie.objects.filter(status='now_showing').order_by('-rating')[:3])
-    coming_soon_movies = list(Movie.objects.filter(status='coming_soon').order_by('release_date')[:4])
+    # Spotlight films for the hero carousel (top 4 now showing by rating)
+    spotlight_movies = list(Movie.objects.filter(status='now_showing').order_by('-rating', '-created_at')[:4])
     
-    # Fetch 3-4 closest upcoming showtimes today (personalized dynamic content)
-    now = timezone.now()
-    today_end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-    upcoming_showtimes = list(Showtime.objects.filter(
-        start_time__gte=now,
-        start_time__lte=today_end,
-        movie__status='now_showing'
-    ).select_related('movie', 'screen__theater').order_by('start_time')[:4])
+    # Recommended / Curated movies for top shelf carousel
+    recommended_movies = list(Movie.objects.filter(status='now_showing').order_by('-rating')[:8])
+
+    # Now showing movies with interactive quick showtimes pills
+    now_showing_with_showtimes = MovieService.get_movies_with_today_showtimes(limit=10)
+
+    # Coming soon movies
+    coming_soon_movies = list(Movie.objects.filter(status='coming_soon').order_by('release_date')[:6])
     
+    # Trending leaderboard & Top rated movies for sidebar
+    trending_leaderboard = MovieService.get_trending_leaderboard(limit=5)
+    top_rated_movies = MovieService.get_top_rated(limit=4)
+    
+    # Check if user is explicitly filtering or searching
+    is_filtering = bool(genre or format_type or search or status != 'now_showing' or sort != 'newest')
+
     context = {
         'user': user,
         'movies': movies,
@@ -205,8 +211,12 @@ def index_view(request):
         'current_sort': sort,
         'search_query': search,
         'spotlight_movies': spotlight_movies,
+        'recommended_movies': recommended_movies,
+        'now_showing_with_showtimes': now_showing_with_showtimes,
         'coming_soon_movies': coming_soon_movies,
-        'upcoming_showtimes': upcoming_showtimes,
+        'trending_leaderboard': trending_leaderboard,
+        'top_rated_movies': top_rated_movies,
+        'is_filtering': is_filtering,
     }
     return render(request, 'cinema/pages/movie_list.html', context)
 

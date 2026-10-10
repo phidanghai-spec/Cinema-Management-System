@@ -1,36 +1,36 @@
 {% extends 'cinema/base.html' %}
 {% load static %}
-{% block title %}CineVerse | Khám Phá Phim{% endblock %}
+{% block title %}CineVerse | Khám Phá Điện Ảnh Đỉnh Cao{% endblock %}
 {% block content %}
 
-<!-- Hero Spotlight Carousel -->
+<!-- 1. Hero Spotlight Carousel -->
 <div class="hero-slider">
     <div id="hero-track" class="hero-track">
         {% for movie in spotlight_movies %}
-        <div class="hero-slide" style="background-image: linear-gradient(to top, var(--color-bg-primary) 0%, rgba(15, 15, 15, 0.4) 60%, transparent 100%), url('{{ movie.poster_url|default:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop" }}');">
+        <div class="hero-slide" style="background-image: linear-gradient(to top, var(--color-bg-primary, #0f0f0f) 0%, rgba(15, 15, 15, 0.45) 60%, transparent 100%), url('{{ movie.poster_url|default:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop" }}');">
             <div class="hero-content">
                 <div class="hero-tags">
-                    <span class="badge badge-primary">🔥 NỔI BẬT</span>
-                    <span class="badge badge-cyan">{{ movie.formats }}</span>
-                    {% if movie.genre %}<span class="badge badge-muted">{{ movie.genre|truncatechars:20 }}</span>{% endif %}
+                    <span class="badge badge-primary">🔥 SIÊU PHẨM HOT</span>
+                    <span class="badge badge-cyan">{{ movie.formats|default:"2D, 3D, IMAX" }}</span>
+                    {% if movie.genre %}<span class="badge badge-muted">{{ movie.genre|truncatechars:24 }}</span>{% endif %}
                 </div>
                 <h2>{{ movie.title }}</h2>
-                <p>{{ movie.description|truncatechars:130 }}</p>
-                <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
-                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary">🎟️ Đặt Vé Ngay</a>
+                <p>{{ movie.description|truncatechars:140 }}</p>
+                <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary" style="box-shadow: 0 4px 18px rgba(229, 9, 20, 0.45); font-weight: 700;">🎟️ ĐẶT VÉ NGAY</a>
                     <a href="{% url 'movie_detail' movie.id %}" class="btn btn-secondary">Chi Tiết Phim</a>
                     <span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span>
-                    <span style="color: var(--color-text-muted); font-size: 14px;">⏳ {{ movie.duration }} phút</span>
+                    <span style="color: var(--color-text-muted); font-size: 14px; font-weight: 500;">⏳ {{ movie.duration }} phút</span>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="hero-slide" style="background-image: linear-gradient(to top, var(--color-bg-primary) 0%, rgba(15, 15, 15, 0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop');">
+        <div class="hero-slide" style="background-image: linear-gradient(to top, var(--color-bg-primary, #0f0f0f) 0%, rgba(15, 15, 15, 0.45) 60%, transparent 100%), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1425&auto=format&fit=crop');">
             <div class="hero-content">
                 <div class="hero-tags"><span class="badge badge-primary">🔥 NỔI BẬT</span></div>
-                <h2>Trải Nghiệm Điện Ảnh Đỉnh Cao Chưa Từng Có</h2>
-                <p>Lựa chọn ghế VIP, màn chiếu IMAX, và ghế đôi giường nằm. Tận hưởng âm thanh vòm sống động.</p>
-                <a href="#movies-catalog" class="btn btn-primary">Khám Phá Phim</a>
+                <h2>Trải Nghiệm Điện Ảnh Đỉnh Cao Tại CineVerse</h2>
+                <p>Màn chiếu IMAX Laser, âm thanh Dolby Atmos và dàn ghế Sweetbox đôi sang trọng.</p>
+                <a href="#movies-catalog" class="btn btn-primary">Khám Phá Phim Chiếu Rạp</a>
             </div>
         </div>
         {% endfor %}
@@ -44,134 +44,370 @@
     </div>
 </div>
 
-<!-- Section: Phim Đang Chiếu / Sắp Chiếu -->
-<div style="margin: 40px 8% 10px;">
-    <h2 style="font-size: 24px; font-weight: 800; text-transform: uppercase; border-bottom: 3px solid var(--color-primary, #e50914); padding-bottom: 8px; display: inline-block; letter-spacing: 0.05em;">
-        🎬 DANH SÁCH PHIM TẠI RẠP
-    </h2>
-</div>
-
-<!-- Catalog Filters Panel -->
-<div class="filters-panel glass-panel" id="movies-catalog">
-    <div class="filters-panel-top">
+<!-- 2. Catalog Filters & Search Bar -->
+<div class="filters-panel glass-panel" id="movies-catalog" style="margin: 30px 5% 25px; border-radius: 16px;">
+    <div class="filters-panel-top" style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center;">
         <!-- Status Tabs -->
-        <div class="filter-group">
-            <a href="?status=now_showing{% if current_genre %}&genre={{ current_genre }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if current_status == 'now_showing' %}active{% endif %}">🎬 Đang Chiếu</a>
-            <a href="?status=coming_soon{% if current_genre %}&genre={{ current_genre }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if current_status == 'coming_soon' %}active{% endif %}">🗓️ Sắp Chiếu</a>
+        <div class="filter-group" style="display: flex; gap: 8px;">
+            <a href="?status=now_showing{% if current_genre %}&genre={{ current_genre }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if current_status == 'now_showing' and not is_filtering %}active{% endif %}" style="border-radius: 10px; font-weight: 700;">🎬 Đang Chiếu</a>
+            <a href="?status=coming_soon{% if current_genre %}&genre={{ current_genre }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if current_status == 'coming_soon' %}active{% endif %}" style="border-radius: 10px; font-weight: 700;">🗓️ Sắp Chiếu</a>
+            <a href="?format=IMAX" class="filter-btn {% if current_format == 'IMAX' %}active{% endif %}" style="border-radius: 10px; font-weight: 700; color: #38bdf8;">✨ Màn Ảnh IMAX</a>
         </div>
 
         <!-- Search Bar -->
-        <form method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 400px; position: relative;">
+        <form method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 420px; position: relative;">
             <input type="hidden" name="status" value="{{ current_status }}">
             {% if current_genre %}<input type="hidden" name="genre" value="{{ current_genre }}">{% endif %}
             <div style="position: relative; flex: 1;">
-                <input type="text" name="q" class="form-input" placeholder="Tìm tên phim, thể loại..." value="{{ search_query|default:'' }}" style="padding: 10px 16px 10px 38px;">
+                <input type="text" name="q" class="form-input" placeholder="Tìm tên phim, diễn viên, thể loại..." value="{{ search_query|default:'' }}" style="padding: 10px 16px 10px 38px; border-radius: 10px; background: rgba(0,0,0,0.4);">
                 <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 13px;">🔍</span>
             </div>
-            <button type="submit" class="btn btn-primary" style="padding: 10px 20px; white-space: nowrap;">Tìm Kiếm</button>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px; white-space: nowrap; border-radius: 10px; font-weight: 700;">Tìm Kiếm</button>
         </form>
     </div>
 
     <!-- Genre List -->
-    <div class="filters-panel-genres">
-        <span class="filters-genre-label">Thể loại:</span>
-        <a href="?status={{ current_status }}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn btn-sm {% if not current_genre %}active{% endif %}">Tất Cả Thể Loại</a>
+    <div class="filters-panel-genres" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.08); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+        <span class="filters-genre-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-muted); margin-right: 6px;">🏷️ Thể loại:</span>
+        <a href="?status={{ current_status }}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn btn-sm {% if not current_genre %}active{% endif %}" style="border-radius: 8px;">Tất Cả</a>
         {% for g in genres %}
-            <a href="?status={{ current_status }}&genre={{ g }}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn btn-sm {% if current_genre == g %}active{% endif %}">{{ g }}</a>
+            <a href="?status={{ current_status }}&genre={{ g }}{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn btn-sm {% if current_genre == g %}active{% endif %}" style="border-radius: 8px;">{{ g }}</a>
         {% endfor %}
     </div>
 </div>
 
-<!-- Movie Grid -->
-<div class="movie-grid">
-    {% for movie in movies %}
-        <a href="{% url 'movie_detail' movie.id %}" class="movie-card">
-            <div class="poster-wrapper">
-                <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}"
-                     alt="{{ movie.title }}"
-                     loading="lazy"
-                     onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop';">
-                <div class="card-overlay">
-                    <span class="btn btn-primary">Đặt Vé Ngay 🎟️</span>
-                </div>
-                <div class="age-badge-overlay {{ movie.age_rating|lower }}" title="{{ movie.get_age_rating_display }}">
-                    {{ movie.age_rating }}
-                </div>
-                {% if movie.status == 'now_showing' %}
-                    <div class="movie-ribbon">ĐANG CHIẾU</div>
-                {% elif movie.status == 'coming_soon' %}
-                    <div class="coming-soon-badge">SẮP CHIẾU</div>
-                {% endif %}
-            </div>
-            <div class="movie-info">
-                <h3 class="movie-title">{{ movie.title }}</h3>
-                <div class="movie-meta">
-                    <span style="color: var(--color-text-muted); font-size: 13px;">{{ movie.genre|truncatechars:18 }}</span>
-                    <span class="rating-badge">★ {{ movie.rating|floatformat:1 }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                    <span style="font-size: 12px; color: var(--color-text-muted);">⏳ {{ movie.duration }} phút</span>
-                    <span class="movie-format-badge">{{ movie.formats }}</span>
-                </div>
-            </div>
-        </a>
-    {% empty %}
-        <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 70px 30px; color: var(--color-text-muted);">
-            <div style="font-size: 50px; margin-bottom: 20px;">🎬</div>
-            <h3 style="margin-bottom: 10px; color: var(--color-text-secondary);">Không tìm thấy phim phù hợp</h3>
-            <p>Vui lòng thay đổi từ khóa hoặc bộ lọc thể loại.</p>
-            <a href="{% url 'index' %}" class="btn btn-secondary" style="margin-top: 20px; display: inline-flex;">Xóa Bộ Lọc</a>
-        </div>
-    {% endfor %}
-</div>
+{% if is_filtering %}
+<!-- 3A. FILTERED SEARCH RESULTS (Hiển thị khi người dùng tìm kiếm hoặc lọc thể loại) -->
+<div style="margin: 20px 5% 50px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="font-size: 22px; font-weight: 800; color: white;">
+            🔍 KẾT QUẢ TÌM KIẾM ({% if search_query %}"{{ search_query }}"{% elif current_genre %}Thể loại: {{ current_genre }}{% else %}Bộ lọc tùy chọn{% endif %}) — <span style="color: var(--color-primary);">{{ movies|length }} Phim</span>
+        </h2>
+        <a href="{% url 'index' %}" class="btn btn-secondary btn-sm" style="border-radius: 8px;">✕ Xóa Bộ Lọc</a>
+    </div>
 
-<!-- Section: Suất Chiếu Hôm Nay (Mới, Động) -->
-<div class="home-section">
-    <h2 class="home-section-title secondary-line">
-        ⚡ SUẤT CHIẾU HÔM NAY (GẦN NHẤT)
-    </h2>
-    <p class="home-section-subtitle">Hiển thị các suất chiếu sắp diễn ra hôm nay. Đặt nhanh giữ chỗ đẹp!</p>
-
-    <div class="showtime-grid">
-        {% for st in upcoming_showtimes %}
-            <div class="glass-panel showtime-card">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                        <span class="badge badge-cyan" style="font-size: 15px; font-weight: 800; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); color: var(--color-secondary);">🕒 {{ st.start_time|date:"H:i" }}</span>
-                        <span class="badge badge-muted" style="font-size: 11px;">Hệ số: {{ st.price_multiplier }}x</span>
+    <div class="movie-grid">
+        {% for movie in movies %}
+            <a href="{% url 'movie_detail' movie.id %}" class="movie-card" style="border-radius: 14px; overflow: hidden; background: var(--color-bg-tertiary); transition: transform 0.25s, box-shadow 0.25s;">
+                <div class="poster-wrapper">
+                    <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}"
+                         alt="{{ movie.title }}" loading="lazy"
+                         onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop';">
+                    <div class="card-overlay">
+                        <span class="btn btn-primary btn-sm">Xem Chi Tiết 🎟️</span>
                     </div>
-                    <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.4;">{{ st.movie.title }}</h4>
-                    <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">🏢 Rạp: {{ st.screen.theater.name }}</p>
-                    <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 16px;">🖥️ Phòng: {{ st.screen.name }} ({{ st.screen.format }})</p>
+                    <div class="age-badge-overlay {{ movie.age_rating|lower }}">{{ movie.age_rating }}</div>
+                    {% if movie.status == 'now_showing' %}
+                        <div class="movie-ribbon">ĐANG CHIẾU</div>
+                    {% elif movie.status == 'coming_soon' %}
+                        <div class="coming-soon-badge">SẮP CHIẾU</div>
+                    {% endif %}
                 </div>
-                <a href="{% url 'booking_flow' st.id %}" class="btn btn-primary btn-sm" style="text-align: center; display: block; width: 100%; font-weight: 700; padding: 10px;">⚡ ĐẶT VÉ NHANH</a>
-            </div>
+                <div class="movie-info" style="padding: 14px;">
+                    <h3 class="movie-title" style="font-size: 15px; font-weight: 700; color: white; margin-bottom: 6px;">{{ movie.title }}</h3>
+                    <div class="movie-meta" style="display: flex; justify-content: space-between; font-size: 13px; color: var(--color-text-muted);">
+                        <span>{{ movie.genre|truncatechars:18 }}</span>
+                        <span class="rating-badge" style="color: #fbbf24; font-weight: 700;">★ {{ movie.rating|floatformat:1 }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--color-text-muted);">
+                        <span>⏳ {{ movie.duration }} phút</span>
+                        <span class="movie-format-badge" style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">{{ movie.formats }}</span>
+                    </div>
+                </div>
+            </a>
         {% empty %}
-            <div class="glass-panel" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--color-text-muted); background: rgba(255,255,255,0.01);">
-                <p style="font-size: 32px; margin-bottom: 10px;">🍿</p>
-                <p style="font-size: 14px;">Hôm nay không còn suất chiếu khả dụng nào khác. Vui lòng quay lại vào ngày mai!</p>
+            <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 70px 30px; color: var(--color-text-muted);">
+                <div style="font-size: 50px; margin-bottom: 16px;">🎬</div>
+                <h3 style="margin-bottom: 8px; color: white;">Không tìm thấy phim phù hợp</h3>
+                <p>Vui lòng thay đổi từ khóa hoặc bộ lọc thể loại khác.</p>
+                <a href="{% url 'index' %}" class="btn btn-primary" style="margin-top: 18px; display: inline-flex;">Xem Tất Cả Phim Chiếu Rạp</a>
             </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- Movie Experience Formats (Đặc trưng phòng chiếu) -->
-<div class="home-section">
-    <h2 class="home-section-title primary-line">
+{% else %}
+<!-- 3B. MAIN STREAMING/CINEMA HYBRID HOMEPAGE LAYOUT -->
+
+<!-- TOP SHELF: CINEVERSE ĐỀ CỬ (HORIZONTAL SCROLL SHELF) -->
+<div style="margin: 10px 5% 40px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px;">🔥</span>
+            <h2 style="font-size: 22px; font-weight: 800; color: white; letter-spacing: 0.5px; text-transform: uppercase;">
+                CINEVERSE ĐỀ CỬ HOT
+            </h2>
+            <span style="font-size: 11px; font-weight: 700; color: var(--color-primary); background: rgba(229,9,20,0.12); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(229,9,20,0.3);">
+                ĐẶC SẮC TUẦN NÀY
+            </span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="shelf-nav-btn" onclick="scrollShelf('recommended-shelf', -320)" aria-label="Cuộn trái" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: white; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px;">❮</button>
+            <button type="button" class="shelf-nav-btn" onclick="scrollShelf('recommended-shelf', 320)" aria-label="Cuộn phải" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: white; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px;">❯</button>
+        </div>
+    </div>
+
+    <!-- Horizontal Scrollable Shelf Track -->
+    <div id="recommended-shelf" style="display: flex; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 12px; scrollbar-width: thin;">
+        {% for movie in recommended_movies %}
+            <div style="flex: 0 0 200px; max-width: 200px; border-radius: 14px; overflow: hidden; background: rgba(26,26,26,0.7); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: transform 0.25s, box-shadow 0.25s;" class="shelf-card">
+                <a href="{% url 'movie_detail' movie.id %}" style="display: block; position: relative; text-decoration: none;">
+                    <div style="position: relative; width: 100%; height: 280px; overflow: hidden;">
+                        <img src="{{ movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}" 
+                             alt="{{ movie.title }}" 
+                             style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" class="shelf-poster">
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; color: #fbbf24; border: 1px solid rgba(251,191,36,0.3);">
+                            ★ {{ movie.rating|floatformat:1 }}
+                        </div>
+                        <div style="position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 800;">
+                            {{ movie.age_rating }}
+                        </div>
+                        <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); padding: 4px 8px; border-radius: 6px;">
+                            <span style="font-size: 10px; font-weight: 700; color: #38bdf8;">{{ movie.formats|truncatechars:12 }}</span>
+                            <span style="font-size: 10px; color: #cbd5e1;">⏳ {{ movie.duration }}'</span>
+                        </div>
+                    </div>
+                    <div style="padding: 12px;">
+                        <h4 style="font-size: 14px; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">{{ movie.title }}</h4>
+                        <div style="font-size: 12px; color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ movie.genre }}</div>
+                        <span class="btn btn-primary btn-sm" style="width: 100%; text-align: center; margin-top: 10px; padding: 6px 10px; font-size: 12px; font-weight: 700; border-radius: 8px; display: block;">
+                            🎟️ Đặt Vé
+                        </span>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- MAIN 2-COLUMN SPLIT: LEFT (MOVIES + QUICK SHOWTIMES) | RIGHT (TRENDING LEADERBOARD) -->
+<div style="margin: 0 5% 50px; display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start;" class="main-hybrid-layout">
+
+    <!-- LEFT COLUMN: HÀNG PHIM ĐANG CHIẾU & SUẤT CHIẾU HÔM NAY -->
+    <div>
+        <!-- Section Header: Phim Đang Chiếu -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">🎬</span>
+                <div>
+                    <h2 style="font-size: 21px; font-weight: 800; color: white; text-transform: uppercase; margin: 0;">
+                        PHIM ĐANG CHIẾU & SUẤT CHIẾU HÔM NAY
+                    </h2>
+                    <p style="font-size: 12px; color: var(--color-text-muted); margin: 3px 0 0;">
+                        Bấm trực tiếp vào các khung giờ bên dưới để chọn ghế vào phòng chiếu ngay lập tức
+                    </p>
+                </div>
+            </div>
+            <a href="?status=now_showing" style="font-size: 13px; color: #38bdf8; font-weight: 600; text-decoration: none; white-space: nowrap;">Xem Tất Cả →</a>
+        </div>
+
+        <!-- Movie Cards with Embedded Quick Showtimes -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-bottom: 45px;">
+            {% for item in now_showing_with_showtimes %}
+                {% with m=item.movie %}
+                <div class="glass-panel now-showing-card" style="border-radius: 16px; overflow: hidden; background: rgba(26,26,26,0.65); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; transition: transform 0.25s, box-shadow 0.25s;">
+                    <!-- Card Top Poster -->
+                    <div style="position: relative; width: 100%; height: 320px; overflow: hidden;">
+                        <a href="{% url 'movie_detail' m.id %}" style="display: block; width: 100%; height: 100%;">
+                            <img src="{{ m.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}" 
+                                 alt="{{ m.title }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" class="shelf-poster">
+                        </a>
+                        <div style="position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">
+                            {{ m.age_rating }}
+                        </div>
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; color: #fbbf24; border: 1px solid rgba(251,191,36,0.3);">
+                            ★ {{ m.rating|floatformat:1 }}
+                        </div>
+                        <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); padding: 4px 8px; border-radius: 6px; font-size: 11px;">
+                            <span style="font-weight: 700; color: #38bdf8;">{{ m.formats }}</span>
+                            <span style="color: #cbd5e1;">⏳ {{ m.duration }} phút</span>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div style="padding: 14px; flex: 1; display: flex; flex-direction: column;">
+                        <h3 style="font-size: 15px; font-weight: 700; color: white; margin: 0 0 4px; line-height: 1.4;">
+                            <a href="{% url 'movie_detail' m.id %}" style="color: white; text-decoration: none;">{{ m.title }}</a>
+                        </h3>
+                        <p style="font-size: 12px; color: var(--color-text-muted); margin: 0 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ m.genre }}
+                        </p>
+
+                        <!-- QUICK SHOWTIMES PILLS (Thời gian xem phim trực quan) -->
+                        <div style="margin-top: auto; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    🕒 Suất chiếu hôm nay:
+                                </span>
+                                <span style="font-size: 10px; color: #10b981; font-weight: 600;">⚡ Đặt nhanh</span>
+                            </div>
+
+                            {% if item.has_showtimes %}
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px;">
+                                    {% for st in item.showtimes %}
+                                        <a href="{% url 'booking_flow' st.id %}" 
+                                           class="quick-st-pill" 
+                                           title="Rạp: {{ st.theater_name }} | Phòng: {{ st.format }} ({{ st.start_time_str }} ~ {{ st.end_time_str }})"
+                                           style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px 4px; border-radius: 8px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); text-decoration: none; transition: all 0.2s;">
+                                            <span style="font-size: 12px; font-weight: 800; color: #60a5fa; font-family: monospace;">{{ st.start_time_str }}</span>
+                                            <span style="font-size: 9px; color: #94a3b8; margin-top: 1px;">{{ st.format }}</span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 8px 10px; border-radius: 8px;">
+                                    <span style="font-size: 11px; color: var(--color-text-muted);">Suất chiếu kế tiếp: Ngày mai</span>
+                                    <a href="{% url 'movie_detail' m.id %}" style="font-size: 11px; color: #38bdf8; font-weight: 700; text-decoration: none;">Xem Lịch →</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+
+        <!-- Section 2: PHIM SẮP KHỞI CHIẾU (Coming Soon Shelf) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">🗓️</span>
+                <h2 style="font-size: 21px; font-weight: 800; color: white; text-transform: uppercase; margin: 0;">
+                    PHIM SẮP KHỞI CHIẾU
+                </h2>
+            </div>
+            <a href="?status=coming_soon" style="font-size: 13px; color: #38bdf8; font-weight: 600; text-decoration: none;">Xem Thêm →</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px;">
+            {% for m in coming_soon_movies %}
+                <div class="glass-panel" style="border-radius: 14px; overflow: hidden; background: rgba(26,26,26,0.5); border: 1px solid rgba(255,255,255,0.06); transition: transform 0.2s;" class="shelf-card">
+                    <a href="{% url 'movie_detail' m.id %}" style="text-decoration: none; color: white;">
+                        <div style="position: relative; width: 100%; height: 260px; overflow: hidden;">
+                            <img src="{{ m.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}" 
+                                 alt="{{ m.title }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(234, 179, 8, 0.9); color: #000; font-weight: 800; font-size: 11px; padding: 4px; text-align: center; border-radius: 6px;">
+                                🗓️ Khởi chiếu: {{ m.release_date|date:"d/m/Y" }}
+                            </div>
+                        </div>
+                        <div style="padding: 12px;">
+                            <h4 style="font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">{{ m.title }}</h4>
+                            <div style="font-size: 11px; color: var(--color-text-muted);">{{ m.genre|truncatechars:20 }}</div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: SIDEBAR BẢNG XẾP HẠNG (TRENDING LEADERBOARD) -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- WIDGET 1: PHIM HOT TRONG TUẦN (TRENDING LEADERBOARD) -->
+        <div class="glass-panel" style="padding: 20px; border-radius: 18px; background: rgba(26,26,26,0.75); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 12px 32px rgba(0,0,0,0.4);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+                <span style="font-size: 22px;">🔥</span>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: white; margin: 0; text-transform: uppercase;">
+                        PHIM HOT TRONG TUẦN
+                    </h3>
+                    <span style="font-size: 11px; color: #94a3b8;">Xếp hạng theo lượt xem & đặt vé</span>
+                </div>
+            </div>
+
+            <!-- Leaderboard Items List -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                {% for item in trending_leaderboard %}
+                <a href="{% url 'movie_detail' item.movie.id %}" style="display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); text-decoration: none; color: white; transition: all 0.2s;" class="leaderboard-row">
+                    <!-- Rank Number Badge -->
+                    <div style="width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; flex-shrink: 0;
+                        {% if item.rank == 1 %}background: linear-gradient(135deg, #eab308, #ca8a04); color: black; box-shadow: 0 2px 8px rgba(234, 179, 8, 0.4);
+                        {% elif item.rank == 2 %}background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: black;
+                        {% elif item.rank == 3 %}background: linear-gradient(135deg, #d97706, #b45309); color: white;
+                        {% else %}background: rgba(255,255,255,0.08); color: #94a3b8;{% endif %}">
+                        {{ item.rank }}
+                    </div>
+
+                    <!-- Movie Thumbnail -->
+                    <div style="width: 42px; height: 56px; border-radius: 6px; overflow: hidden; flex-shrink: 0;">
+                        <img src="{{ item.movie.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}" 
+                             alt="{{ item.movie.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+
+                    <!-- Movie Info & Stats -->
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 style="font-size: 13px; font-weight: 700; margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.movie.title }}</h4>
+                        <div style="display: flex; gap: 8px; font-size: 11px; color: var(--color-text-muted);">
+                            <span style="color: #fbbf24; font-weight: 700;">★ {{ item.rating }}</span>
+                            <span>•</span>
+                            <span>{{ item.popularity_str }} lượt xem</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- WIDGET 2: TOP PHIM ĐÁNH GIÁ CAO -->
+        <div class="glass-panel" style="padding: 20px; border-radius: 18px; background: rgba(26,26,26,0.75); border: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+                <span style="font-size: 20px;">⭐</span>
+                <h3 style="font-size: 15px; font-weight: 800; color: white; margin: 0; text-transform: uppercase;">
+                    ĐÁNH GIÁ CAO NHẤT
+                </h3>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                {% for m in top_rated_movies %}
+                <a href="{% url 'movie_detail' m.id %}" style="display: flex; gap: 10px; align-items: center; text-decoration: none; color: white; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.05);" class="top-rated-link">
+                    <img src="{{ m.poster_url|default:'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600&auto=format&fit=crop' }}" 
+                         alt="{{ m.title }}" style="width: 36px; height: 50px; border-radius: 6px; object-fit: cover;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ m.title }}</div>
+                        <div style="display: flex; gap: 6px; font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">
+                            <span style="color: #fbbf24; font-weight: 700;">★ {{ m.rating|floatformat:1 }}</span>
+                            <span>•</span>
+                            <span>{{ m.duration }} phút</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- WIDGET 3: BANNER ĐẶC QUYỀN THÀNH VIÊN -->
+        <div style="background: linear-gradient(135deg, rgba(229,9,20,0.2) 0%, rgba(59,130,246,0.15) 100%); border: 1px solid rgba(229,9,20,0.3); border-radius: 16px; padding: 18px; text-align: center;">
+            <span style="font-size: 28px; display: block; margin-bottom: 6px;">👑</span>
+            <strong style="color: white; font-size: 14px; display: block; margin-bottom: 4px;">THÀNH VIÊN CINEVERSE VIP</strong>
+            <p style="font-size: 12px; color: #cbd5e1; margin: 0 0 12px; line-height: 1.5;">Tích điểm đổi vé xem phim miễn phí & nhận bắp nước combo độc quyền.</p>
+            {% if not user %}
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm" style="width: 100%; border-radius: 8px; font-weight: 700;">Đăng Ký Thành Viên</a>
+            {% else %}
+                <a href="{% url 'profile' %}" class="btn btn-secondary btn-sm" style="width: 100%; border-radius: 8px;">Xem Điểm Của Tôi</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 4. Movie Experience Formats (Đặc trưng phòng chiếu CineVerse) -->
+<div class="home-section" style="margin: 30px 5%;">
+    <h2 class="home-section-title primary-line" style="font-size: 20px; font-weight: 800; text-transform: uppercase;">
         🎬 ĐẶC TRƯNG PHÒNG CHIẾU CINEVERSE
     </h2>
-    <div class="experience-grid">
-        <div class="glass-panel experience-card">
+    <div class="experience-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div class="glass-panel experience-card" style="padding: 24px; border-radius: 16px;">
             <span style="font-size: 32px; display: block; margin-bottom: 12px;">🌟</span>
-            <h3 style="color: var(--color-primary); font-weight: 800; margin-bottom: 8px;">IMAX EXPERIENCE</h3>
+            <h3 style="color: var(--color-primary); font-weight: 800; margin-bottom: 8px;">IMAX LASER EXPERIENCE</h3>
             <p style="font-size: 13px; color: var(--color-text-secondary); line-height: 1.6;">Màn ảnh cực đại siêu cong sắc nét cùng dàn âm thanh vòm sống động tái hiện trọn vẹn từng chi tiết phim chân thực nhất.</p>
         </div>
-        <div class="glass-panel experience-card">
+        <div class="glass-panel experience-card" style="padding: 24px; border-radius: 16px;">
             <span style="font-size: 32px; display: block; margin-bottom: 12px;">👑</span>
             <h3 style="color: var(--color-primary); font-weight: 800; margin-bottom: 8px;">GOLD CLASS VIP</h3>
             <p style="font-size: 13px; color: var(--color-text-secondary); line-height: 1.6;">Phòng chiếu thượng hạng thiết kế ghế da đôi chỉnh điện êm ái, tặng kèm thức uống và dịch vụ phục vụ tận tâm riêng biệt.</p>
         </div>
-        <div class="glass-panel experience-card">
+        <div class="glass-panel experience-card" style="padding: 24px; border-radius: 16px;">
             <span style="font-size: 32px; display: block; margin-bottom: 12px;">👩‍❤️‍👨</span>
             <h3 style="color: var(--color-primary); font-weight: 800; margin-bottom: 8px;">SWEETBOX COUPLE</h3>
             <p style="font-size: 13px; color: var(--color-text-secondary); line-height: 1.6;">Ghế đôi Sweetbox với vách ngăn cao tạo không gian ấm áp, riêng tư tuyệt đối cho các cặp đôi cùng thưởng thức phim ngọt ngào.</p>
@@ -179,39 +415,91 @@
     </div>
 </div>
 
-<!-- Important Notice Guidelines (Accordion Details) -->
-<div class="home-section" style="margin-bottom: var(--spacing-16);">
-    <details class="glass-panel notice-details">
-        <summary style="font-size: 15px; font-weight: 800; color: #fff; list-style: none; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+<!-- 5. Important Notice Guidelines (Accordion Details) -->
+<div class="home-section" style="margin: 0 5% 50px;">
+    <details class="glass-panel notice-details" style="padding: 18px 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+        <summary style="font-size: 15px; font-weight: 800; color: #fff; list-style: none; display: flex; justify-content: space-between; align-items: center; user-select: none; cursor: pointer;">
             <span>⚠️ LƯU Ý QUAN TRỌNG KHI ĐI XEM PHIM TẠI RẠP (Click để xem chi tiết)</span>
             <span style="font-size: 16px; color: var(--color-text-muted);">▼</span>
         </summary>
-        <div style="margin-top: var(--spacing-5); display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--spacing-6); font-size: 13.5px; color: var(--color-text-secondary); line-height: 1.7; cursor: default;">
+        <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; font-size: 13.5px; color: var(--color-text-secondary); line-height: 1.7; cursor: default; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 16px;">
             <div>
                 <strong style="color: var(--color-primary); display: block; margin-bottom: 8px; font-size: 14px;">🔞 Quy định phân loại độ tuổi:</strong>
                 <ul style="padding-left: 16px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
                     <li><strong>Phim P</strong>: Phổ biến rộng rãi đến tất cả độ tuổi.</li>
                     <li><strong>Phim K</strong>: Dưới 13 tuổi xem cùng cha mẹ hoặc người giám hộ.</li>
-                    <li><strong>Phim T13, T16, T18</strong>: Nghiêm cấm khán giả dưới 13, 16, 18 tuổi. Vui lòng mang theo giấy tờ tùy thân (CCCD, thẻ học sinh).</li>
+                    <li><strong>Phim T13, T16, T18</strong>: Nghiêm cấm khán giả dưới 13, 16, 18 tuổi. Vui lòng mang theo giấy tờ tùy thân (CCCD).</li>
                 </ul>
             </div>
             <div>
                 <strong style="color: var(--color-secondary); display: block; margin-bottom: 8px; font-size: 14px;">⏱️ Giờ vào rạp chiếu phim:</strong>
                 <ul style="padding-left: 16px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-                    <li>Vui lòng có mặt tại sảnh rạp chiếu phim trước ít nhất <strong>15 phút</strong> để thực hiện check-in hoặc in vé giấy tại quầy tự động.</li>
+                    <li>Vui lòng có mặt tại sảnh rạp chiếu phim trước ít nhất <strong>15 phút</strong> để check-in hoặc nhận bắp nước combo.</li>
                     <li>Cửa phòng chiếu sẽ đóng sau khi phim bắt đầu chiếu <strong>15 phút</strong> để đảm bảo sự yên tĩnh.</li>
                 </ul>
             </div>
             <div>
                 <strong style="color: var(--color-success); display: block; margin-bottom: 8px; font-size: 14px;">🎟️ Sử dụng Vé Điện Tử QR Code:</strong>
                 <ul style="padding-left: 16px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-                    <li>Sau khi hoàn tất thanh toán, vé QR sẽ được hiển thị ngay tại mục <strong>Lịch Sử Đặt Vé</strong> và gửi email thông báo tự động.</li>
-                    <li>Khán giả quét mã QR trực tiếp tại cửa kiểm vé hoặc nhập mã booking tại quầy tự động của rạp CineVerse để in vé giấy.</li>
+                    <li>Sau khi hoàn tất thanh toán (VietQR, MoMo, VNPay), vé QR sẽ được hiển thị ngay tại mục <strong>Lịch Sử Đặt Vé</strong>.</li>
+                    <li>Khán giả quét mã QR trực tiếp tại cửa kiểm vé để vào rạp xem phim tiện lợi và nhanh chóng.</li>
                 </ul>
             </div>
         </div>
     </details>
 </div>
 
+<!-- Embedded Script & Styles for Shelves & Quick Pills -->
+<script>
+function scrollShelf(shelfId, amount) {
+    const el = document.getElementById(shelfId);
+    if (el) {
+        el.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+}
+</script>
+
+<style>
+.shelf-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.5) !important;
+    border-color: rgba(229, 9, 20, 0.4) !important;
+}
+.shelf-card:hover .shelf-poster {
+    transform: scale(1.05);
+}
+.now-showing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.45) !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+}
+.now-showing-card:hover .shelf-poster {
+    transform: scale(1.04);
+}
+.quick-st-pill:hover {
+    background: linear-gradient(135deg, #e50914 0%, #b80710 100%) !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+    transform: translateY(-2px);
+}
+.quick-st-pill:hover span {
+    color: white !important;
+}
+.leaderboard-row:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(229, 9, 20, 0.3) !important;
+    transform: translateX(4px);
+}
+.top-rated-link:hover {
+    opacity: 0.85;
+    transform: translateX(4px);
+    transition: all 0.2s;
+}
+@media (max-width: 992px) {
+    .main-hybrid-layout {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 
 {% endblock %}
